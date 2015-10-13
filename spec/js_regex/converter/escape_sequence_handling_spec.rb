@@ -24,14 +24,21 @@ describe JsRegex::Converter do
       expect_ruby_and_js_to_match(string: 'FFxy66z', with_results: %w(xy z))
     end
 
-    it 'translates the anchor \z' do
+    it 'translates the beginning-of-string anchor \A' do
+      given_the_ruby_regexp(/\A\d/)
+      expect_js_regex_to_be(/^\d/)
+      expect_no_warnings
+      expect_ruby_and_js_to_match(string: '123', with_results: %w(1))
+    end
+
+    it 'translates the end-of-string anchor \z' do
       given_the_ruby_regexp(/\w\z/)
       expect_js_regex_to_be(/\w$/)
       expect_no_warnings
       expect_ruby_and_js_to_match(string: 'abc', with_results: %w(c))
     end
 
-    it 'translates the anchor \Z' do
+    it 'translates the end-of-string-with-optional-newline anchor \Z' do
       given_the_ruby_regexp(/\w\Z/)
       expect_js_regex_to_be(/\w(?=\n?$)/)
       expect_no_warnings

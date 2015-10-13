@@ -7,7 +7,11 @@ class JsRegex
       private
 
       def convert_data
-        pass_through
+        if data == "\n"
+          '\\n'
+        else
+          pass_through
+        end
       end
     end
   end
