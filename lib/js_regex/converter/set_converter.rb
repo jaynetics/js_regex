@@ -54,7 +54,7 @@ class JsRegex
         if /[\u{10000}-\u{FFFFF}]/ =~ utf8_data
           warn_of_unsupported_feature('astral plane character')
         else
-          buffer_set_member(utf8_data)
+          buffer_set_member(utf8_data.sub("\n", '\\n'))
         end
       end
 

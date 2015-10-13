@@ -13,10 +13,6 @@ class JsRegex
     attr_reader :ruby_regex, :source, :options, :warnings
 
     def initialize(ruby_regex)
-      # Regexp::Parser accepts ::Regexp#inspect output which leads to
-      # different results, so make sure a ::Regexp is being passed.
-      fail TypeError, 'Pass a ::Regexp' unless ruby_regex.is_a?(::Regexp)
-
       @ruby_regex = ruby_regex
       @source = ''
       @options = ''
@@ -50,9 +46,11 @@ class JsRegex
     end
 
     def converter_for_token_class(token_class)
-      converter_name = converter_name_for_token_class(token_class)
-      converter_class = JsRegex::Converter.const_get(converter_name)
-      converters[token_class] ||= converter_class.new(self, context)
+      converters[token_class] ||= begin
+        converter_name = converter_name_for_token_class(token_class)
+        converter_class = JsRegex::Converter.const_get(converter_name)
+        converter_class.new(self, context)
+      end
     end
 
     def converter_name_for_token_class(token_class)

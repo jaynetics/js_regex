@@ -131,5 +131,27 @@ describe JsRegex::Converter do
       expect_js_regex_to_be(/./)
       expect_warning
     end
+
+    it 'converts literal newline members into newline escapes' do
+      given_the_ruby_regexp(/[a
+b]/)
+      expect_js_regex_to_be(/[a\nb]/)
+      expect_no_warnings
+      expect_ruby_and_js_to_match(string: "x\ny", with_results: ["\n"])
+    end
+
+    it 'preserves newline escape members' do
+      given_the_ruby_regexp(/[a\nb]/)
+      expect_js_regex_to_be(/[a\nb]/)
+      expect_no_warnings
+      expect_ruby_and_js_to_match(string: "x\ny", with_results: ["\n"])
+    end
+
+    it 'does not add escapes to \\n' do
+      given_the_ruby_regexp(/\\n/)
+      expect_js_regex_to_be(/\\n/)
+      expect_no_warnings
+      expect_ruby_and_js_to_match(string: '\\n', with_results: %w(\\n))
+    end
   end
 end

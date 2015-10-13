@@ -4,7 +4,7 @@ require 'spec_helper'
 describe JsRegex::Converter do
   describe 'literal handling' do
     context 'when the literal is a newline' do
-      it 'escapes the newline' do
+      it 'converts it into a newline escape' do
         given_the_ruby_regexp(/
 /)
         expect_js_regex_to_be(/\n/)
@@ -19,6 +19,13 @@ describe JsRegex::Converter do
         expect_js_regex_to_be(/aü_1>!/)
         expect_no_warnings
         expect_ruby_and_js_to_match(string: 'aü_1>!', with_results: %w(aü_1>!))
+      end
+
+      it 'does not add escapes to \\n' do
+        given_the_ruby_regexp(/\\n/)
+        expect_js_regex_to_be(/\\n/)
+        expect_no_warnings
+        expect_ruby_and_js_to_match(string: '\\n', with_results: %w(\\n))
       end
     end
   end
