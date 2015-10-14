@@ -15,6 +15,12 @@ describe JsRegex::Converter do
     end
 
     context 'when the literal is anything but a newline' do
+      it 'drops astral plane literals with warning' do
+        given_the_ruby_regexp(/😁/)
+        expect_js_regex_to_be(//)
+        expect_warning
+      end
+
       it 'lets the literal pass through' do
         given_the_ruby_regexp(/aü_1>!/)
         expect_js_regex_to_be(/aü_1>!/)

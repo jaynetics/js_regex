@@ -35,35 +35,32 @@ def expect_ruby_and_js_to_match(args = { string: '', with_results: [] })
   results = args[:with_results]
 
   expect(matches_in_ruby_on(string)).to eq(results)
-  expect(matches_in_javascript_on(string)).to eq(results)
+  expect(matches_in_javascript_using_to_s_result_on(string)).to eq(results)
+  expect(matches_in_javascript_using_to_h_result_on(string)).to eq(results)
 end
 
 def matches_in_ruby_on(string)
   string.scan(@ruby_regex).flatten
 end
 
-def matches_in_javascript_on(string)
+def matches_in_javascript_using_to_s_result_on(string)
   js = "var matches = '#{js_sanitize(string)}'.match(#{@js_regex});"\
        'if (matches === null) matches = [];'\
        'matches;'
   JS_CONTEXT.eval(js).to_a
 end
 
-def when_using_to_h_and_new_regexp_in_js_to_match(string)
-  to_h = @js_regex.to_h
-  js = "var regExp = new RegExp('#{to_h[:source]}', '#{to_h[:options]}');"\
+def matches_in_javascript_using_to_h_result_on(string)
+  hash = @js_regex.to_h
+  js = "var regExp = new RegExp(\"#{hash[:source]}\", '#{hash[:options]}');"\
        "var matches = '#{js_sanitize(string)}'.match(regExp);"\
        'if (matches === null) matches = [];'\
        'matches;'
-  @to_h_match_result = JS_CONTEXT.eval(js).to_a
-end
-
-def expect_new_regexp_match_results_to_be(result)
-  expect(@to_h_match_result).to eq(result)
+  JS_CONTEXT.eval(js).to_a
 end
 
 def js_sanitize(test_string)
-  test_string.gsub('\\', '\\\\\\\\').gsub("\n", '\\n')
+  test_string.gsub('\\', '\\\\\\\\').gsub("\n", '\\n').gsub("\r", '\\r')
 end
 
 def ruby_version_at_least?(version_string)

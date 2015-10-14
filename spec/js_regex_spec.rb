@@ -25,8 +25,7 @@ describe JsRegex do
 
     it "can be used in 'new RegExp()' in JS" do
       given_the_ruby_regexp(/a\\b/)
-      when_using_to_h_and_new_regexp_in_js_to_match('a\b')
-      expect_new_regexp_match_results_to_be(['a\b'])
+      expect(matches_in_javascript_using_to_h_result_on('a\b')).to eq(['a\b'])
     end
   end
 
@@ -40,7 +39,7 @@ describe JsRegex do
     it 'can be injected directly into JS' do
       given_the_ruby_regexp(/a\\b/)
       expect(@js_regex.to_s).to start_with('/a\\\\b/')
-      expect(matches_in_javascript_on('a\b')).to eq(['a\b'])
+      expect(matches_in_javascript_using_to_s_result_on('a\b')).to eq(['a\b'])
     end
   end
 

@@ -16,6 +16,13 @@ describe JsRegex::Converter do
       expect_ruby_and_js_to_match(string: 'ABab', with_results: %w(A a))
     end
 
+    it 'does not carry over the multiline option' do
+      # this would be bad since JS' multiline option is very different from RB's
+      given_the_ruby_regexp(//m)
+      expect(@js_regex.to_h[:options]).not_to include('m')
+      expect_no_warnings
+    end
+
     it 'ensures dots match newlines if the multiline option is set' do
       given_the_ruby_regexp(/a.+a/m)
       expect_js_regex_to_be(/a(?:.|\n)+a/)
@@ -32,6 +39,12 @@ describe JsRegex::Converter do
       expect_ruby_and_js_to_match(string: "a\na a.a", with_results: ['a.a'])
     end
 
+    it 'does not try to carry over the extended option' do
+      given_the_ruby_regexp(//x)
+      expect(@js_regex.to_h[:options]).not_to include('x')
+      expect_no_warnings
+    end
+
     context 'when extended mode is set' do
       it 'drops comments' do
         given_the_ruby_regexp(/Multiple    #   comment 1
@@ -41,22 +54,6 @@ describe JsRegex::Converter do
         expect_no_warnings
         expect_ruby_and_js_to_match(string: 'MultipleComments!',
                                     with_results: ['MultipleComments!'])
-      end
-
-      it 'preserves escaped whitespace' do
-        given_the_ruby_regexp(/Escaped\	Whitespace\ !/x)
-        expect_js_regex_to_be(/Escaped\	Whitespace\ !/)
-        expect_no_warnings
-        expect_ruby_and_js_to_match(string: 'Escaped	Whitespace !',
-                                    with_results: ['Escaped	Whitespace !'])
-      end
-
-      it 'drops non-escaped whitespace' do
-        given_the_ruby_regexp(/	Unescaped  Whitespace!	/x)
-        expect_js_regex_to_be(/UnescapedWhitespace!/)
-        expect_no_warnings
-        expect_ruby_and_js_to_match(string: 'UnescapedWhitespace!',
-                                    with_results: ['UnescapedWhitespace!'])
       end
     end
 
@@ -68,22 +65,6 @@ describe JsRegex::Converter do
         expect(@js_regex.source).to include('Multiple    #   comment 1')
         expect(@js_regex.source).to include('Comments!   #   comment 2')
         expect_no_warnings
-      end
-
-      it 'preserves escaped white space' do
-        given_the_ruby_regexp(/Escaped\	Whitespace\ !/)
-        expect_js_regex_to_be(/Escaped\	Whitespace\ !/)
-        expect_no_warnings
-        expect_ruby_and_js_to_match(string: 'Escaped	Whitespace !',
-                                    with_results: ['Escaped	Whitespace !'])
-      end
-
-      it 'preserves unescaped white space' do
-        given_the_ruby_regexp(/	Unescaped  Whitespace!	/)
-        expect_js_regex_to_be(/	Unescaped  Whitespace!	/)
-        expect_no_warnings
-        expect_ruby_and_js_to_match(string: '	Unescaped  Whitespace!	',
-                                    with_results: ['	Unescaped  Whitespace!	'])
       end
     end
   end

@@ -50,12 +50,9 @@ class JsRegex
       end
 
       def convert_member_subtype
-        utf8_data = data.dup.force_encoding('UTF-8')
-        if /[\u{10000}-\u{FFFFF}]/ =~ utf8_data
-          warn_of_unsupported_feature('astral plane character')
-        else
-          buffer_set_member(utf8_data.sub("\n", '\\n'))
-        end
+        literal_conversion = LiteralConverter.convert(data, self)
+        return '' if literal_conversion == ''
+        buffer_set_member(literal_conversion)
       end
 
       def convert_class_subtype
