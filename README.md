@@ -152,14 +152,18 @@ JsRegex is fairly fast. However, it does a lot more than the default approach, s
 
 | Approach | total     | real      |
 |----------|-----------|-----------|
-| Default  | 0.069000  | 0.083174  |
-| JsRegex  | 0.134000  | 0.142905  |
+| Default  | 0.0670000 | 0.0682271 |
+| JsRegex  | 1.1660000 | 1.1838971 |
 
 Seconds taken to convert a complicated 5-line expression 1000 times. [(benchmark code)](https://gist.github.com/janosch-x/554405a924f20d1d6db3)
 
 ### Contributions
 
 Feel free to send suggestions, point out issues, or submit pull requests.
+
+### Credits
+
+JsRegex uses a scanner that is part of ammar's powerful [regexp_parser](https://github.com/ammar/regexp_parser) gem.
 
 ### Outlook
 
