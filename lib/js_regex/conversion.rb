@@ -7,8 +7,10 @@ class JsRegex
   #
   class Conversion
     require 'regexp_parser'
-    require File.join(__dir__, 'converter', 'base')
-    Dir[File.join(__dir__, 'converter', '*.rb')].each { |f| require f }
+
+    dir = File.dirname(__FILE__)
+    require File.join(dir, 'converter', 'base')
+    Dir[File.join(dir, 'converter', '*.rb')].each { |f| require f }
 
     attr_reader :ruby_regex, :source, :options, :warnings
 

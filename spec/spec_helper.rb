@@ -1,11 +1,11 @@
 
-require 'v8'
+require 'js_regex'
+
+require 'v8' # gem 'therubyracer'
 JS_CONTEXT = V8::Context.new
 
 require 'codeclimate-test-reporter'
 CodeClimate::TestReporter.start
-
-require File.join(__dir__, '..', 'lib', 'js_regex')
 
 def given_the_ruby_regexp(ruby_regex)
   @ruby_regex = ruby_regex
@@ -28,11 +28,14 @@ def expect_warnings(count)
   expect(@js_regex.warnings.count).to eq(count)
 end
 
-def expect_ruby_and_js_to_match(string:, with_results:)
+def expect_ruby_and_js_to_match(args = { string: '', with_results: [] })
   # this is a kind of quick, inline integration test, checking whether the
   # produced js really has the same matching results as the Ruby source.
-  expect(matches_in_ruby_on(string)).to eq(with_results)
-  expect(matches_in_javascript_on(string)).to eq(with_results)
+  string = args[:string]
+  results = args[:with_results]
+
+  expect(matches_in_ruby_on(string)).to eq(results)
+  expect(matches_in_javascript_on(string)).to eq(results)
 end
 
 def matches_in_ruby_on(string)
@@ -61,4 +64,8 @@ end
 
 def js_sanitize(test_string)
   test_string.gsub('\\', '\\\\\\\\').gsub("\n", '\\n')
+end
+
+def ruby_version_at_least?(version_string)
+  Gem::Version.new(RUBY_VERSION.dup) >= Gem::Version.new(version_string)
 end

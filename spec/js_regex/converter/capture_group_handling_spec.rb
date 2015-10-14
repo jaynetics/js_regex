@@ -1,3 +1,4 @@
+# encoding: utf-8
 
 require 'spec_helper'
 
@@ -32,24 +33,6 @@ describe JsRegex::Converter do
       expect_ruby_and_js_to_match(string: '13337', with_results: ['13337'])
     end
 
-    it 'makes conditional groups non-conditional with warning' do
-      given_the_ruby_regexp(/(a)?(?(1)b|c)/)
-      expect_js_regex_to_be(/(a)?(b|c)/)
-      expect_warning
-    end
-
-    it 'makes ab-named conditional groups non-conditional with warning' do
-      given_the_ruby_regexp(/(?<condition>a)?(?(<condition>)b|c)/)
-      expect_js_regex_to_be(/(a)?(b|c)/)
-      expect_warning
-    end
-
-    it 'makes sq-named conditional groups non-conditional with warning' do
-      given_the_ruby_regexp(/(?'condition'a)?(?('condition')b|c)/)
-      expect_js_regex_to_be(/(a)?(b|c)/)
-      expect_warning
-    end
-
     it 'makes lookbehind groups non-lookbehind with warning' do
       given_the_ruby_regexp(/(?<=A)b/)
       expect_js_regex_to_be(/(?:A)b/)
@@ -59,6 +42,27 @@ describe JsRegex::Converter do
     it 'drops group-specific options with warning' do
       given_the_ruby_regexp(/a(?i-m:a)a/m)
       expect_js_regex_to_be(/a(a)a/)
+      expect_warning
+    end
+
+    it 'makes conditional groups non-conditional with warning',
+       if: ruby_version_at_least?('2.0') do
+      given_the_ruby_regexp(Regexp.new('(a)?(?(1)b|c)'))
+      expect_js_regex_to_be(Regexp.new('(a)?(b|c)'))
+      expect_warning
+    end
+
+    it 'makes ab-named conditional groups non-conditional with warning',
+       if: ruby_version_at_least?('2.0') do
+      given_the_ruby_regexp(Regexp.new('(?<condition>a)?(?(<condition>)b|c)'))
+      expect_js_regex_to_be(Regexp.new('(a)?(b|c)'))
+      expect_warning
+    end
+
+    it 'makes sq-named conditional groups non-conditional with warning',
+       if: ruby_version_at_least?('2.0') do
+      given_the_ruby_regexp(Regexp.new("(?'condition'a)?(?('condition')b|c)"))
+      expect_js_regex_to_be(Regexp.new('(a)?(b|c)'))
       expect_warning
     end
   end

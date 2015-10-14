@@ -1,8 +1,8 @@
-# coding: utf-8
+# encoding: utf-8
 Gem::Specification.new do |s|
   s.platform      = Gem::Platform::RUBY
   s.name          = 'js_regex'
-  s.version       = '1.0.2'
+  s.version       = '1.0.3'
   s.license       = 'MIT'
 
   s.summary       = 'Converts Ruby regexes to JavaScript regexes.'

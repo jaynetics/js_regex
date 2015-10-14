@@ -1,10 +1,11 @@
+# encoding: utf-8
 
 require 'spec_helper'
 
 describe JsRegex do
   it 'can handle a complex email validation regex' do
-    regex = /[a-z0-9!#$%&'*+=?^_\`\{|\}~-]+
-             (?:\.[a-z0-9!#$%&\'*+=?^_\`\{|}~-]+)*@
+    regex = /[a-z0-9!$#%&'*+=?^_\`\{|\}~-]+
+             (?:\.[a-z0-9!$#%&\'*+=?^_\`\{|}~-]+)*@
              (?:[a-z0-9](?:[a-z0-9-]*[a-z0-9])?\.)+
              (?:[A-Z]{2}|com|org|net|edu|gov|mil|
              biz|info|mobi|name|aero|asia|jobs|museum)\b/xi

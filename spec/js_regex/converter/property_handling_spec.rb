@@ -1,3 +1,4 @@
+# encoding: utf-8
 
 require 'spec_helper'
 
@@ -29,13 +30,6 @@ describe JsRegex::Converter do
       expect_js_regex_to_be(/[A-Fa-f0-9]+/)
       expect_no_warnings
       expect_ruby_and_js_to_match(string: '3GF', with_results: %w(3 F))
-    end
-
-    it 'translates unicode blocks' do
-      given_the_ruby_regexp(/\p{InBasicLatin}/)
-      expect_js_regex_to_be(/[\x00-\u007F]/)
-      expect_no_warnings
-      expect_ruby_and_js_to_match(string: 'añB', with_results: %w(a B))
     end
 
     it 'translates unicode categories' do
@@ -73,11 +67,20 @@ describe JsRegex::Converter do
       expect_ruby_and_js_to_match(string: 'a$c', with_results: %w($))
     end
 
-    it 'translates unicode ages' do
-      given_the_ruby_regexp(/\p{Age=6.2}/)
-      expect(@js_regex.source).to end_with('\u20BA]')
+    it 'translates unicode ages',
+       if: ruby_version_at_least?('1.9.3') do
+      given_the_ruby_regexp(Regexp.new('\p{Age=2.0}'))
+      expect(@js_regex.source).to end_with('\uD7A3]')
       expect_no_warnings
-      expect_ruby_and_js_to_match(string: 'A؜₺', with_results: %w(A ₺))
+      expect_ruby_and_js_to_match(string: 'A؜힣', with_results: %w(A 힣))
+    end
+
+    it 'translates unicode blocks',
+       if: ruby_version_at_least?('2.0') do
+      given_the_ruby_regexp(Regexp.new('\p{InBasicLatin}'))
+      expect_js_regex_to_be(Regexp.new('[\x00-\u007F]'))
+      expect_no_warnings
+      expect_ruby_and_js_to_match(string: 'añB', with_results: %w(a B))
     end
 
     it 'translates negated properties that are negated with ^' do
