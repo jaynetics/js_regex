@@ -1,11 +1,12 @@
 class JsRegex
+  #
   module Converter
+    require_relative 'base'
+    require_relative File.join('..', 'property_map')
     #
     # Template class implementation.
     #
     class PropertyConverter < JsRegex::Converter::Base
-      require_relative File.join('..', 'property_map')
-
       def self.property_replacement(property_name, negated = false)
         replacement = JsRegex::PROPERTY_MAP[property_name.downcase.to_sym]
         negated ? negated_property_replacement(replacement) : replacement
