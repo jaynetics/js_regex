@@ -11,7 +11,7 @@ class JsRegex
 
       def convert_data
         case subtype
-        when :backslash, :dot, :form_feed, :hex, :interval_close,
+        when :backslash, :codepoint, :dot, :form_feed, :hex, :interval_close,
              :interval_open, :newline, :one_or_more, :octal, :return,
              :space, :tab, :vertical_tab, :zero_or_more, :zero_or_one
           pass_through

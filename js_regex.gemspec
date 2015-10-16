@@ -2,7 +2,7 @@
 Gem::Specification.new do |s|
   s.platform      = Gem::Platform::RUBY
   s.name          = 'js_regex'
-  s.version       = '1.0.6'
+  s.version       = '1.0.7'
   s.license       = 'MIT'
 
   s.summary       = 'Converts Ruby regexes to JavaScript regexes.'
