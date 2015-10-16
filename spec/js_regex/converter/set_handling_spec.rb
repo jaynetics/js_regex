@@ -101,6 +101,20 @@ describe JsRegex::Converter do
       expect_ruby_and_js_to_match(string: 'ñbäõ_ß', with_results: %w(bä _ß))
     end
 
+    it 'wraps multiple set extractions in a passive alternation group' do
+      given_the_ruby_regexp(/[\h\p{ascii}]+/)
+      expect_js_regex_to_be(/(?:[A-Fa-f0-9]|[\x00-\x7F])+/)
+      expect_no_warnings
+      expect_ruby_and_js_to_match(string: 'efgh', with_results: %w(efgh))
+    end
+
+    it 'removes the parent set if it is depleted after extractions are done' do
+      given_the_ruby_regexp(/[[a-z]]+/)
+      expect_js_regex_to_be(/[a-z]+/)
+      expect_no_warnings
+      expect_ruby_and_js_to_match(string: 'abc', with_results: %w(abc))
+    end
+
     it 'drops set intersections with warning' do
       given_the_ruby_regexp(/[a-c&&x-z]/)
       expect_js_regex_to_be(/[a-cx-z]/)

@@ -18,16 +18,13 @@ class JsRegex
         self.start_index = start_index
         self.end_index = end_index
 
-        target.source << (context.valid? ? convert_data : '')
+        result = convert_data
+        target.source << (context.valid? ? result : '')
       end
 
       private
 
       attr_accessor :token_class, :subtype, :data, :start_index, :end_index
-
-      def convert_data
-        fail NotImplementedError
-      end
 
       def pass_through
         data

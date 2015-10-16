@@ -49,15 +49,13 @@ class JsRegex
       end
 
       def close_group
+        context.group_level -= 1
         if context.negative_lookbehind
           close_negative_lookbehind
+        elsif end_of_atomic_group?
+          close_atomic_group
         else
-          context.group_level -= 1
-          if end_of_atomic_group?
-            close_atomic_group
-          else
-            ')'
-          end
+          ')'
         end
       end
 
@@ -73,7 +71,7 @@ class JsRegex
 
       def close_atomic_group
         context.group_level_for_backreference = nil
-        # an empty passive group is appended in case literal digits follow
+        # the empty passive group (?:) is appended in case literal digits follow
         "))\\#{context.group_number_for_backreference}(?:)"
       end
     end

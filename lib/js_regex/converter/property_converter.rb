@@ -17,11 +17,8 @@ class JsRegex
         return nil unless property_string
         if property_string.start_with?('[^')
           property_string.sub('[^', '[')
-        elsif property_string.start_with?('[')
-          property_string.sub('[', '[^')
         else
-          # it's an invertable meta char
-          property_string.swapcase
+          property_string.sub('[', '[^')
         end
       end
 

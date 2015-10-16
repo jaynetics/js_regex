@@ -2,8 +2,10 @@
 # JsRegex
 
 [![Gem Version](https://badge.fury.io/rb/js_regex.svg)](https://badge.fury.io/rb/js_regex)
+[![Build Status](https://travis-ci.org/janosch-x/js_regex.svg?branch=master)](https://travis-ci.org/janosch-x/js_regex)
 [![Dependency Status](https://gemnasium.com/janosch-x/js_regex.svg)](https://gemnasium.com/janosch-x/js_regex)
 [![Code Climate](https://codeclimate.com/github/janosch-x/js_regex/badges/gpa.svg)](https://codeclimate.com/github/janosch-x/js_regex)
+[![Test Coverage](https://codeclimate.com/github/janosch-x/js_regex/badges/coverage.svg)](https://codeclimate.com/github/janosch-x/js_regex/coverage)
 
 This is a Ruby gem that translates Ruby's regular expressions to the JavaScript flavor.
 

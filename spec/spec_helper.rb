@@ -1,11 +1,11 @@
 
+require 'codeclimate-test-reporter'
+CodeClimate::TestReporter.start
+
 require 'js_regex'
 
 require 'v8' # gem 'therubyracer'
 JS_CONTEXT = V8::Context.new
-
-require 'codeclimate-test-reporter'
-CodeClimate::TestReporter.start
 
 def given_the_ruby_regexp(ruby_regex)
   @ruby_regex = ruby_regex

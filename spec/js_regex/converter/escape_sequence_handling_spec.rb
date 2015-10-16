@@ -61,6 +61,20 @@ describe JsRegex::Converter do
       expect_ruby_and_js_to_match(string: "abc\n", with_results: %w(c))
     end
 
+    it 'preserves the word-boundary \b' do
+      given_the_ruby_regexp(/\w\b/)
+      expect_js_regex_to_be(/\w\b/)
+      expect_no_warnings
+      expect_ruby_and_js_to_match(string: 'abc', with_results: %w(c))
+    end
+
+    it 'preserves the non-word-boundary \B' do
+      given_the_ruby_regexp(/\w\B/)
+      expect_js_regex_to_be(/\w\B/)
+      expect_no_warnings
+      expect_ruby_and_js_to_match(string: 'abc', with_results: %w(a b))
+    end
+
     it 'drops the bell char \a with warning' do
       given_the_ruby_regexp(/.\a/)
       expect_js_regex_to_be(/./)
