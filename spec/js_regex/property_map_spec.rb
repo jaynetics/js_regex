@@ -1,4 +1,6 @@
 
+require 'spec_helper'
+
 require File.join('js_regex', 'property_map')
 
 describe 'JsRegex::PROPERTY_MAP' do
