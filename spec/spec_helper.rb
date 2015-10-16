@@ -1,6 +1,8 @@
 
-require 'codeclimate-test-reporter'
-CodeClimate::TestReporter.start
+if Gem::Version.new(RUBY_VERSION.dup) >= Gem::Version.new('2.2.2')
+  require 'codeclimate-test-reporter'
+  CodeClimate::TestReporter.start
+end
 
 require 'js_regex'
 

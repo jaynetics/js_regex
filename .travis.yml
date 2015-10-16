@@ -1,6 +1,6 @@
 rvm:
-  - 2.2.2
   - 1.9.3
+  - 2.2.2
 
 addons:
   code_climate:
