@@ -25,4 +25,29 @@ describe JsRegex do
     expect_ruby_and_js_to_match(string: 'a:', with_results: [])
     expect_ruby_and_js_to_match(string: '. 9', with_results: [])
   end
+
+  it 'can handle the email validation regex of the devise gem' do
+    # regexp from: https://github.com/plataformatec/devise/blob/
+    # 7df57d5081f9884849ca15e4fde179ef164a575f/lib/devise.rb
+
+    # examples from: https://github.com/plataformatec/devise/blob/
+    # 7df57d5081f9884849ca15e4fde179ef164a575f/test/devise_test.rb
+
+    valid_emails = ['test@example.com', 'jo@jo.co', 'f4$_m@you.com',
+                    'testing.example@example.com.ua']
+    non_valid_emails = ['rex', 'test@go,com', 'test user@example.com',
+                        'test_user@example server.com',
+                        'test_user@example.com.']
+
+    given_the_ruby_regexp(/\A[^@\s]+@(?:[^@\s]+\.)+[^@\W]+\z/)
+    expect_js_regex_to_be(/^[^@\s]+@(?:[^@\s]+\.)+[^@\W]+$/)
+    expect_no_warnings
+
+    valid_emails.each do |address|
+      expect_ruby_and_js_to_match(string: address, with_results: [address])
+    end
+    non_valid_emails.each do |address|
+      expect_ruby_and_js_to_match(string: address, with_results: [])
+    end
+  end
 end
