@@ -4,6 +4,13 @@ require 'spec_helper'
 
 describe JsRegex::Converter do
   describe 'escape sequence handling' do
+    it 'lets backslashes pass through' do
+      given_the_ruby_regexp(/\\/)
+      expect_js_regex_to_be(/\\/)
+      expect_no_warnings
+      expect_ruby_and_js_to_match(string: '\\', with_results: %w(\\))
+    end
+
     it 'preserves escaped meta chars' do
       given_the_ruby_regexp(/\\A\\h/)
       expect_js_regex_to_be(/\\A\\h/)

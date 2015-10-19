@@ -47,19 +47,22 @@ If you want to inject the result directly into JavaScript, use *#to_s* or String
 var regExp = #{js_regex};
 ```
 
-If you want to convey the result via a DOM or JSON in order to feed it into the *new RegExp()* constructor in JavaScript, use *#to_h*. This also adds escapes required by the constructor.
-
-In Ruby:
+If you want to convey it as a data attribute of a DOM element, use *#to_h*.
 
 ```ruby
-js_regex = JsRegex.new(/\n{2}/)
-js_regex.to_h # => {source: '\\n{2}', options: 'g'}
+js_regex.to_h # => {source: '[a-fA-F0-9]+', options: 'g'}
 ```
 
-And then in JavaScript:
+Use *#to_json* if you want to send it as JSON. In a Rails controller you can simply do:
+
+```ruby
+render json: js_regex
+```
+
+To turn the data attribute or parsed JSON object back into a regex in JavaScript, use the *new RegExp()* constructor:
 
 ```javascript
-var regExp = new RegExp(json_obj.source, json_obj.options);
+var regExp = new RegExp(jsonObj.source, jsonObj.options);
 ```
 
 <a name='HW'></a>

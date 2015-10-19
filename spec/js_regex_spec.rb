@@ -16,16 +16,26 @@ describe JsRegex do
     it 'includes an :options String' do
       expect(return_value[:options]).to be_instance_of(String)
     end
+  end
 
-    it 'duplicates escape characters' do
-      # If you want to use 'new RegExp()' in JS to match, say, 'a\b',
-      # then you you have to type new RegExp('a\\\\b'), in all seriousness.
-      expect(JsRegex.new(/a\\b/).to_h[:source]).to eq('a\\\\\\\\b')
+  describe '#to_json' do
+    let(:return_value) { JsRegex.new(//).to_json }
+
+    it 'returns a String' do
+      expect(return_value).to be_instance_of(String)
     end
 
-    it "can be used in 'new RegExp()' in JS" do
-      given_the_ruby_regexp(/a\\b/)
-      expect(matches_in_javascript_using_to_h_result_on('a\b')).to eq(['a\b'])
+    it 'encodes the result of #to_h' do
+      js_regex = JsRegex.new(/[a-z]+/)
+      json = js_regex.to_json
+      decoded_json = JSON.parse(json, symbolize_names: true)
+      expect(decoded_json).to eq(js_regex.to_h)
+    end
+
+    it "can be used with JavaScript's new RegExp() constructor" do
+      given_the_ruby_regexp(/[a-z]+/)
+      matches = matches_in_javascript_using_to_json_result_on('abc123')
+      expect(matches).to eq(%w(abc))
     end
   end
 
@@ -37,9 +47,9 @@ describe JsRegex do
     end
 
     it 'can be injected directly into JS' do
-      given_the_ruby_regexp(/a\\b/)
-      expect(@js_regex.to_s).to start_with('/a\\\\b/')
-      expect(matches_in_javascript_using_to_s_result_on('a\b')).to eq(['a\b'])
+      given_the_ruby_regexp(/[a-z]+/)
+      matches = matches_in_javascript_using_to_s_result_on('abc123')
+      expect(matches).to eq(%w(abc))
     end
   end
 

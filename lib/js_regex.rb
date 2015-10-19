@@ -9,6 +9,7 @@
 #
 class JsRegex
   require_relative File.join('js_regex', 'conversion')
+  require 'json'
 
   attr_reader :source, :options, :warnings
 
@@ -17,7 +18,11 @@ class JsRegex
   end
 
   def to_h
-    { source: source.gsub('\\', '\\\\\\\\'), options: options }
+    { source: source, options: options }
+  end
+
+  def to_json(options = {})
+    to_h.to_json(options)
   end
 
   def to_s

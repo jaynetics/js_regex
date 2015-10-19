@@ -38,7 +38,7 @@ def expect_ruby_and_js_to_match(args = { string: '', with_results: [] })
 
   expect(matches_in_ruby_on(string)).to eq(results)
   expect(matches_in_javascript_using_to_s_result_on(string)).to eq(results)
-  expect(matches_in_javascript_using_to_h_result_on(string)).to eq(results)
+  expect(matches_in_javascript_using_to_json_result_on(string)).to eq(results)
 end
 
 def matches_in_ruby_on(string)
@@ -46,23 +46,30 @@ def matches_in_ruby_on(string)
 end
 
 def matches_in_javascript_using_to_s_result_on(string)
-  js = "var matches = '#{js_sanitize(string)}'.match(#{@js_regex});"\
+  test_string = escape_for_js_string_evaluation(string)
+  js = "var matches = '#{test_string}'.match(#{@js_regex});"\
        'if (matches === null) matches = [];'\
        'matches;'
   JS_CONTEXT.eval(js).to_a
 end
 
-def matches_in_javascript_using_to_h_result_on(string)
-  hash = @js_regex.to_h
-  js = "var regExp = new RegExp(\"#{hash[:source]}\", '#{hash[:options]}');"\
-       "var matches = '#{js_sanitize(string)}'.match(regExp);"\
+def matches_in_javascript_using_to_json_result_on(string)
+  json_string = escape_for_js_string_evaluation(@js_regex.to_json)
+  test_string = escape_for_js_string_evaluation(string)
+  js = "var jsonObj = JSON.parse('#{json_string}');"\
+       'var regExp = new RegExp(jsonObj.source, jsonObj.options);'\
+       "var matches = '#{test_string}'.match(regExp);"\
        'if (matches === null) matches = [];'\
        'matches;'
   JS_CONTEXT.eval(js).to_a
 end
 
-def js_sanitize(test_string)
-  test_string.gsub('\\', '\\\\\\\\').gsub("\n", '\\n').gsub("\r", '\\r')
+def escape_for_js_string_evaluation(test_string)
+  test_string
+    .gsub('\\') { '\\\\' } # this actually replaces one backslash with two
+    .gsub("'") { "\\'" } # http://stackoverflow.com/revisions/12701027/2
+    .gsub("\n", '\\n')
+    .gsub("\r", '\\r')
 end
 
 def ruby_version_at_least?(version_string)
