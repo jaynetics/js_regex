@@ -1,7 +1,6 @@
 
 # JsRegex
 
-[![Gem Version](https://badge.fury.io/rb/js_regex.svg)](https://badge.fury.io/rb/js_regex)
 [![Build Status](https://travis-ci.org/janosch-x/js_regex.svg?branch=master)](https://travis-ci.org/janosch-x/js_regex)
 [![Dependency Status](https://gemnasium.com/janosch-x/js_regex.svg)](https://gemnasium.com/janosch-x/js_regex)
 [![Code Climate](https://codeclimate.com/github/janosch-x/js_regex/badges/gpa.svg)](https://codeclimate.com/github/janosch-x/js_regex)
@@ -12,7 +11,7 @@ This is a Ruby gem that translates Ruby's regular expressions to the JavaScript 
 It has two advantages when compared to the most widespread approach
 [[1]](https://dockyard.com/blog/ruby/2011/11/18/convert-ruby-regexp-to-javascript-regex)
 [[2]](https://github.com/rails/rails/blob/b67043393b5ed6079989513299fe303ec3bc133b/actionpack/lib/action_dispatch/routing/inspector.rb#L42)
-[[3]](https://github.com/DavyJonesLocker/client_side_validations/blob/4-2-stable/lib/client_side_validations/core_ext/regexp.rb#L3)
+[[3]](https://github.com/DavyJonesLocker/client_side_validations/blob/7f0a570f3d88628aeeb6cd61864a8af61ebbf887/lib/client_side_validations/core_ext/regexp.rb#L3)
 :
 
 1. It [can handle far more](#SF) of Ruby's regex capabilities.
