@@ -1,6 +1,7 @@
 # encoding: utf-8
 
 require 'spec_helper'
+require 'uri'
 
 describe JsRegex do
   it 'can handle ambidextrous apostrophes' do
@@ -53,15 +54,33 @@ describe JsRegex do
 
     valid_emails = ['test@example.com', 'jo@jo.co', 'f4$_m@you.com',
                     'testing.example@example.com.ua']
-    non_valid_emails = ['rex', 'test@go,com', 'test user@example.com',
-                        'test_user@example server.com',
-                        'test_user@example.com.']
+    invalid_emails = ['rex', 'test@go,com', 'test user@example.com',
+                      'test_user@example server.com',
+                      'test_user@example.com.']
 
     valid_emails.each do |address|
       expect_ruby_and_js_to_match(string: address, with_results: [address])
     end
-    non_valid_emails.each do |address|
+    invalid_emails.each do |address|
       expect_ruby_and_js_to_match(string: address, with_results: [])
+    end
+  end
+
+  it 'can handle Ruby\'s URI regexp' do
+    given_the_ruby_regexp(URI.regexp)
+    expect_no_warnings
+
+    valid_uris = %w(http://ab.de ftp://142.42.1.1:8080/ http://مثال.إختبار)
+    invalid_uris = %w(http htt?:// foo.com)
+
+    valid_uris.each do |uri|
+      # match contents are not fully identical due to JS' different handling
+      # of capturing groups. just check that valid uris do produce matches.
+      expect(matches_in_ruby_on(uri)).not_to be_empty
+      expect(matches_in_javascript_using_to_s_result_on(uri)).not_to be_empty
+    end
+    invalid_uris.each do |uri|
+      expect_ruby_and_js_to_match(string: uri, with_results: [])
     end
   end
 end

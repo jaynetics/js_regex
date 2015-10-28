@@ -11,12 +11,19 @@ class JsRegex
         if /[\u{10000}-\u{FFFFF}]/ =~ utf8_data
           converter.send(:warn_of_unsupported_feature, 'astral plane character')
         else
+          escape_literal_forward_slashes(utf8_data)
           ensure_json_compatibility(utf8_data)
+          utf8_data
         end
       end
 
+      def self.escape_literal_forward_slashes(data)
+        # literal slashes would be mistaken for the pattern end in JsRegex#to_s
+        data.gsub!('/', '\\/')
+      end
+
       def self.ensure_json_compatibility(data)
-        data.gsub(/\\?[\f\n\r\t]/) { |lit| Regexp.escape(lit.delete('\\')) }
+        data.gsub!(/\\?[\f\n\r\t]/) { |lit| Regexp.escape(lit.delete('\\')) }
       end
 
       private
