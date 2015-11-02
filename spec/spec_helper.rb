@@ -41,6 +41,15 @@ def expect_ruby_and_js_to_match(args = { string: '', with_results: [] })
   expect(matches_in_javascript_using_to_json_result_on(string)).to eq(results)
 end
 
+def expect_ruby_and_js_to_match_string(string)
+  # Due to JS' different splitting of group match data, some return values
+  # are not completely identical between Ruby and JS matching calls.
+  # In that case, just check that a valid string does produce a match.
+  expect(matches_in_ruby_on(string)).not_to be_empty
+  expect(matches_in_javascript_using_to_s_result_on(string)).not_to be_empty
+  expect(matches_in_javascript_using_to_json_result_on(string)).not_to be_empty
+end
+
 def matches_in_ruby_on(string)
   string.scan(@ruby_regex).flatten
 end

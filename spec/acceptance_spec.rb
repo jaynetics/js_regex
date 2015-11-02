@@ -74,10 +74,7 @@ describe JsRegex do
     invalid_uris = %w(http htt?:// foo.com)
 
     valid_uris.each do |uri|
-      # match contents are not fully identical due to JS' different handling
-      # of capturing groups. just check that valid uris do produce matches.
-      expect(matches_in_ruby_on(uri)).not_to be_empty
-      expect(matches_in_javascript_using_to_s_result_on(uri)).not_to be_empty
+      expect_ruby_and_js_to_match_string(uri)
     end
     invalid_uris.each do |uri|
       expect_ruby_and_js_to_match(string: uri, with_results: [])

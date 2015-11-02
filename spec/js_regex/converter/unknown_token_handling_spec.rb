@@ -29,9 +29,9 @@ describe JsRegex::Converter do
     end
 
     context 'when the token is an unknown group head' do
-      it 'opens a regular group with warning' do
+      it 'opens a passive group with warning' do
         when_parsing_the_token(:group, :an_unknown_group_head)
-        expect(@conversion.source).to eq('(')
+        expect(@conversion.source).to eq('(?:')
         expect(@conversion.warnings).not_to be_empty
       end
     end
@@ -40,5 +40,5 @@ end
 
 def when_parsing_the_token(token_class, subtype)
   @conversion = JsRegex::Conversion.new(//)
-  @conversion.send(:convert_token, token_class, subtype, 'X', 0, 0)
+  @conversion.send(:convert_token, token_class, subtype, 'X', 0, 1)
 end

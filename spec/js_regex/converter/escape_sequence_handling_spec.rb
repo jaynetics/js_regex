@@ -130,6 +130,14 @@ describe JsRegex::Converter do
       expect_warning
     end
 
+    it 'preserves simple number backreferences' do
+      given_the_ruby_regexp(/(a)\1/)
+      expect_js_regex_to_be(/(a)\1/)
+      expect_no_warnings
+      expect_ruby_and_js_to_match(string: 'a', with_results: [])
+      expect_ruby_and_js_to_match_string('aa')
+    end
+
     it 'drops ab-numbered backreferences (\k) with warning' do
       given_the_ruby_regexp(/(a)\k<1>/)
       expect_js_regex_to_be(/(a)/)

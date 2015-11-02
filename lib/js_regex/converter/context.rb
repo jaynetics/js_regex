@@ -8,12 +8,12 @@ class JsRegex
     class Context
       attr_accessor :buffered_set_members,
                     :buffered_set_extractions,
+                    :captured_group_count,
+                    :group_count_changed,
                     :group_level,
                     :group_level_for_backreference,
-                    :group_number_for_backreference,
                     :negative_lookbehind,
                     :negative_set_levels,
-                    :opened_groups,
                     :previous_quantifier_subtype,
                     :previous_quantifier_end,
                     :set_level
@@ -21,10 +21,11 @@ class JsRegex
       def initialize
         self.buffered_set_members = []
         self.buffered_set_extractions = []
+        self.captured_group_count = 0
+        self.group_count_changed = false
         self.group_level = 0
         self.negative_lookbehind = false
         self.negative_set_levels = []
-        self.opened_groups = 0
         self.set_level = 0
       end
 
