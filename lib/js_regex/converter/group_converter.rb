@@ -54,12 +54,6 @@ class JsRegex
         options[:head] || pass_through
       end
 
-      def open_assertion(assertion_head = pass_through)
-        # these don't count as captured groups for backreference purposes
-        context.group_level += 1
-        assertion_head
-      end
-
       def close_group
         context.group_level -= 1
         if context.negative_lookbehind

@@ -126,7 +126,8 @@ class JsRegex
         case buffered_extractions.count
         when 0 then ''
         when 1 then buffered_extractions.first
-        else "(?:#{buffered_extractions.join('|')})" end
+        else "(?:#{buffered_extractions.join('|')})"
+        end
       end
 
       def build_set(members, negative)
