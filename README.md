@@ -42,7 +42,7 @@ js_regex.source # => '[a-fA-F0-9]+'
 js_regex.options # => 'g'
 ```
 
-If you want to inject the result directly into JavaScript, use *#to_s* or String interpolation. E.g. in inline JavaScript in HAML you can simply do:
+If you want to inject the result directly into JavaScript, use *#to_s* or String interpolation. E.g. in inline JavaScript in HAML or SLIM you can simply do:
 
 ```javascript
 var regExp = #{js_regex};
@@ -150,7 +150,7 @@ Currently, the following functionalities can't be carried over to JavaScript. If
 
 [7] The given example would match 24 'A's. This is most likely just a bug in Ruby's regex engine, but JsRegex handles this case anyway to prevent SyntaxErrors in JavaScript.
 
-[8] As of v2.2.2, Ruby itself only supports a small number of astral plane scripts.
+[8] As of v2.2.3, Ruby itself only supports a small number of astral plane scripts.
 
 ### Performance
 
