@@ -137,20 +137,16 @@ Currently, the following functionalities can't be carried over to JavaScript. If
 | set intersections              | [a-z&amp;&amp;[^uo]]  | yes     |
 | recursive set negation         | [^a[^b]]              | yes     |
 | possessive quantifiers         | ++, *+, ?+, {4,8}+    | yes     |
-| multiplicative quantifiers [7] | A{4}{6}               | yes     |
+| multiplicative quantifiers     | /A{4}{6}/ =~ 'A' * 24 | yes     |
 | forward references             | (\2two&#124;(one))    | yes     |
 | backreferences after atomics   | a(?>bc&#124;b)c(d)\1  | yes     |
 | \k-backreferences              | (a)\k&lt;1&gt;        | yes     |
 | subexpression calls            | (?'a'.)\g'a'/, \G     | yes     |
 | bell, escape, backspace chars  | \a, \e, [\b]          | yes     |
 | wide hex, control, metacontrol | \x{1234}, \cD, \M-\C- | yes     |
-| astral plane scripts [8]       | \p{Deseret}           | yes     |
+| astral plane scripts           | \p{Deseret}           | yes     |
 | astral plane ranges            | [&#x1f601;-&#x1f632;] | yes     |
 | matching astral chars with '.' | /./ =~ '&#x1f601;'    | no      |
-
-[7] The given example would match 24 'A's. This is most likely just a bug in Ruby's regex engine, but JsRegex handles this case anyway to prevent SyntaxErrors in JavaScript.
-
-[8] As of v2.2.3, Ruby itself only supports a small number of astral plane scripts.
 
 ### Performance
 
