@@ -4,6 +4,94 @@ require 'spec_helper'
 
 describe JsRegex::Converter do
   describe 'quantifier handling' do
+    context 'when quantifiers are greedy (default)' do
+      it 'preserves zero-or-ones (?)' do
+        given_the_ruby_regexp(/a?/)
+        expect_js_regex_to_be(/a?/)
+        expect_no_warnings
+      end
+
+      it 'preserves zero-or-mores (*)' do
+        given_the_ruby_regexp(/a*/)
+        expect_js_regex_to_be(/a*/)
+        expect_no_warnings
+      end
+
+      it 'preserves one-or-mores (+)' do
+        given_the_ruby_regexp(/a+/)
+        expect_js_regex_to_be(/a+/)
+        expect_no_warnings
+      end
+
+      it 'preserves fixes ({x})' do
+        given_the_ruby_regexp(/a{4}/)
+        expect_js_regex_to_be(/a{4}/)
+        expect_no_warnings
+      end
+
+      it 'preserves ranges ({x,y})' do
+        given_the_ruby_regexp(/a{6,8}/)
+        expect_js_regex_to_be(/a{6,8}/)
+        expect_no_warnings
+      end
+
+      it 'preserves set quantifiers' do
+        given_the_ruby_regexp(/[a-z]{6,8}/)
+        expect_js_regex_to_be(/[a-z]{6,8}/)
+        expect_no_warnings
+      end
+
+      it 'preserves group quantifiers' do
+        given_the_ruby_regexp(/(?:a|b){6,8}/)
+        expect_js_regex_to_be(/(?:a|b){6,8}/)
+        expect_no_warnings
+      end
+    end
+
+    context 'when quantifiers are reluctant' do
+      it 'preserves zero-or-ones (??)' do
+        given_the_ruby_regexp(/a??/)
+        expect_js_regex_to_be(/a??/)
+        expect_no_warnings
+      end
+
+      it 'preserves zero-or-mores (*?)' do
+        given_the_ruby_regexp(/a*?/)
+        expect_js_regex_to_be(/a*?/)
+        expect_no_warnings
+      end
+
+      it 'preserves one-or-mores (+?)' do
+        given_the_ruby_regexp(/a+?/)
+        expect_js_regex_to_be(/a+?/)
+        expect_no_warnings
+      end
+
+      it 'preserves fixes ({x}?)' do
+        given_the_ruby_regexp(/a{4}?/)
+        expect_js_regex_to_be(/a{4}?/)
+        expect_no_warnings
+      end
+
+      it 'preserves ranges ({x,y}?)' do
+        given_the_ruby_regexp(/a{6,8}?/)
+        expect_js_regex_to_be(/a{6,8}?/)
+        expect_no_warnings
+      end
+
+      it 'preserves set quantifiers' do
+        given_the_ruby_regexp(/[a-z]{6,8}?/)
+        expect_js_regex_to_be(/[a-z]{6,8}?/)
+        expect_no_warnings
+      end
+
+      it 'preserves group quantifiers' do
+        given_the_ruby_regexp(/(?:a|b){6,8}?/)
+        expect_js_regex_to_be(/(?:a|b){6,8}?/)
+        expect_no_warnings
+      end
+    end
+
     context 'when quantifiers are possessive' do
       it 'makes zero-or-ones (?+) none-possessive with warning' do
         given_the_ruby_regexp(/a?+/)
