@@ -41,9 +41,9 @@ describe 'JsRegex::PROPERTY_MAP' do
 
   it 'does not contain duplicate keys' do
     duplicate_keys = map.keys
-                     .group_by { |e| e }
-                     .select { |_k, v| v.size > 1 }
-                     .map(&:first)
+                        .group_by { |e| e }
+                        .select { |_k, v| v.size > 1 }
+                        .map(&:first)
 
     expect(duplicate_keys).to be_empty
   end
