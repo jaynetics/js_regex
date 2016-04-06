@@ -30,7 +30,7 @@ class JsRegex
           warn_of_unsupported_feature("set intersection '&&'")
         else
           # TODO: I think it's a bug in Regexp::Scanner that some property
-          # tokens (only positive ones?) are returned with token the class :set
+          # tokens (only positive ones?) are returned with the token class :set
           # within sets. If this's fixed, just warn_of_unsupported_feature here.
           try_replacing_potential_property_subtype
         end
