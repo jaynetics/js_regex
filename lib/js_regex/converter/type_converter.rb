@@ -6,8 +6,8 @@ class JsRegex
     # Template class implementation.
     #
     class TypeConverter < JsRegex::Converter::Base
-      HEX_EXPANSION = '[A-Fa-f0-9]'
-      NONHEX_EXPANSION = '[^A-Fa-f0-9]'
+      HEX_EXPANSION    = '[A-Fa-f0-9]'.freeze
+      NONHEX_EXPANSION = '[^A-Fa-f0-9]'.freeze
 
       private
 
