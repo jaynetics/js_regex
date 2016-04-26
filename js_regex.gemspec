@@ -2,7 +2,7 @@
 Gem::Specification.new do |s|
   s.platform      = Gem::Platform::RUBY
   s.name          = 'js_regex'
-  s.version       = '1.0.13'
+  s.version       = '1.0.14'
   s.license       = 'MIT'
 
   s.summary       = 'Converts Ruby regexes to JavaScript regexes.'
@@ -16,7 +16,7 @@ Gem::Specification.new do |s|
 
   s.files         = Dir[File.join('lib', '**', '*.rb')]
 
-  s.add_dependency 'regexp_parser', '0.3.2'
+  s.add_dependency 'regexp_parser', '0.3.3'
 
   s.add_development_dependency 'codeclimate-test-reporter', '~> 0.4'
   s.add_development_dependency 'rake', '~> 10.4'
