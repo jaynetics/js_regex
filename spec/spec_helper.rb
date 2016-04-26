@@ -56,20 +56,24 @@ end
 
 def matches_in_javascript_using_to_s_result_on(string)
   test_string = escape_for_js_string_evaluation(string)
-  js = "var matches = '#{test_string}'.match(#{@js_regex});"\
-       'if (matches === null) matches = [];'\
-       'matches;'
+  js = <<-EOF
+    var matches = '#{test_string}'.match(#{@js_regex});
+    if (matches === null) matches = [];
+    matches;
+  EOF
   JS_CONTEXT.eval(js).to_a
 end
 
 def matches_in_javascript_using_to_json_result_on(string)
   json_string = escape_for_js_string_evaluation(@js_regex.to_json)
   test_string = escape_for_js_string_evaluation(string)
-  js = "var jsonObj = JSON.parse('#{json_string}');"\
-       'var regExp = new RegExp(jsonObj.source, jsonObj.options);'\
-       "var matches = '#{test_string}'.match(regExp);"\
-       'if (matches === null) matches = [];'\
-       'matches;'
+  js = <<-EOF
+    var jsonObj = JSON.parse('#{json_string}');
+    var regExp = new RegExp(jsonObj.source, jsonObj.options);
+    var matches = '#{test_string}'.match(regExp);
+    if (matches === null) matches = [];
+    matches;
+  EOF
   JS_CONTEXT.eval(js).to_a
 end
 
