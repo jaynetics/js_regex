@@ -20,6 +20,7 @@ Gem::Specification.new do |s|
 
   s.add_development_dependency 'codeclimate-test-reporter', '~> 0.5'
   s.add_development_dependency 'rake', '~> 11.1'
-  s.add_development_dependency 'rspec', '~> 3.4'
+  s.add_development_dependency 'rspec-core', '~> 3.4'
+  s.add_development_dependency 'rspec-expectations', '~> 3.4'
   s.add_development_dependency 'therubyracer', '~> 0.12'
 end
