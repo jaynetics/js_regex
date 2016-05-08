@@ -6,16 +6,16 @@ class JsRegex
     # The Converters themselves are stateless.
     #
     class Context
-      attr_accessor :buffered_set_members,
-                    :buffered_set_extractions,
+      attr_accessor :buffered_set_extractions,
+                    :buffered_set_members,
                     :captured_group_count,
                     :group_count_changed,
                     :group_level,
                     :group_level_for_backreference,
                     :negative_lookbehind,
                     :negative_set_levels,
-                    :previous_quantifier_subtype,
                     :previous_quantifier_end,
+                    :previous_quantifier_subtype,
                     :set_level
 
       def initialize

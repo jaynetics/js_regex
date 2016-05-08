@@ -26,9 +26,7 @@ class JsRegex
 
       attr_accessor :token_class, :subtype, :data, :start_index, :end_index
 
-      def pass_through
-        data
-      end
+      alias pass_through data
 
       def warn_of_unsupported_feature(description = nil)
         description ||= "#{subtype} #{token_class} '#{data}'".tr('_', ' ')
