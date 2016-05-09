@@ -8,6 +8,7 @@
 *.tmPreferences.cache
 *~
 .bundle/
+.byebug_history
 .DS_Store
 .idea/
 .ruby-gemset
