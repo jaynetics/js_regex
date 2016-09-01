@@ -13,7 +13,8 @@ class JsRegex
         case subtype
         when :backslash, :codepoint, :form_feed, :return, :hex, :interval_close,
              :interval_open, :newline, :one_or_more, :octal, :space, :set_close,
-             :set_open, :dot, :tab, :vertical_tab, :zero_or_more, :zero_or_one
+             :set_open, :dot, :tab, :vertical_tab, :zero_or_more, :zero_or_one,
+             :carriage
           pass_through
         when :literal
           LiteralConverter.convert(data, self)
