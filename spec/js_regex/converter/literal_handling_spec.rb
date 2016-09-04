@@ -20,7 +20,7 @@ describe JsRegex::Converter do
       expect_ruby_and_js_to_match(string: '\\n', with_results: %w(\\n))
     end
 
-    it 'converts literal backslashes to backslash escapes' do
+    it 'converts literal forward slashes to forward slash escapes' do
       given_the_ruby_regexp(%r{//})
       expect(@js_regex.source).to eq('\\/\\/')
       expect_no_warnings
