@@ -23,4 +23,11 @@ Gem::Specification.new do |s|
   s.add_development_dependency 'rspec-core', '~> 3.4'
   s.add_development_dependency 'rspec-expectations', '~> 3.4'
   s.add_development_dependency 'therubyracer', '~> 0.12'
+
+  # Recent versions of simplecov have a relaxed JSON dependency
+  # that renders them incompatible with Ruby < 2.
+  # https://github.com/colszowka/simplecov/issues/511
+  if Gem::Version.new(RUBY_VERSION.dup) < Gem::Version.new('2.0.0')
+    s.add_development_dependency 'simplecov', '>= 0.10', '< 0.12'
+  end
 end
