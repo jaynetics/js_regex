@@ -149,5 +149,12 @@ describe JsRegex::Converter do
       expect_js_regex_to_be(/(a)/)
       expect_warning
     end
+
+    it 'preservers carriage returns' do
+      given_the_ruby_regexp(/\r/)
+      expect_js_regex_to_be(/\r/)
+      expect_no_warnings
+      expect_ruby_and_js_to_match(string: "abc\r123", with_results: ["\r"])
+    end
   end
 end
