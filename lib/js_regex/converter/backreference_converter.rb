@@ -5,7 +5,7 @@ class JsRegex
     #
     # Template class implementation.
     #
-    class BackrefConverter < JsRegex::Converter::Base
+    class BackreferenceConverter < JsRegex::Converter::Base
       private
 
       def convert_data

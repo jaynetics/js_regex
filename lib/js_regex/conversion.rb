@@ -9,13 +9,17 @@ class JsRegex
     require 'regexp_parser'
     Dir[File.join(File.dirname(__FILE__), '**', '*.rb')].each { |f| require f }
 
-    attr_reader :ruby_regex, :source, :options, :warnings
+    attr_reader :ruby_regex, :context, :converters, :source, :options, :warnings
 
     def initialize(ruby_regex)
       @ruby_regex = ruby_regex
-      @source = ''
-      @options = ''
-      @warnings = []
+
+      @context    = Converter::Context.new
+      @converters = {}
+
+      @source     = ''
+      @options    = ''
+      @warnings   = []
 
       convert_source(ruby_regex)
       convert_options(ruby_regex)
@@ -28,6 +32,24 @@ class JsRegex
     end
 
     private
+
+    CONVERTER_MAP = Hash.new(Converter::UnsupportedTokenConverter).merge(
+      anchor:      Converter::AnchorConverter,
+      assertion:   Converter::AssertionConverter,
+      backref:     Converter::BackreferenceConverter,
+      conditional: Converter::ConditionalConverter,
+      escape:      Converter::EscapeConverter,
+      free_space:  Converter::FreespaceConverter,
+      group:       Converter::GroupConverter,
+      literal:     Converter::LiteralConverter,
+      meta:        Converter::MetaConverter,
+      nonproperty: Converter::NonpropertyConverter,
+      property:    Converter::PropertyConverter,
+      quantifier:  Converter::QuantifierConverter,
+      set:         Converter::SetConverter,
+      subset:      Converter::SetConverter,
+      type:        Converter::TypeConverter
+    ).freeze
 
     def convert_source(ruby_regex)
       Regexp::Scanner.scan(ruby_regex) do |token_class, subtype, data, s, e|
@@ -45,24 +67,7 @@ class JsRegex
     end
 
     def converter_for_token_class(token_class)
-      converters[token_class] ||= begin
-        converter_name = converter_name_for_token_class(token_class)
-        converter_class = JsRegex::Converter.const_get(converter_name)
-        converter_class.new(self, context)
-      end
-    end
-
-    def converter_name_for_token_class(token_class)
-      name = "#{token_class.to_s.delete('_').capitalize}Converter"
-      Converter.const_defined?(name) ? name : 'UnsupportedTokenConverter'
-    end
-
-    def converters
-      @converters ||= {}
-    end
-
-    def context
-      @context ||= JsRegex::Converter::Context.new
+      converters[token_class] ||= CONVERTER_MAP[token_class].new(self, context)
     end
 
     def convert_options(ruby_regex)
