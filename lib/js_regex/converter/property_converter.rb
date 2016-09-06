@@ -1,8 +1,8 @@
+require_relative 'base'
+require_relative File.join('..', 'property_map')
+
 class JsRegex
-  #
   module Converter
-    require_relative 'base'
-    require_relative File.join('..', 'property_map')
     #
     # Template class implementation.
     #

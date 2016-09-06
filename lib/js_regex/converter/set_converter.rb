@@ -1,10 +1,10 @@
+require_relative 'base'
+require_relative 'literal_converter'
+require_relative 'property_converter'
+require_relative 'type_converter'
+
 class JsRegex
-  #
   module Converter
-    require_relative 'base'
-    require_relative 'literal_converter'
-    require_relative 'property_converter'
-    require_relative 'type_converter'
     #
     # Template class implementation.
     #
