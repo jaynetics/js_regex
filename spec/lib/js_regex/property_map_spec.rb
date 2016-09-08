@@ -32,9 +32,9 @@ describe 'JsRegex::PROPERTY_MAP' do
     #
     # Astral plane chars are not supported by JS.
     #
-    non_compliant_properties = map.keys.select do |key|
-      /\\u\h{5}/ =~ map[key]
-    end
+    non_compliant_properties = map.select do |_k, v|
+      /\\u\h{5}/ =~ v
+    end.keys
 
     expect(non_compliant_properties).to be_empty
   end
