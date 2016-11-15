@@ -12,9 +12,11 @@ class JsRegex
       def convert_data
         case subtype
         when :backslash,
+             :bol,
              :carriage,
              :codepoint,
              :dot,
+             :eol,
              :form_feed,
              :hex,
              :interval_close,

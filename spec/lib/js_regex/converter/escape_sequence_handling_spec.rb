@@ -18,6 +18,13 @@ describe JsRegex::Converter do
       expect_ruby_and_js_to_match(string: '\\A\\h', with_results: ['\\A\\h'])
     end
 
+    it 'preserves escaped bol/eol anchors' do
+      given_the_ruby_regexp(/\^\$/)
+      expect_js_regex_to_be(/\^\$/)
+      expect_no_warnings
+      expect_ruby_and_js_to_match(string: '^$', with_results: ['^$'])
+    end
+
     it 'lets ascii escapes pass through' do
       given_the_ruby_regexp(/\x42/)
       expect_js_regex_to_be(/\x42/)
