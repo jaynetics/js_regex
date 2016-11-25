@@ -1,8 +1,10 @@
 # encoding: utf-8
+require_relative File.join('lib', 'js_regex', 'version')
+
 Gem::Specification.new do |s|
   s.platform      = Gem::Platform::RUBY
   s.name          = 'js_regex'
-  s.version       = '1.0.19'
+  s.version       = JsRegex::VERSION
   s.license       = 'MIT'
 
   s.summary       = 'Converts Ruby regexes to JavaScript regexes.'
