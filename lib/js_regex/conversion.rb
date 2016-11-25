@@ -1,3 +1,5 @@
+# frozen_string_literal: true
+
 class JsRegex
   #
   # This class acts as a facade, creating specific Converters and
@@ -17,8 +19,8 @@ class JsRegex
       @context    = Converter::Context.new
       @converters = {}
 
-      @source     = ''
-      @options    = ''
+      @source     = +''
+      @options    = +''
       @warnings   = []
 
       convert_source(ruby_regex)

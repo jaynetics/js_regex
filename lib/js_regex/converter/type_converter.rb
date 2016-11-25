@@ -1,3 +1,5 @@
+# frozen_string_literal: true
+
 require_relative 'base'
 
 class JsRegex
@@ -6,8 +8,8 @@ class JsRegex
     # Template class implementation.
     #
     class TypeConverter < JsRegex::Converter::Base
-      HEX_EXPANSION    = '[A-Fa-f0-9]'.freeze
-      NONHEX_EXPANSION = '[^A-Fa-f0-9]'.freeze
+      HEX_EXPANSION    = '[A-Fa-f0-9]'
+      NONHEX_EXPANSION = '[^A-Fa-f0-9]'
 
       private
 

@@ -1,3 +1,5 @@
+# frozen_string_literal: true
+
 require_relative 'base'
 require_relative File.join('..', 'property_map')
 
@@ -13,7 +15,6 @@ class JsRegex
       end
 
       def self.negated_property_replacement(property_string)
-        # take care not to use destructive methods on elements in the map
         return nil unless property_string
         if property_string.start_with?('[^')
           property_string.sub('[^', '[')
