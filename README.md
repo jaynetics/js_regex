@@ -85,7 +85,7 @@ advanced_ruby_regex = /[a-x&&c-z]/
 # the resulting JavaScript regex will match a-z
 js_regex = JsRegex.new(advanced_ruby_regex)
 
-js_regex.warnings # => ['Dropped unsupported character set intersection (&&) at index 5..6']
+js_regex.warnings # => ["Dropped unsupported set intersection '&&' at index 4...6"]
 js_regex.source # => '[a-xc-z]'
 ```
 
