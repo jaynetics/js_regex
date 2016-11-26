@@ -31,10 +31,11 @@ class JsRegex
         when :intersection
           warn_of_unsupported_feature("set intersection '&&'")
         else
-          # Note that Regexp::Scanner returns positive property tokens
-          # with the token class :set and negative ones tokens with the
-          # token class :nonproperty.
-          try_replacing_potential_positive_property_subtype
+          # Note that, within sets, Regexp::Scanner returns
+          # - positive property tokens in the \p{-style with class :set
+          # - negative property tokens in the \P{-style with class :set
+          # - negative property tokens in the \p{^-style with class :nonproperty
+          try_replacing_potential_property_subtype
         end
       end
 
@@ -68,11 +69,12 @@ class JsRegex
         try_replacing_property(name, negated)
       end
 
-      def try_replacing_potential_positive_property_subtype
-        try_replacing_property(subtype)
+      def try_replacing_potential_property_subtype
+        negated = data.start_with?('\\P')
+        try_replacing_property(subtype, negated)
       end
 
-      def try_replacing_property(name, negated = nil)
+      def try_replacing_property(name, negated)
         replacement = PropertyConverter.property_replacement(name, negated)
         if replacement
           buffer_set_extraction(replacement)

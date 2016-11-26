@@ -134,8 +134,15 @@ describe JsRegex::Converter::SetConverter do
     expect_ruby_and_js_to_match(string: 'ñbäõ_ß', with_results: %w(bä _ß))
   end
 
-  it 'extracts negative \p-style properties from sets' do
+  it 'extracts negative \p{^-style properties from sets' do
     given_the_ruby_regexp(/[x-z\p{^ascii}]+/)
+    expect_js_regex_to_be(/(?:[x-z]|[^\x00-\x7F])+/)
+    expect_no_warnings
+    expect_ruby_and_js_to_match(string: 'xañbäõ_ß', with_results: %w(x ñ äõ ß))
+  end
+
+  it 'extracts negative \P-style properties from sets' do
+    given_the_ruby_regexp(/[x-z\P{ascii}]+/)
     expect_js_regex_to_be(/(?:[x-z]|[^\x00-\x7F])+/)
     expect_no_warnings
     expect_ruby_and_js_to_match(string: 'xañbäõ_ß', with_results: %w(x ñ äõ ß))
