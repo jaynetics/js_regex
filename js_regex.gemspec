@@ -1,7 +1,8 @@
 # encoding: utf-8
 # frozen_string_literal: true
 
-require_relative File.join('lib', 'js_regex', 'version')
+lib_dir = File.expand_path('../lib', __FILE__)
+require File.join(lib_dir, 'js_regex', 'version')
 
 Gem::Specification.new do |s|
   s.platform      = Gem::Platform::RUBY
