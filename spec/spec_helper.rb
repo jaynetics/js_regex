@@ -1,7 +1,7 @@
 # encoding: utf-8
 # frozen_string_literal: true
 
-if Gem::Version.new(RUBY_VERSION.dup) >= Gem::Version.new('2.2.2')
+if Gem::Version.new(RUBY_VERSION.dup) >= Gem::Version.new('2.3.1')
   require 'codeclimate-test-reporter'
   CodeClimate::TestReporter.start
 end
