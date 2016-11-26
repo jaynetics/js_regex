@@ -58,9 +58,13 @@ class JsRegex
       end
 
       def convert_member_subtype
-        literal_conversion = LiteralConverter
-                             .convert(data.force_encoding('UTF-8'), self)
-        buffer_set_member(literal_conversion)
+        utf8_data = data.force_encoding('UTF-8')
+        if /[\u{10000}-\u{FFFFF}]/ =~ utf8_data
+          warn_of_unsupported_feature('astral plane set member')
+        else
+          literal_conversion = LiteralConverter.convert_data(utf8_data)
+          buffer_set_member(literal_conversion)
+        end
       end
 
       def convert_class_subtype

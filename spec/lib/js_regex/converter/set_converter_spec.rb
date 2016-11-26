@@ -178,7 +178,7 @@ describe JsRegex::Converter::SetConverter do
   it 'drops astral plane set members with warning' do
     given_the_ruby_regexp(/[a-z😁0-9]/)
     expect_js_regex_to_be(/[a-z0-9]/)
-    expect_warning
+    expect_warning('astral plane')
   end
 
   it 'drops astral plane ranges with warning' do

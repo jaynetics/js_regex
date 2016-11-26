@@ -1,6 +1,15 @@
 # encoding: utf-8
 # frozen_string_literal: true
 
+#
+#
+#
+# WARNING: Some of the examples below contain literal tabs.
+# Make sure that your IDE doesn't replace them with spaces.
+#
+#
+#
+
 require 'spec_helper'
 
 describe JsRegex::Converter::EscapeConverter do
@@ -125,8 +134,11 @@ describe JsRegex::Converter::EscapeConverter do
     expect_ruby_and_js_to_match(string: "a\177b", with_results: ["\177"])
   end
 
-  it 'drops unsupported escaped literals with warning' do
-    expect_to_drop_token_with_warning(:escape, :literal, '😁')
+  it 'replaces escaped literal tabs with \t' do
+    given_the_ruby_regexp(/\	/)
+    expect_js_regex_to_be(/\t/)
+    expect_no_warnings
+    expect_ruby_and_js_to_match(string: '	', with_results: ['	'])
   end
 
   it 'drops the bell char "\a" with warning' do

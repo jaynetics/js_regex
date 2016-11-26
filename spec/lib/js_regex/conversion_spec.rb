@@ -101,54 +101,52 @@ describe JsRegex::Conversion do
       conversion.send(:perform_sanity_check)
     end
 
-    context 'if the source is ok' do
-      it 'does nothing' do
-        expect { conversion.send(:perform_sanity_check) }
-          .not_to change { [conversion.source, conversion.warnings] }
-      end
+    it 'does nothing if the source is ok' do
+      expect { conversion.send(:perform_sanity_check) }
+        .not_to change { [conversion.source, conversion.warnings] }
     end
 
-    context 'if there is an error in the source' do
-      # manually inject illegal source
-      before { conversion.source.replace('[') }
-
-      it 'sets source to empty' do
-        expect { conversion.send(:perform_sanity_check) }
-          .to change { conversion.source }.from('[').to('')
-      end
-
-      it 'adds a warning' do
-        expect { conversion.send(:perform_sanity_check) }
-          .to change { conversion.warnings.count }.by(1)
-        expect(conversion.warnings.last).to be_a(String)
-      end
+    it 'sets source to empty if there is an error in the source' do
+      conversion.source.replace('[')
+      expect { conversion.send(:perform_sanity_check) }
+        .to change { conversion.source }.from('[').to('')
     end
 
-    context 'if there is an ArgumentError' do
-      before { allow(Regexp).to receive(:new).and_raise(ArgumentError) }
-
-      it 'applies' do
-        expect { conversion.send(:perform_sanity_check) }
-          .to change { conversion.warnings.count }.by(1)
-      end
+    it 'adds a warning if there is an error in the source' do
+      conversion.source.replace('[')
+      expect { conversion.send(:perform_sanity_check) }
+        .to change { conversion.warnings.count }.by(1)
+      expect(conversion.warnings.last).to be_a(String)
     end
 
-    context 'if there is a RegexpError' do
-      before { allow(Regexp).to receive(:new).and_raise(RegexpError) }
-
-      it 'applies' do
-        expect { conversion.send(:perform_sanity_check) }
-          .to change { conversion.warnings.count }.by(1)
-      end
+    it 'applies if there is an ArgumentError' do
+      allow(Regexp).to receive(:new).and_raise(ArgumentError)
+      expect { conversion.send(:perform_sanity_check) }
+        .to change { conversion.warnings.count }.by(1)
     end
 
-    context 'if there is a SyntaxError' do
-      before { allow(Regexp).to receive(:new).and_raise(SyntaxError) }
+    it 'applies if there is a RegexpError' do
+      allow(Regexp).to receive(:new).and_raise(RegexpError)
+      expect { conversion.send(:perform_sanity_check) }
+        .to change { conversion.warnings.count }.by(1)
+    end
 
-      it 'applies' do
-        expect { conversion.send(:perform_sanity_check) }
-          .to change { conversion.warnings.count }.by(1)
-      end
+    it 'applies if there is a SyntaxError' do
+      allow(Regexp).to receive(:new).and_raise(SyntaxError)
+      expect { conversion.send(:perform_sanity_check) }
+        .to change { conversion.warnings.count }.by(1)
+    end
+
+    it 'ignores surrogate pairs since they are allowed (and needed) in JS' do
+      conversion.source.replace('\\ud83d\\ude01')
+      expect { conversion.send(:perform_sanity_check) }
+        .not_to change { [conversion.source, conversion.warnings] }
+    end
+
+    it 'ignores surrogate codepoints in sets' do
+      conversion.source.replace('[\\ud83d]')
+      expect { conversion.send(:perform_sanity_check) }
+        .not_to change { [conversion.source, conversion.warnings] }
     end
   end
 end

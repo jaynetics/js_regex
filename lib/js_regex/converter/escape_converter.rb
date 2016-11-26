@@ -34,7 +34,7 @@ class JsRegex
              :zero_or_one
           pass_through
         when :literal
-          LiteralConverter.convert(data, self)
+          LiteralConverter.convert_data(data)
         else
           # Backspace, Bell, HexWide, Control, Meta, MetaControl, ...
           warn_of_unsupported_feature

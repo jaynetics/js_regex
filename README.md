@@ -114,12 +114,15 @@ In addition to the conversions supported by the default approach, this gem will 
 | unicode ages [6]          | \p{Age=5.2}       |
 | unicode abbreviations [6] | \p{Mong}, \p{Sc}  |
 | unicode negations [6]     | \p{^Number}       |
+| astral plane literals [7] | &#x1f601;         |
 
 [4] Keep in mind that [Ruby's multiline mode](http://ruby-doc.org/core-2.1.1/Regexp.html#class-Regexp-label-Options) is totally different from [JavaScript's multiline mode](http://javascript.info/tutorial/ahchors-and-multiline-mode#multiline-mode).
 
 [5] JavaScript doesn't support atomic groups, but JsRegex emulates their behavior by substituting them with [backreferenced lookahead groups](http://instanceof.me/post/52245507631/regex-emulate-atomic-grouping-with-lookahead).
 
 [6] Some properties from these groups will result in very large JavaScript regexes.
+
+[7] Astral plane characters are converted to surrogate pairs, so they don't require ES6.
 
 <a name='UF'></a>
 ### Unsupported Features
@@ -146,7 +149,6 @@ Currently, the following functionalities can't be carried over to JavaScript. If
 | wide hex, control, metacontrol | \x{1234}, \cD, \M-\C- | yes     |
 | astral plane scripts           | \p{Deseret}           | yes     |
 | astral plane ranges            | [&#x1f601;-&#x1f632;] | yes     |
-| matching astral chars with '.' | /./ =~ '&#x1f601;'    | no      |
 
 ### Performance
 

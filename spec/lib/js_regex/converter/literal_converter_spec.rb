@@ -52,13 +52,6 @@ describe JsRegex::Converter::LiteralConverter do
     expect_ruby_and_js_to_match(string: '	', with_results: ['	'])
   end
 
-  it 'replaces literal tabs that are part of escapes with \t' do
-    given_the_ruby_regexp(/\	/)
-    expect_js_regex_to_be(/\t/)
-    expect_no_warnings
-    expect_ruby_and_js_to_match(string: '	', with_results: ['	'])
-  end
-
   it 'converts literal forward slashes to forward slash escapes' do
     given_the_ruby_regexp(%r{//})
     expect(@js_regex.source).to eq('\\/\\/')
@@ -66,10 +59,10 @@ describe JsRegex::Converter::LiteralConverter do
     expect_ruby_and_js_to_match(string: 'a//b', with_results: %w(//))
   end
 
-  it 'drops astral plane literals with warning' do
+  it 'converts astral plane literals to surrogate pairs' do
     given_the_ruby_regexp(/😁/)
-    expect_js_regex_to_be(//)
-    expect_warning('astral plane character')
+    expect(@js_regex.source).to eq('\\ud83d\\ude01')
+    expect_ruby_and_js_to_match(string: '😁', with_results: %w(😁))
   end
 
   it 'lets all other literals pass through' do

@@ -74,10 +74,13 @@ class JsRegex
       options << 'i' if (ruby_regex.options & Regexp::IGNORECASE).nonzero?
     end
 
+    SURROGATE_CODEPOINT_PATTERN = /\\uD[89A-F]\h\h/i
+
     def perform_sanity_check
       # Ruby regex capabilities are a superset of JS regex capabilities in
-      # the source part. So if this raises an Error, a Converter messed up:
-      Regexp.new(source)
+      # the source part. So if this raises an Error, a Converter messed up.
+      # Ignore that Ruby won't accept surrogate pairs, though.
+      Regexp.new(source.gsub(SURROGATE_CODEPOINT_PATTERN, '.'))
     rescue ArgumentError, RegexpError, SyntaxError => e
       self.source = ''
       warnings << e.message

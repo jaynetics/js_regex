@@ -8,30 +8,42 @@ class JsRegex
     # Template class implementation.
     #
     class LiteralConverter < JsRegex::Converter::Base
-      def self.convert(data, converter)
-        if /[\u{10000}-\u{FFFFF}]/ =~ data
-          converter
-            .__send__(:warn_of_unsupported_feature, 'astral plane character')
-        else
-          escape_literal_forward_slashes(data)
-          ensure_json_compatibility(data)
-          data
+      class << self
+        ASTRAL_PLANE_CODEPOINT_PATTERN = /\A[\u{10000}-\u{FFFFF}]\z/
+
+        def convert_data(data)
+          if data =~ ASTRAL_PLANE_CODEPOINT_PATTERN
+            surrogate_pair_for(data)
+          else
+            escape_literal_forward_slashes(data)
+            ensure_json_compatibility(data)
+            data
+          end
         end
-      end
 
-      def self.escape_literal_forward_slashes(data)
-        # literal slashes would be mistaken for the pattern end in JsRegex#to_s
-        data.gsub!('/', '\\/')
-      end
+        private
 
-      def self.ensure_json_compatibility(data)
-        data.gsub!(/\\?[\f\n\r\t]/) { |lit| Regexp.escape(lit.delete('\\')) }
+        def surrogate_pair_for(astral_char)
+          base = astral_char.codepoints.first - 65_536
+          high = ((base / 1024).floor + 55_296).to_s(16)
+          low  = (base % 1024 + 56_320).to_s(16)
+          "\\u#{high}\\u#{low}"
+        end
+
+        def escape_literal_forward_slashes(data)
+          # literal slashes would signify the pattern end in JsRegex#to_s
+          data.gsub!('/', '\\/')
+        end
+
+        def ensure_json_compatibility(data)
+          data.gsub!(/\\?[\f\n\r\t]/) { |lit| Regexp.escape(lit.delete('\\')) }
+        end
       end
 
       private
 
       def convert_data
-        self.class.convert(data, self)
+        self.class.convert_data(data)
       end
     end
   end
