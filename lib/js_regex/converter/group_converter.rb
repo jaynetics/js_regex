@@ -15,7 +15,7 @@ class JsRegex
         when :atomic then open_atomic_group
         when :capture then open_group
         when :close then close_group
-        when :comment then '' # drop whole group w/o warning
+        when :comment then '' # drop whole group without warning
         when :named_ab, :named_sq then open_named_group
         when :options then open_options_group
         when :passive then open_passive_group
@@ -27,12 +27,16 @@ class JsRegex
         # Atomicity is emulated using backreferenced lookahead groups:
         # http://instanceof.me/post/52245507631
         # regex-emulate-atomic-grouping-with-lookahead
-        context.group_level_for_backreference = context.group_level
-        open_group(head: '(?=(')
+        if context.atomic_group?
+          open_unsupported_group('nested atomic group')
+        else
+          context.start_atomic_group
+          open_group(head: '(?=(')
+        end
       end
 
       def open_named_group
-        # drop name w/o warning
+        # drop name without warning
         open_group(head: '(')
       end
 
@@ -42,46 +46,32 @@ class JsRegex
       end
 
       def open_passive_group
-        open_group(head: '(?:', non_capturing: true)
+        open_group(head: '(?:', capturing: false)
       end
 
-      def open_unsupported_group
-        warn_of_unsupported_feature
+      def open_unsupported_group(description = nil)
+        warn_of_unsupported_feature(description)
         open_passive_group
       end
 
-      def open_group(options = {})
-        context.group_level += 1
-        context.captured_group_count += 1 unless options[:non_capturing]
-        options[:head] || pass_through
+      def open_group(opts = {})
+        context.open_group
+        context.capture_group unless opts[:capturing].equal?(false)
+        opts[:head] || pass_through
       end
 
       def close_group
-        context.group_level -= 1
         if context.negative_lookbehind
-          close_negative_lookbehind
-        elsif end_of_atomic_group?
-          close_atomic_group
+          context.close_negative_lookbehind
+          ''
+        elsif context.base_level_of_atomic_group?
+          context.close_atomic_group
+          # an empty passive group (?:) is appended as literal digits may follow
+          "))\\#{context.captured_group_count}(?:)"
         else
+          context.close_group
           ')'
         end
-      end
-
-      def close_negative_lookbehind
-        context.negative_lookbehind = false
-        ''
-      end
-
-      def end_of_atomic_group?
-        return false unless context.group_level_for_backreference
-        context.group_level_for_backreference == context.group_level
-      end
-
-      def close_atomic_group
-        context.group_level_for_backreference = nil
-        context.group_count_changed = true
-        # the empty passive group (?:) is appended in case literal digits follow
-        "))\\#{context.captured_group_count}(?:)"
       end
     end
   end

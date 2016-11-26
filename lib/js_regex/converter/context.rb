@@ -60,7 +60,53 @@ class JsRegex
 
       def close_set
         self.set_level -= 1
+
+      # group context
+
+      def open_group
+        self.group_level = group_level + 1
       end
+
+      def capture_group
+        self.captured_group_count = captured_group_count + 1
+      end
+
+      def start_atomic_group
+        self.group_level_for_backreference = group_level
+      end
+
+      def start_negative_lookbehind
+        self.negative_lookbehind = true
+      end
+
+      def close_group
+        self.group_level = group_level - 1
+      end
+
+      def close_atomic_group
+        close_group
+        self.group_level_for_backreference = nil
+        self.group_count_changed = true
+      end
+
+      def close_negative_lookbehind
+        close_group
+        self.negative_lookbehind = false
+      end
+
+      def group?
+        group_level > 0
+      end
+
+      def atomic_group?
+        group_level_for_backreference
+      end
+
+      def base_level_of_atomic_group?
+        group_level_for_backreference &&
+          group_level.equal?(group_level_for_backreference + 1)
+      end
+
     end
   end
 end

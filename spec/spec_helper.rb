@@ -21,11 +21,12 @@ def expect_js_regex_to_be(expected)
 end
 
 def expect_no_warnings
-  expect_warnings(0)
+  expect(@js_regex.warnings).to be_empty
 end
 
-def expect_warning
+def expect_warning(specific_text = nil)
   expect_warnings(1)
+  expect(@js_regex.warnings.first).to include(specific_text) if specific_text
 end
 
 def expect_warnings(count)
