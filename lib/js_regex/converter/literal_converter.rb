@@ -9,13 +9,13 @@ class JsRegex
     #
     class LiteralConverter < JsRegex::Converter::Base
       def self.convert(data, converter)
-        utf8_data = data.dup.force_encoding('UTF-8')
-        if /[\u{10000}-\u{FFFFF}]/ =~ utf8_data
-          converter.send(:warn_of_unsupported_feature, 'astral plane character')
+        if /[\u{10000}-\u{FFFFF}]/ =~ data
+          converter
+            .__send__(:warn_of_unsupported_feature, 'astral plane character')
         else
-          escape_literal_forward_slashes(utf8_data)
-          ensure_json_compatibility(utf8_data)
-          utf8_data
+          escape_literal_forward_slashes(data)
+          ensure_json_compatibility(data)
+          data
         end
       end
 

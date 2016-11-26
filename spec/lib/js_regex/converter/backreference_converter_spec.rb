@@ -43,6 +43,7 @@ describe JsRegex::Converter::BackreferenceConverter do
     # c.f. group_converter_spec.rb
     given_the_ruby_regexp(/1(?>33|3)37(a)\1/)
     expect_js_regex_to_be(/1(?=(33|3))\1(?:)37(a)/)
-    expect_warning
+    expect_warning('number backreference following a feature that '\
+                   'changes the group count (such as an atomic group)')
   end
 end

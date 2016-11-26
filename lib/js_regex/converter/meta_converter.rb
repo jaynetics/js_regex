@@ -22,8 +22,7 @@ class JsRegex
       end
 
       def ruby_multiline_mode?
-        return false if @rb_mm == false
-        @rb_mm ||= target.ruby_regex.options & Regexp::MULTILINE > 0
+        (target.ruby_regex.options & Regexp::MULTILINE).nonzero?
       end
     end
   end

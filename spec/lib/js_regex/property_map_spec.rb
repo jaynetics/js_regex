@@ -5,7 +5,7 @@ require 'spec_helper'
 
 require File.join('js_regex', 'property_map')
 
-describe 'JsRegex::PROPERTY_MAP' do
+describe JsRegex::PROPERTY_MAP do
   let(:map) { JsRegex::PROPERTY_MAP }
 
   it 'maps named properties to standard character sets' do
@@ -13,7 +13,7 @@ describe 'JsRegex::PROPERTY_MAP' do
     # All values must be sets, else it won't be as easy to carry
     # negations (as in \p{^alpha} or \P{alpha}) over to JS .
     #
-    non_compliant_properties = map.select do |_k, v|
+    non_compliant_properties = described_class.select do |_k, v|
       !v.start_with?('[') || !v.end_with?(']')
     end.keys
 
@@ -26,7 +26,7 @@ describe 'JsRegex::PROPERTY_MAP' do
     # a SyntaxError, invalid ascii escapes, and invalid unicode ranges.
     #
     expect do
-      map.values.each { |value| Regexp.new(value) }
+      described_class.values.each { |value| Regexp.new(value) }
     end.not_to raise_error
   end
 
@@ -34,7 +34,7 @@ describe 'JsRegex::PROPERTY_MAP' do
     #
     # Astral plane chars are not supported by JS.
     #
-    non_compliant_properties = map.select do |_k, v|
+    non_compliant_properties = described_class.select do |_k, v|
       /\\u\h{5}/ =~ v
     end.keys
 
@@ -42,10 +42,10 @@ describe 'JsRegex::PROPERTY_MAP' do
   end
 
   it 'does not contain duplicate keys' do
-    duplicate_keys = map.keys
-                        .group_by { |e| e }
-                        .select { |_k, v| v.size > 1 }
-                        .map(&:first)
+    duplicate_keys = described_class.keys
+                                    .group_by { |e| e }
+                                    .select { |_k, v| v.size > 1 }
+                                    .map(&:first)
 
     expect(duplicate_keys).to be_empty
   end

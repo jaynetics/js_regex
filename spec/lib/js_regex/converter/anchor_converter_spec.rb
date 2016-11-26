@@ -53,4 +53,8 @@ describe JsRegex::Converter::AnchorConverter do
     expect_no_warnings
     expect_ruby_and_js_to_match(string: 'abc', with_results: %w(a b))
   end
+
+  it 'drops unknown anchors with warning' do
+    expect_to_drop_token_with_warning(:anchor, :an_unknown_anchor)
+  end
 end

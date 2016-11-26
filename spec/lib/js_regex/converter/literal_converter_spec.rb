@@ -69,7 +69,7 @@ describe JsRegex::Converter::LiteralConverter do
   it 'drops astral plane literals with warning' do
     given_the_ruby_regexp(/😁/)
     expect_js_regex_to_be(//)
-    expect_warning
+    expect_warning('astral plane character')
   end
 
   it 'lets all other literals pass through' do

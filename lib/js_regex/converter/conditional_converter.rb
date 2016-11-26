@@ -13,7 +13,7 @@ class JsRegex
       def convert_data
         case subtype
         when :open
-          warn_of_unsupported_feature("conditional '(?'")
+          warn_of_unsupported_feature("conditional '(?('")
           '('
         when :separator, :close
           pass_through

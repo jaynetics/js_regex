@@ -14,17 +14,17 @@ class JsRegex
     attr_reader :ruby_regex, :context, :converters, :source, :options, :warnings
 
     def initialize(ruby_regex)
-      @ruby_regex = ruby_regex
+      self.ruby_regex = ruby_regex
 
-      @context    = Converter::Context.new
-      @converters = {}
+      self.context    = Converter::Context.new
+      self.converters = {}
 
-      @source     = +''
-      @options    = +''
-      @warnings   = []
+      self.source     = ''.dup
+      self.options    = ''.dup
+      self.warnings   = []
 
-      convert_source(ruby_regex)
-      convert_options(ruby_regex)
+      convert_source
+      convert_options
       perform_sanity_check
     end
 
@@ -34,6 +34,8 @@ class JsRegex
     end
 
     private
+
+    attr_writer :ruby_regex, :context, :converters, :source, :options, :warnings
 
     CONVERTER_MAP = Hash.new(Converter::UnsupportedTokenConverter).merge(
       anchor:      Converter::AnchorConverter,
@@ -53,36 +55,31 @@ class JsRegex
       type:        Converter::TypeConverter
     ).freeze
 
-    def convert_source(ruby_regex)
+    def convert_source
       Regexp::Scanner.scan(ruby_regex) do |token_class, subtype, data, s, e|
         # There might be a lot of tokens, so don't wrap their data in objects.
         # Even just wrapping them in simple structs or attr_reader objects
         # can lead to 60%+ longer processing times for large regexes.
-        convert_token(token_class, subtype, data, s, e)
+        converter_for_token_class(token_class)
+          .convert(token_class, subtype, data, s, e)
       end
-      converters.clear
-    end
-
-    def convert_token(token_class, subtype, data, s, e)
-      converter = converter_for_token_class(token_class)
-      converter.convert(token_class, subtype, data, s, e)
     end
 
     def converter_for_token_class(token_class)
       converters[token_class] ||= CONVERTER_MAP[token_class].new(self, context)
     end
 
-    def convert_options(ruby_regex)
-      @options = 'g' # all Ruby regexes are what is called "global" in JS
-      @options << 'i' if ruby_regex.options & Regexp::IGNORECASE > 0
+    def convert_options
+      options << 'g' # all Ruby regexes are what is called "global" in JS
+      options << 'i' if (ruby_regex.options & Regexp::IGNORECASE).nonzero?
     end
 
     def perform_sanity_check
       # Ruby regex capabilities are a superset of JS regex capabilities in
       # the source part. So if this raises an Error, a Converter messed up:
-      Regexp.new(source, options)
+      Regexp.new(source)
     rescue ArgumentError, RegexpError, SyntaxError => e
-      @source = ''
+      self.source = ''
       warnings << e.message
     end
   end

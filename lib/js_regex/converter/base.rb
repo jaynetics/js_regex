@@ -33,7 +33,7 @@ class JsRegex
       def warn_of_unsupported_feature(description = nil)
         description ||= "#{subtype} #{token_class} '#{data}'".tr('_', ' ')
         target.warnings << "Dropped unsupported #{description} "\
-                           "at index #{start_index}..#{end_index}"
+                           "at index #{start_index}...#{end_index}"
         ''
       end
     end

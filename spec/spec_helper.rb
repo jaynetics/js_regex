@@ -6,6 +6,10 @@ if Gem::Version.new(RUBY_VERSION.dup) >= Gem::Version.new('2.2.2')
   CodeClimate::TestReporter.start
 end
 
+RSpec.configure do |config|
+  config.mock_with(:rspec) { |mocks| mocks.verify_partial_doubles = true }
+end
+
 require 'js_regex'
 
 require 'v8' # gem 'therubyracer'

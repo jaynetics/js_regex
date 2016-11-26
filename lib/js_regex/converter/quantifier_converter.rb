@@ -12,9 +12,9 @@ class JsRegex
 
       def convert_data
         if multiplicative_interval?
-          warn_of_unsupported_feature('multiplicative interval \'{x}{x}\'')
+          warn_of_unsupported_feature('adjacent quantifiers')
         else
-          context.previous_quantifier_subtype = subtype
+          # context.previous_quantifier_type = subtype
           context.previous_quantifier_end = end_index
           convert_quantifier
         end
@@ -30,9 +30,9 @@ class JsRegex
       end
 
       def multiplicative_interval?
-        subtype == :interval &&
-          context.previous_quantifier_subtype == :interval &&
-          context.previous_quantifier_end == start_index
+        # subtype == :interval &&
+        #  context.previous_quantifier_type == :interval &&
+        context.previous_quantifier_end.equal?(start_index)
       end
     end
   end
