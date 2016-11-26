@@ -17,7 +17,7 @@ class JsRegex
         case subtype
         when :hex then HEX_EXPANSION
         when :nonhex then NONHEX_EXPANSION
-        when :any, :digit, :nondigit, :word, :nonword, :space, :nonspace
+        when :digit, :nondigit, :word, :nonword, :space, :nonspace
           pass_through
         else
           warn_of_unsupported_feature

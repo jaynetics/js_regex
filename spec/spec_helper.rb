@@ -88,6 +88,16 @@ def escape_for_js_string_evaluation(test_string)
     .gsub("\r", '\\r')
 end
 
+def expect_to_drop_token_with_warning(token_class, subtype, data = 'X')
+  conversion = JsRegex::Conversion.new(//)
+  converter = conversion.send(:converter_for_token_class, token_class)
+  expect(converter).to be_a(described_class)
+
+  converter.convert(token_class, subtype, data, 0, 1)
+  expect(conversion.source).to be_empty
+  expect(conversion.warnings.size).to eq(1)
+end
+
 def ruby_version_at_least?(version_string)
   Gem::Version.new(RUBY_VERSION.dup) >= Gem::Version.new(version_string)
 end

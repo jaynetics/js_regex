@@ -4,14 +4,6 @@
 require 'spec_helper'
 
 describe JsRegex::Converter::TypeConverter do
-  it 'preserves the "any" type / universal matcher "."' do
-#    TODO - this is probably a meta
-    given_the_ruby_regexp(/./)
-    expect_js_regex_to_be(/./)
-    expect_no_warnings
-    expect_ruby_and_js_to_match(string: ' b%', with_results: [' ', 'b', '%'])
-  end
-
   it 'preserves the digit type "\d"' do
     given_the_ruby_regexp(/\d/)
     expect_js_regex_to_be(/\d/)
@@ -66,5 +58,9 @@ describe JsRegex::Converter::TypeConverter do
     expect_js_regex_to_be(/[^A-Fa-f0-9]+/)
     expect_no_warnings
     expect_ruby_and_js_to_match(string: 'FFxy66z', with_results: %w(xy z))
+  end
+
+  it 'drops unknown types with warning' do
+    expect_to_drop_token_with_warning(:type, :an_unknown_type)
   end
 end

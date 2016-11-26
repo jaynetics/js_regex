@@ -8,25 +8,20 @@ class JsRegex
     # The Converters themselves are stateless.
     #
     class Context
-      attr_accessor :buffered_set_extractions,
-                    :buffered_set_members,
-                    :captured_group_count,
-                    :group_count_changed,
-                    :group_level,
-                    :group_level_for_backreference,
-                    :negative_lookbehind,
-                    :negative_set_levels,
-                    :previous_quantifier_end,
-                    :previous_quantifier_subtype,
-                    :set_level
+      attr_accessor :previous_quantifier_end # , :previous_quantifier_type
+
+      attr_reader :buffered_set_extractions,
+                  :buffered_set_members,
+                  :captured_group_count,
+                  :group_count_changed,
+                  :group_level_for_backreference,
+                  :negative_lookbehind
 
       def initialize
         self.buffered_set_members = []
         self.buffered_set_extractions = []
         self.captured_group_count = 0
-        self.group_count_changed = false
         self.group_level = 0
-        self.negative_lookbehind = false
         self.negative_set_levels = []
         self.set_level = 0
       end
@@ -38,16 +33,24 @@ class JsRegex
       # set context
 
       def open_set
-        self.set_level += 1
+        self.set_level = set_level + 1
         if set_level == 1
           buffered_set_members.clear
           buffered_set_extractions.clear
         end
-        self.negative_set_levels -= [set_level]
+        negative_set_levels.delete(set_level)
       end
 
       def negate_set
-        self.negative_set_levels |= [set_level]
+        self.negative_set_levels = negative_set_levels | [set_level]
+      end
+
+      def close_set
+        self.set_level = set_level - 1
+      end
+
+      def set?
+        set_level > 0
       end
 
       def negative_set?(level = set_level)
@@ -55,11 +58,12 @@ class JsRegex
       end
 
       def nested_negation?
-        set_level > 1 && negative_set?
+        nested_set? && negative_set?
       end
 
-      def close_set
-        self.set_level -= 1
+      def nested_set?
+        set_level > 1
+      end
 
       # group context
 
@@ -107,6 +111,16 @@ class JsRegex
           group_level.equal?(group_level_for_backreference + 1)
       end
 
+      private
+
+      attr_accessor :group_level, :negative_set_levels, :set_level
+
+      attr_writer :buffered_set_extractions,
+                  :buffered_set_members,
+                  :captured_group_count,
+                  :group_count_changed,
+                  :group_level_for_backreference,
+                  :negative_lookbehind
     end
   end
 end

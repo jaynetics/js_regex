@@ -4,18 +4,41 @@
 require 'spec_helper'
 
 describe JsRegex::Converter::PropertyConverter do
-  it 'translates the [[:...:]] property style' do
-    given_the_ruby_regexp(/[[:ascii:]]/)
-    expect_js_regex_to_be(/[\x00-\x7F]/)
-    expect_no_warnings
-    expect_ruby_and_js_to_match(string: 'añB', with_results: %w(a B))
-  end
-
   it 'translates the \p{...} property style' do
     given_the_ruby_regexp(/\p{ascii}/)
     expect_js_regex_to_be(/[\x00-\x7F]/)
     expect_no_warnings
     expect_ruby_and_js_to_match(string: 'añB', with_results: %w(a B))
+  end
+
+  it 'translates the negated \p{^...} property style' do
+    given_the_ruby_regexp(/\p{^ascii}/)
+    expect_js_regex_to_be(/[^\x00-\x7F]/)
+    expect_no_warnings
+    expect_ruby_and_js_to_match(string: 'añB', with_results: %w(ñ))
+  end
+
+  it 'translates negations of negative properties by making them positive' do
+    given_the_ruby_regexp(/\p{graph}/)
+    expect(@js_regex.source).to start_with('[^\s\x00')
+
+    given_the_ruby_regexp(/\p{^graph}/)
+    expect(@js_regex.source).to start_with('[\s\x00')
+  end
+
+  it 'drops unknown properties negated with \p{^ with warning' do
+    # this should concern little more than the few astral plane scripts
+    # supported by Ruby, but it is also a good precaution if spacy new
+    # properties are added in the future.
+    given_the_ruby_regexp(/\p{^Deseret}/)
+    expect_js_regex_to_be(//)
+    expect_warning
+  end
+
+  it 'drops unknown properties negated with \P with warning' do
+    given_the_ruby_regexp(/\P{Deseret}/)
+    expect_js_regex_to_be(//)
+    expect_warning
   end
 
   it 'translates posix types' do
@@ -83,5 +106,9 @@ describe JsRegex::Converter::PropertyConverter do
     given_the_ruby_regexp(/\p{Deseret}/)
     expect_js_regex_to_be(//)
     expect_warning
+  end
+
+  it 'can handle properties irrespective of case' do
+    expect(described_class.property_replacement('AsCiI')).not_to be_nil
   end
 end

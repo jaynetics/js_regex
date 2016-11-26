@@ -14,7 +14,12 @@ class JsRegex
       private
 
       def convert_data
-        convert_property(true)
+        if context.set?
+          context.buffered_set_extractions << convert_property(true)
+          ''
+        else
+          convert_property(true)
+        end
       end
     end
   end

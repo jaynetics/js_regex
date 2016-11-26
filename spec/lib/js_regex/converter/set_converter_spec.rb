@@ -63,13 +63,19 @@ describe JsRegex::Converter::SetConverter do
     it 'drops deeply nested negative sets with warning' do
       given_the_ruby_regexp(/[a-c[x-z[^0-2]]]+/)
       expect_js_regex_to_be(/[a-cx-z]+/)
-      expect_warning
+      expect_warning('nested negative set')
     end
 
     it 'drops deeply nested negative sets from negated sets with warning' do
       given_the_ruby_regexp(/[^a-c[x-z[^0-2]]]+/)
       expect_js_regex_to_be(/[^a-cx-z]+/)
-      expect_warning
+      expect_warning('nested negative set')
+    end
+
+    it 'drops deeply nested negative sets with properties with warning' do
+      given_the_ruby_regexp(/[^a-c[x-z[^\p{ascii}]]]+/)
+      expect_js_regex_to_be(/[^a-cx-z]+/)
+      expect_warning('nested negative set')
     end
   end
 
@@ -81,21 +87,34 @@ describe JsRegex::Converter::SetConverter do
   end
 
   it 'extracts the non-hex type from sets' do
-    given_the_ruby_regexp(/[x-y\H]+/)
-    expect_js_regex_to_be(/(?:[x-y]|[^A-Fa-f0-9])+/)
+    given_the_ruby_regexp(/[a-c\H]+/)
+    expect_js_regex_to_be(/(?:[a-c]|[^A-Fa-f0-9])+/)
     expect_no_warnings
-    expect_ruby_and_js_to_match(string: 'zxa3n', with_results: %w(zx n))
+    expect_ruby_and_js_to_match(string: 'zxa3n', with_results: %w(zxa n))
+  end
+
+  it 'does not create empty sets when extracting types' do
+    # whitelist #first, c.f. https://github.com/mbj/mutant/issues/616
+    array = []
+    allow_any_instance_of(JsRegex::Converter::Context)
+      .to receive(:buffered_set_extractions)
+      .and_return(array)
+    expect(array).to receive(:first).and_call_original
+
+    given_the_ruby_regexp(/[\h]+/)
+    expect_js_regex_to_be(/[A-Fa-f0-9]+/)
+    expect_no_warnings
+    expect_ruby_and_js_to_match(string: 'zxa3n', with_results: %w(a3))
+  end
+
+  it 'does not extracts other types from sets' do
+    given_the_ruby_regexp(/[x-y\s\S\d\D\w\W]+/)
+    expect_js_regex_to_be(/[x-y\s\S\d\D\w\W]+/)
+    expect_no_warnings
   end
 
   it 'extracts posix classes from sets' do
     given_the_ruby_regexp(/[äöüß[:ascii:]]+/)
-    expect_js_regex_to_be(/(?:[äöüß]|[\x00-\x7F])+/)
-    expect_no_warnings
-    expect_ruby_and_js_to_match(string: 'ñbäõ_ß', with_results: %w(bä _ß))
-  end
-
-  it 'extracts \p-style properties from sets' do
-    given_the_ruby_regexp(/[äöüß\p{ascii}]+/)
     expect_js_regex_to_be(/(?:[äöüß]|[\x00-\x7F])+/)
     expect_no_warnings
     expect_ruby_and_js_to_match(string: 'ñbäõ_ß', with_results: %w(bä _ß))
@@ -108,9 +127,30 @@ describe JsRegex::Converter::SetConverter do
     expect_ruby_and_js_to_match(string: 'xañbäõ_ß', with_results: %w(x ñ äõ ß))
   end
 
+  it 'extracts \p-style properties from sets' do
+    given_the_ruby_regexp(/[äöüß\p{ascii}]+/)
+    expect_js_regex_to_be(/(?:[äöüß]|[\x00-\x7F])+/)
+    expect_no_warnings
+    expect_ruby_and_js_to_match(string: 'ñbäõ_ß', with_results: %w(bä _ß))
+  end
+
+  it 'extracts negative \p-style properties from sets' do
+    given_the_ruby_regexp(/[x-z\p{^ascii}]+/)
+    expect_js_regex_to_be(/(?:[x-z]|[^\x00-\x7F])+/)
+    expect_no_warnings
+    expect_ruby_and_js_to_match(string: 'xañbäõ_ß', with_results: %w(x ñ äõ ß))
+  end
+
   it 'wraps multiple set extractions in a passive alternation group' do
     given_the_ruby_regexp(/[\h\p{ascii}]+/)
     expect_js_regex_to_be(/(?:[A-Fa-f0-9]|[\x00-\x7F])+/)
+    expect_no_warnings
+    expect_ruby_and_js_to_match(string: 'efghß', with_results: %w(efgh))
+  end
+
+  it 'retains other set contents if there are multiple set extractions' do
+    given_the_ruby_regexp(/[ä-ö\h\p{ascii}]+/)
+    expect_js_regex_to_be(/(?:[ä-ö]|[A-Fa-f0-9]|[\x00-\x7F])+/)
     expect_no_warnings
     expect_ruby_and_js_to_match(string: 'efghß', with_results: %w(efgh))
   end
@@ -125,19 +165,21 @@ describe JsRegex::Converter::SetConverter do
   it 'drops set intersections with warning' do
     given_the_ruby_regexp(/[a-c&&x-z]/)
     expect_js_regex_to_be(/[a-cx-z]/)
-    expect_warning
+    expect_warning('set intersection')
   end
 
-  it 'drops astral plane chars with warning' do
-    # FIXME: If the astral plane chars form a range
-    # Regexp::Scanner will not detect them as a range,
-    # instead seeing 3 separate members.
-    # The '-' will survive processing, causing Ruby
-    # to warn on STDOUT and the set to match '-'.
-    # This should be fixed in Regexp::Scanner itself.
+  it 'drops astral plane set members with warning' do
     given_the_ruby_regexp(/[a-z😁0-9]/)
     expect_js_regex_to_be(/[a-z0-9]/)
     expect_warning
+  end
+
+  it 'drops astral plane ranges with warning' do
+    given_the_ruby_regexp(/[😁-😲]/)
+    # FIXME: Regexp::Scanner will not detect ranges made of astral plane chars,
+    # instead seeing 3 separate members. The member '-' will survive processing,
+    # causing the set to match '-'. This should be fixed in Regexp::Scanner.
+    # expect_js_regex_to_be(//)
   end
 
   it 'preserves bmp unicode ranges' do
