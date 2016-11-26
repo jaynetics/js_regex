@@ -25,8 +25,11 @@ describe JsRegex::PROPERTY_MAP do
     # This will find, amongst others, unescaped brackets that will lead to
     # a SyntaxError, invalid ascii escapes, and invalid unicode ranges.
     #
+    # Ignore that Ruby won't accept surrogate codepoints, though. JS does.
+    #
     expect do
-      described_class.values.each { |value| Regexp.new(value) }
+      scp = JsRegex::Conversion::SURROGATE_CODEPOINT_PATTERN
+      described_class.values.each { |value| Regexp.new(value.gsub(scp, '.')) }
     end.not_to raise_error
   end
 
