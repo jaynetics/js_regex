@@ -107,6 +107,12 @@ describe JsRegex::Converter::SetConverter do
     expect_ruby_and_js_to_match(string: 'zxa3n', with_results: %w(a3))
   end
 
+  it 'does not create empty sets when dropping all contents' do
+    given_the_ruby_regexp(/[\p{Deseret}]/)
+    expect_js_regex_to_be(//)
+    expect_warning('unsupported script')
+  end
+
   it 'does not extracts other types from sets' do
     given_the_ruby_regexp(/[x-y\s\S\d\D\w\W]+/)
     expect_js_regex_to_be(/[x-y\s\S\d\D\w\W]+/)
@@ -197,10 +203,18 @@ describe JsRegex::Converter::SetConverter do
     expect_ruby_and_js_to_match(string: '孙孜', with_results: %w(孙 孜))
   end
 
-  it 'drops the backspace pseudo set with warning' do
-    given_the_ruby_regexp(/[\b]./)
-    expect_js_regex_to_be(/./)
-    expect_warning
+  it 'preserves the backspace pseudo set' do
+    given_the_ruby_regexp(/[\b]/)
+    expect_js_regex_to_be(/[\b]/)
+    expect_no_warnings
+    expect_ruby_and_js_to_match(string: "a\bz", with_results: ["\b"])
+  end
+
+  it 'extracts the backspace pseudo set from real sets' do
+    given_the_ruby_regexp(/[a-f\b]/)
+    expect_js_regex_to_be(/(?:[a-f]|[\b])/)
+    expect_no_warnings
+    expect_ruby_and_js_to_match(string: "a\bz", with_results: ['a', "\b"])
   end
 
   it 'converts literal newline members into newline escapes' do
@@ -216,12 +230,5 @@ b]/)
     expect_js_regex_to_be(/[a\nb]/)
     expect_no_warnings
     expect_ruby_and_js_to_match(string: "x\ny", with_results: ["\n"])
-  end
-
-  it 'does not add escapes to \\n' do
-    given_the_ruby_regexp(/\\n/)
-    expect_js_regex_to_be(/\\n/)
-    expect_no_warnings
-    expect_ruby_and_js_to_match(string: '\\n', with_results: %w(\\n))
   end
 end

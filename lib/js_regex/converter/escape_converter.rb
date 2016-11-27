@@ -36,7 +36,7 @@ class JsRegex
         when :literal
           LiteralConverter.convert_data(data)
         else
-          # Backspace, Bell, HexWide, Control, Meta, MetaControl, ...
+          # Bell, Escape, HexWide, Control, Meta, MetaControl, ...
           warn_of_unsupported_feature
         end
       end

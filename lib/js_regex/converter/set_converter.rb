@@ -28,6 +28,7 @@ class JsRegex
         when :member, :range, :escape then convert_member_subtype
         when /\Aclass_/ then convert_class_subtype
         when /\Atype_/ then convert_type_subtype
+        when :backspace then convert_backspace_subtype
         when :intersection
           warn_of_unsupported_feature("set intersection '&&'")
         else
@@ -95,6 +96,10 @@ class JsRegex
         else
           buffer_set_member(data)
         end
+      end
+
+      def convert_backspace_subtype
+        buffer_set_extraction('[\b]')
       end
 
       def buffer_set_member(m)
