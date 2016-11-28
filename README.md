@@ -152,14 +152,16 @@ Currently, the following functionalities can't be carried over to JavaScript. If
 
 ### Performance
 
-JsRegex is fairly fast. However, it does a lot more than the default approach, so it can take 2 to 20 times as long, depending on the complexity of the Ruby regex.
+JsRegex is fairly fast. However, it does a lot more than the default approach, so it can take 2 to 10 times as long, depending on the complexity of the Ruby regex.
 
-| Approach | total     | real      |
-|----------|-----------|-----------|
-| Default  | 0.0670000 | 0.0682271 |
-| JsRegex  | 1.1660000 | 1.1838971 |
+| Complexity | Approach | Time   |
+|------------|----------|--------|
+| very low   | default  | 0.0106 |
+| very low   | JsRegex  | 0.0197 |
+| very high  | default  | 0.0453 |
+| very high  | JsRegex  | 0.5157 |
 
-Seconds taken to convert a complicated 5-line expression 1000 times. [(benchmark code)](https://gist.github.com/janosch-x/554405a924f20d1d6db3)
+Seconds taken to convert an expression 1000 times. [(benchmark code)](https://gist.github.com/janosch-x/554405a924f20d1d6db3)
 
 ### Contributions
 
