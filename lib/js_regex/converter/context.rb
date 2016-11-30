@@ -8,8 +8,6 @@ class JsRegex
     # The Converters themselves are stateless.
     #
     class Context
-      attr_accessor :previous_quantifier_end # , :previous_quantifier_type
-
       attr_reader :buffered_set_extractions,
                   :buffered_set_members,
                   :captured_group_count,
@@ -28,6 +26,12 @@ class JsRegex
 
       def valid?
         !negative_lookbehind
+      end
+
+      def stacked_quantifier?(quantifier_start_index, quantifier_end_index)
+        is_stacked = last_quantifier_end_index.equal?(quantifier_start_index)
+        self.last_quantifier_end_index = quantifier_end_index
+        is_stacked
       end
 
       # set context
@@ -113,7 +117,10 @@ class JsRegex
 
       private
 
-      attr_accessor :group_level, :negative_set_levels, :set_level
+      attr_accessor :group_level,
+                    :last_quantifier_end_index,
+                    :negative_set_levels,
+                    :set_level
 
       attr_writer :buffered_set_extractions,
                   :buffered_set_members,

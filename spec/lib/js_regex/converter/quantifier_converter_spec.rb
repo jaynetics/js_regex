@@ -155,6 +155,12 @@ describe JsRegex::Converter::QuantifierConverter do
       expect_warning('adjacent quantifiers')
     end
 
+    it 'drops multiple adjacent quantifiers' do
+      given_the_ruby_regexp(/ab{2}{3}{4}{5}/)
+      expect_js_regex_to_be(/ab{2}/)
+      expect_warnings(3)
+    end
+
     it 'preserves distinct quantifiers' do
       given_the_ruby_regexp(/a{2}b{2}c{2,3}d{2,3}e+f+g?h?i*j*/)
       expect_js_regex_to_be(/a{2}b{2}c{2,3}d{2,3}e+f+g?h?i*j*/)
