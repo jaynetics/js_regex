@@ -31,8 +31,9 @@ class JsRegex
       alias pass_through data
 
       def warn_of_unsupported_feature(description = nil)
-        description ||= "#{subtype} #{token_class} '#{data}'".tr('_', ' ')
-        target.warnings << "Dropped unsupported #{description} "\
+        description ||= "#{subtype} #{token_class}".tr('_', ' ')
+        full_description = "#{description} '#{data}'"
+        target.warnings << "Dropped unsupported #{full_description} "\
                            "at index #{start_index}...#{end_index}"
         ''
       end

@@ -29,14 +29,8 @@ class JsRegex
         when /\Aclass_/ then convert_class_subtype
         when /\Atype_/ then convert_type_subtype
         when :backspace then convert_backspace_subtype
-        when :intersection
-          warn_of_unsupported_feature("set intersection '&&'")
-        else
-          # Note that, within sets, Regexp::Scanner returns
-          # - positive property tokens in the \p{-style with class :set
-          # - negative property tokens in the \P{-style with class :set
-          # - negative property tokens in the \p{^-style with class :nonproperty
-          try_replacing_potential_property_subtype
+        when :intersection then warn_of_unsupported_feature('set intersection')
+        else try_replacing_potential_property_subtype
         end
       end
 
@@ -80,11 +74,10 @@ class JsRegex
       end
 
       def try_replacing_property(name, negated)
-        replacement = PropertyConverter.property_replacement(name, negated)
-        if replacement
+        if (replacement = PropertyConverter.property_replacement(name, negated))
           buffer_set_extraction(replacement)
         else
-          warn_of_unsupported_feature
+          warn_of_unsupported_feature('property')
         end
       end
 

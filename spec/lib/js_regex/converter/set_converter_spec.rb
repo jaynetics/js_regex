@@ -110,7 +110,7 @@ describe JsRegex::Converter::SetConverter do
   it 'does not create empty sets when dropping all contents' do
     given_the_ruby_regexp(/[\p{Deseret}]/)
     expect_js_regex_to_be(//)
-    expect_warning('unsupported script')
+    expect_warning("unsupported property '\\p{Deseret}'")
   end
 
   it 'does not extracts other types from sets' do

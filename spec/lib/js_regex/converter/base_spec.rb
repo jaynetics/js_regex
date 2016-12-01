@@ -31,12 +31,11 @@ describe JsRegex::Converter::Base do
     end
 
     it 'takes an argument to override the description' do
-      converter = described_class.new(
-        instance_double(JsRegex, warnings: []), nil
-      )
-      converter.send(:warn_of_unsupported_feature, 'foobar')
-      expect(converter.target.warnings.first)
-        .to start_with('Dropped unsupported foobar')
+      conv = described_class.new(instance_double(JsRegex, warnings: []), nil)
+      allow(conv).to receive(:data).and_return('fizz')
+      conv.send(:warn_of_unsupported_feature, 'foobar')
+      expect(conv.target.warnings.first)
+        .to start_with("Dropped unsupported foobar 'fizz'")
     end
   end
 end
