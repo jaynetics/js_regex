@@ -25,7 +25,8 @@ class JsRegex
         when :open then convert_open_subtype
         when :negate then convert_negate_subtype
         when :close then convert_close_subtype
-        when :member, :range, :escape then convert_member_subtype
+        when :member, :member_hex, :range, :range_hex, :escape
+          convert_member_subtype
         when /\Aclass_/ then convert_class_subtype
         when /\Atype_/ then convert_type_subtype
         when :backspace then convert_backspace_subtype

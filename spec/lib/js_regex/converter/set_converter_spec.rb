@@ -4,6 +4,20 @@
 require 'spec_helper'
 
 describe JsRegex::Converter::SetConverter do
+  it 'preserves hex escape members' do
+    given_the_ruby_regexp(/[\x41]/)
+    expect_js_regex_to_be(/[\x41]/)
+    expect_no_warnings
+    expect_ruby_and_js_to_match(string: 'ABC', with_results: %w(A))
+  end
+
+  it 'preserves hex escape ranges' do
+    given_the_ruby_regexp(/[\x41-\x43]+/)
+    expect_js_regex_to_be(/[\x41-\x43]+/)
+    expect_no_warnings
+    expect_ruby_and_js_to_match(string: 'ABC', with_results: %w(ABC))
+  end
+
   context 'when sets are nested' do
     it 'flattens simple nested sets' do
       given_the_ruby_regexp(/[a-z[0-9]]+/)
