@@ -1,5 +1,12 @@
 # Changelog
 
+## v1.2.0
+### Fixed
+- fixed an exotic bug with multiple stacked quantifiers (e.g. /a{2}{3}{4}/). they are now all removed instead of breaking the regex.
+
+### Added
+- added support for hex escapes in character sets.
+
 ## v1.1.0
 ### Fixed
 - fixed a bug with atomic groups nested in atomic groups. they are now made non-atomic with a warning instead of breaking the regex.
