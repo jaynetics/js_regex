@@ -134,7 +134,7 @@ Currently, the following functionalities can't be carried over to JavaScript. If
 | lookbehind                     | (?&lt;=, (?&lt;!, \K  | yes     |
 | conditionals                   | (?(a)b&#124;c)        | yes     |
 | group-specific options         | (?i:, (?-i:           | yes     |
-| named capturing groups         | (?&lt;a&gt;, (?'a'    | no      |
+| capturing group names          | (?&lt;a&gt;, (?'a'    | no      |
 | comment groups                 | (?#comment)           | no      |
 | inline comments (in x-mode)    | /[a-z] # comment/x    | no      |
 | set intersections              | [a-z&amp;&amp;[^uo]]  | yes     |
