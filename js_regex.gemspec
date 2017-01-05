@@ -1,8 +1,9 @@
 # encoding: utf-8
 # frozen_string_literal: true
 
-lib_dir = File.expand_path('../lib', __FILE__)
-require File.join(lib_dir, 'js_regex', 'version')
+dir = File.expand_path('..', __FILE__)
+require File.join(dir, 'lib', 'js_regex', 'version')
+require File.join(dir, 'build')
 
 Gem::Specification.new do |s|
   s.platform      = Gem::Platform::RUBY
@@ -31,8 +32,8 @@ Gem::Specification.new do |s|
   s.add_development_dependency 'rspec-mocks', '~> 3.5'
   s.add_development_dependency 'therubyracer', '~> 0.12'
 
-  if Gem::Version.new(RUBY_VERSION.dup) >= Gem::Version.new('2.3.1')
-    s.add_development_dependency 'codeclimate-test-reporter', '~> 0.6'
-    s.add_development_dependency 'mutant-rspec'
+  if JsRegex::PERFORM_FULL_BUILD
+    s.add_development_dependency 'codeclimate-test-reporter', '~> 1.0'
+    s.add_development_dependency 'mutant-rspec', '~> 0.8'
   end
 end

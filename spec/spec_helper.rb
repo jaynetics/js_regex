@@ -1,9 +1,11 @@
 # encoding: utf-8
 # frozen_string_literal: true
 
-if Gem::Version.new(RUBY_VERSION.dup) >= Gem::Version.new('2.3.1')
-  require 'codeclimate-test-reporter'
-  CodeClimate::TestReporter.start
+require_relative File.join('..', 'build')
+
+if JsRegex::PERFORM_FULL_BUILD
+  require 'simplecov'
+  SimpleCov.start
 end
 
 RSpec.configure do |config|

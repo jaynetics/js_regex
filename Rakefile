@@ -20,8 +20,10 @@ task mutate: :spec do
   system(*arguments) || raise('Mutant task is not successful')
 end
 
-if Gem::Version.new(RUBY_VERSION.dup) >= Gem::Version.new('2.3.1')
-  task default: :mutate
-else
-  task default: :spec
+require_relative 'build'
+
+task default: (JsRegex::PERFORM_FULL_BUILD ? :mutate : :spec)
+
+task :report_coverage do
+  JsRegex::PERFORM_FULL_BUILD && `bundle exec codeclimate-test-reporter`
 end
