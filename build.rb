@@ -1,6 +1,5 @@
 # frozen_string_literal: true
 
 class JsRegex
-  PERFORM_FULL_BUILD =
-    Gem::Version.new(RUBY_VERSION.dup) >= Gem::Version.new('2.4.0')
+  PERFORM_FULL_BUILD = RUBY_VERSION.start_with?('2.3')
 end
