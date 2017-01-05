@@ -6,5 +6,3 @@ rvm:
 addons:
   code_climate:
     repo_token: 26a3db2158ce963cf22a4b8ad8493741fe3fbf48c128dc8748ec739e2b9a3464
-after_success:
-  - bundle exec rake report_coverage

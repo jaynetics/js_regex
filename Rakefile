@@ -6,6 +6,8 @@ require 'rspec/core/rake_task'
 RSpec::Core::RakeTask.new
 
 task mutate: :spec do
+  `bundle exec codeclimate-test-reporter` if ENV['TRAVIS']
+
   arguments = %w(
     bundle exec mutant
     --fail-fast
@@ -23,7 +25,3 @@ end
 require_relative 'build'
 
 task default: (JsRegex::PERFORM_FULL_BUILD ? :mutate : :spec)
-
-task :report_coverage do
-  JsRegex::PERFORM_FULL_BUILD && `bundle exec codeclimate-test-reporter`
-end
