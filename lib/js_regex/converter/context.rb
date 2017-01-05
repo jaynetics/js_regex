@@ -102,10 +102,6 @@ class JsRegex
         self.negative_lookbehind = false
       end
 
-      def group?
-        group_level > 0
-      end
-
       def atomic_group?
         group_level_for_backreference
       end
