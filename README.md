@@ -99,7 +99,7 @@ In addition to the conversions supported by the default approach, this gem will 
 | escaped meta chars        | \\\A              |
 | Ruby's multiline mode [4] | /.+/m             |
 | Ruby's free-spacing mode  | / http (s?) /x    |
-| atomic groups [5]         | a(?>bc&#124;b)c   |
+| atomic groups [5]         | a(?>bcǀb)c        |
 | \h, \H, and \Z            | \h+\Z             |
 | literal whitespace        | [a-z ]            |
 | nested sets               | [a-z[A-Z]]        |
@@ -132,7 +132,7 @@ Currently, the following functionalities can't be carried over to JavaScript. If
 | Description                    | Example               | Warning |
 |--------------------------------|-----------------------|---------|
 | lookbehind                     | (?&lt;=, (?&lt;!, \K  | yes     |
-| conditionals                   | (?(a)b&#124;c)        | yes     |
+| conditionals                   | (?(a)bǀc)             | yes     |
 | group-specific options         | (?i:, (?-i:           | yes     |
 | capturing group names          | (?&lt;a&gt;, (?'a'    | no      |
 | comment groups                 | (?#comment)           | no      |
@@ -141,8 +141,8 @@ Currently, the following functionalities can't be carried over to JavaScript. If
 | recursive set negation         | [^a[^b]]              | yes     |
 | possessive quantifiers         | ++, *+, ?+, {4,8}+    | yes     |
 | multiplicative quantifiers     | /A{4}{6}/ =~ 'A' * 24 | yes     |
-| forward references             | (\2two&#124;(one))    | yes     |
-| backreferences after atomics   | a(?>bc&#124;b)c(d)\1  | yes     |
+| forward references             | (\2twoǀ(one))         | yes     |
+| backreferences after atomics   | a(?>bcǀb)c(d)\1       | yes     |
 | \k-backreferences              | (a)\k&lt;1&gt;        | yes     |
 | subexpression calls            | (?'a'.)\g'a'/, \G     | yes     |
 | bell and escape chars          | \a, \e                | yes     |
