@@ -114,6 +114,7 @@ In addition to the conversions supported by the default approach, this gem will 
 | unicode ages [6]          | \p{Age=5.2}       |
 | unicode abbreviations [6] | \p{Mong}, \p{Sc}  |
 | unicode negations [6]     | \p{^Number}       |
+| codepoint lists           | \u{61 63 1F601}   |
 | astral plane literals [7] | &#x1f601;         |
 
 [4] Keep in mind that [Ruby's multiline mode](http://ruby-doc.org/core-2.1.1/Regexp.html#class-Regexp-label-Options) is totally different from [JavaScript's multiline mode](http://javascript.info/tutorial/ahchors-and-multiline-mode#multiline-mode).

@@ -35,6 +35,8 @@ class JsRegex
 
       def convert_data
         case subtype
+        when :codepoint_list
+          convert_codepoint_list
         when :literal
           LiteralConverter.convert_data(data)
         when *ESCAPES_SHARED_BY_RUBY_AND_JS
@@ -43,6 +45,14 @@ class JsRegex
           # Bell, Escape, HexWide, Control, Meta, MetaControl, ...
           warn_of_unsupported_feature
         end
+      end
+
+      def convert_codepoint_list
+        elements = data.scan(/\h+/).map do |codepoint|
+          literal = Regexp.escape([codepoint.hex].pack('U'))
+          LiteralConverter.convert_data(literal)
+        end
+        elements.join
       end
     end
   end

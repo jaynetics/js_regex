@@ -182,4 +182,17 @@ describe JsRegex::Converter::EscapeConverter do
     expect_js_regex_to_be(/(.)/)
     expect_warning
   end
+
+  it 'converts codepoint lists, escaping meta chars and using surrogates' do
+    # allow working with old Regexp::Scanner for mutant build
+    if Gem::Version.new(Regexp::Parser::VERSION.dup) < Gem::Version.new('0.4.0')
+      allow(Regexp::Scanner)
+        .to receive(:scan)
+        .and_yield(:escape, :codepoint_list, "\\u{61 a 28 1F601}", 0, 17)
+    end
+
+    given_the_ruby_regexp(/\u{61 a 28 1F601}/)
+    expect(@js_regex.source).to eq('a\\n\\(\\ud83d\\ude01')
+    expect_ruby_and_js_to_match(string: "_a\n(😁_", with_results: ["a\n(😁"])
+  end
 end
