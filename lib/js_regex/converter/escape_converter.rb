@@ -19,6 +19,8 @@ class JsRegex
         :dot,
         :eol,
         :form_feed,
+        :group_close,
+        :group_open,
         :hex,
         :interval_close,
         :interval_open,
