@@ -1,5 +1,12 @@
 # Changelog
 
+## v1.2.3
+### Fixed
+- fixed handling of escaped parentheses ("\\(" and "\\)"); thanks to https://github.com/owst
+
+### Added
+- added support for codepoint lists (e.g. \u{61 63 1F601}}.
+
 ## v1.2.0
 ### Fixed
 - fixed an exotic bug with multiple stacked quantifiers (e.g. /a{2}{3}{4}/). they are now all removed instead of breaking the regex.
