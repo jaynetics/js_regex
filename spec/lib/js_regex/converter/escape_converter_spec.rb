@@ -20,6 +20,13 @@ describe JsRegex::Converter::EscapeConverter do
     expect_ruby_and_js_to_match(string: '\\', with_results: %w(\\))
   end
 
+  it 'preserves escaped groups' do
+    given_the_ruby_regexp(/\(1\)/)
+    expect_js_regex_to_be(/\(1\)/)
+    expect_no_warnings
+    expect_ruby_and_js_to_match(string: '(1)', with_results: ["(1)"])
+  end
+
   it 'preserves escaped literals' do
     given_the_ruby_regexp(/\j/)
     expect_js_regex_to_be(/\j/)
