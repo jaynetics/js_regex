@@ -13,7 +13,7 @@ describe JsRegex do
       (?:[A-Z]{2}|com|org|net|edu|gov|mil|
       biz|info|mobi|name|aero|asia|jobs|museum)\b/xi
     )
-    expect_no_warnings
+    expect_warning("boundary '\\b' at index 210 is not unicode-aware")
     expect_ruby_and_js_to_match(string: 'a@b me@s-w.com x.y@place.edu #ö+.',
                                 with_results: %w[me@s-w.com x.y@place.edu])
   end

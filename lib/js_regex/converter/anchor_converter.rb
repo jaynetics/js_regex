@@ -15,11 +15,18 @@ class JsRegex
         when :bol, :bos then '^'
         when :eol, :eos then '$'
         when :eos_ob_eol then '(?=\n?$)'
-        when :word_boundary then '\b'
-        when :nonword_boundary then '\B'
+        when :word_boundary then pass_boundary_with_warning('\b')
+        when :nonword_boundary then pass_boundary_with_warning('\B')
         else
           warn_of_unsupported_feature
         end
+      end
+
+      def pass_boundary_with_warning(boundary)
+        warnings << "The boundary '#{boundary}' at index #{expression.ts} "\
+                    'is not unicode-aware in JavaScript, so it might '\
+                    'act differently than in Ruby.'
+        boundary
       end
     end
   end

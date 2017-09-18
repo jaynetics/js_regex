@@ -152,18 +152,17 @@ Currently, the following functionalities can't be carried over to JavaScript. If
 | astral plane scripts           | \p{Deseret}           | yes     |
 | astral plane ranges            | [&#x1f601;-&#x1f632;] | yes     |
 
-### Performance
+In addition, the word boundaries `\b` and `\B` cause warnings since they are not unicode-ready in JavaScript. Unfortunately this [holds true even for the latest versions of JavaScript](http://www.ecma-international.org/ecma-262/6.0/#sec-runtime-semantics-iswordchar-abstract-operation).
 
-JsRegex is fairly fast. However, it does a lot more than the default approach, so it can take 2 to 10 times as long, depending on the complexity of the Ruby regex.
+Ruby:
+```ruby
+'Erkki-Sven Tüür'.split(/\b/) # => ["Erkki", "-", "Sven", " ", "Tüür"]
+```
 
-| Complexity | Approach | Time   |
-|------------|----------|--------|
-| very low   | default  | 0.0106 |
-| very low   | JsRegex  | 0.0197 |
-| very high  | default  | 0.0453 |
-| very high  | JsRegex  | 0.5157 |
-
-Seconds taken to convert an expression 1000 times. [(benchmark code)](https://gist.github.com/janosch-x/554405a924f20d1d6db3)
+JavaScript:
+```javascript
+'Erkki-Sven Tüür'.split(/\b/) // => ["Erkki", "-", "Sven", " ", "T", "üü", "r"]
+```
 
 ### Contributions
 

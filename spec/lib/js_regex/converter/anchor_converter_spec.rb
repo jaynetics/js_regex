@@ -40,18 +40,18 @@ describe JsRegex::Converter::AnchorConverter do
     expect_ruby_and_js_to_match(string: 'abc', with_results: %w[c])
   end
 
-  it 'preserves the word-boundary "\b"' do
+  it 'preserves the word-boundary "\b" with a warning' do
     given_the_ruby_regexp(/\w\b/)
     expect_js_regex_to_be(/\w\b/)
-    expect_no_warnings
-    expect_ruby_and_js_to_match(string: 'abc', with_results: %w(c))
+    expect_warning("boundary '\\b' at index 2 is not unicode-aware in JavaScr")
+    expect_ruby_and_js_to_match(string: 'abc', with_results: %w[c])
   end
 
-  it 'preserves the non-word-boundary "\B"' do
+  it 'preserves the non-word-boundary "\B" with a warning' do
     given_the_ruby_regexp(/\w\B/)
     expect_js_regex_to_be(/\w\B/)
-    expect_no_warnings
-    expect_ruby_and_js_to_match(string: 'abc', with_results: %w(a b))
+    expect_warning("boundary '\\B' at index 2 is not unicode-aware in JavaScr")
+    expect_ruby_and_js_to_match(string: 'abc', with_results: %w[a b])
   end
 
   it 'drops unknown anchors with warning' do
