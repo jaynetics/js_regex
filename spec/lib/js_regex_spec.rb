@@ -37,7 +37,7 @@ describe JsRegex do
     it "can be used with JavaScript's new RegExp() constructor" do
       given_the_ruby_regexp(/[a-z]+/)
       matches = matches_in_javascript_using_to_json_result_on('abc123')
-      expect(matches).to eq(%w(abc))
+      expect(matches).to eq(%w[abc])
     end
 
     it 'passes on the options parameter, defaulting to {}' do
@@ -65,7 +65,7 @@ describe JsRegex do
     it 'can be injected directly into JS' do
       given_the_ruby_regexp(/[a-z]+/)
       matches = matches_in_javascript_using_to_s_result_on('abc123')
-      expect(matches).to eq(%w(abc))
+      expect(matches).to eq(%w[abc])
     end
   end
 
