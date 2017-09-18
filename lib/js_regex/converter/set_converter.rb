@@ -42,9 +42,9 @@ class JsRegex
         when /[\u{10000}-\u{FFFFF}]/
           warn_of_unsupported_feature('astral plane set member')
         when '\\h'
-          handle_hex_meta
+          handle_hex_type
         when '\\H'
-          handle_nonhex_meta
+          handle_nonhex_type
         when '&&'
           warn_of_unsupported_feature('set intersection')
         when /\A(?:\[:|\\([pP])\{)(\^?)([^:\}]+)/
@@ -58,11 +58,11 @@ class JsRegex
       HEX_RANGES = 'A-Fa-f0-9'
       NONHEX_SET = '[^A-Fa-f0-9]'
 
-      def handle_hex_meta
+      def handle_hex_type
         buffer_set_member(HEX_RANGES)
       end
 
-      def handle_nonhex_meta
+      def handle_nonhex_type
         if context.negative_base_set
           warn_of_unsupported_feature('nonhex type in negative set')
         else
