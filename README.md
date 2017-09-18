@@ -146,6 +146,7 @@ Currently, the following functionalities can't be carried over to JavaScript. If
 | backreferences after atomics   | a(?>bcǀb)c(d)\1       | yes     |
 | \k-backreferences              | (a)\k&lt;1&gt;        | yes     |
 | subexpression calls            | (?'a'.)\g'a'/, \G     | yes     |
+| absence operator               | (?~foo)               | yes     |
 | bell and escape chars          | \a, \e                | yes     |
 | wide hex, control, metacontrol | \x{1234}, \cD, \M-\C- | yes     |
 | astral plane scripts           | \p{Deseret}           | yes     |

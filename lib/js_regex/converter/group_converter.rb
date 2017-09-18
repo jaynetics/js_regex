@@ -18,6 +18,7 @@ class JsRegex
         when :named then build_named_group
         when :options then build_options_group
         when :passive then build_passive_group
+        when :absence then warn_of_unsupported_feature
         else build_unsupported_group
         end
       end
