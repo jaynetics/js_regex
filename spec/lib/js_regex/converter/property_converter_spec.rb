@@ -8,14 +8,14 @@ describe JsRegex::Converter::PropertyConverter do
     given_the_ruby_regexp(/\p{ascii}/)
     expect_js_regex_to_be(/[\x00-\x7F]/)
     expect_no_warnings
-    expect_ruby_and_js_to_match(string: 'añB', with_results: %w(a B))
+    expect_ruby_and_js_to_match(string: 'añB', with_results: %w[a B])
   end
 
   it 'translates the negated \p{^...} property style' do
     given_the_ruby_regexp(/\p{^ascii}/)
     expect_js_regex_to_be(/[^\x00-\x7F]/)
     expect_no_warnings
-    expect_ruby_and_js_to_match(string: 'añB', with_results: %w(ñ))
+    expect_ruby_and_js_to_match(string: 'añB', with_results: %w[ñ])
   end
 
   it 'translates negations of negative properties by making them positive' do

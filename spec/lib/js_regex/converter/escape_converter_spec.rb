@@ -17,35 +17,35 @@ describe JsRegex::Converter::EscapeConverter do
     given_the_ruby_regexp(/\\/)
     expect_js_regex_to_be(/\\/)
     expect_no_warnings
-    expect_ruby_and_js_to_match(string: '\\', with_results: %w(\\))
+    expect_ruby_and_js_to_match(string: '\\', with_results: %w[\\])
   end
 
   it 'preserves escaped groups' do
     given_the_ruby_regexp(/\(1\)/)
     expect_js_regex_to_be(/\(1\)/)
     expect_no_warnings
-    expect_ruby_and_js_to_match(string: '(1)', with_results: ["(1)"])
+    expect_ruby_and_js_to_match(string: '(1)', with_results: ['(1)'])
   end
 
   it 'preserves escaped literals' do
     given_the_ruby_regexp(/\j/)
     expect_js_regex_to_be(/\j/)
     expect_no_warnings
-    expect_ruby_and_js_to_match(string: 'ijk', with_results: %w(j))
+    expect_ruby_and_js_to_match(string: 'ijk', with_results: %w[j])
   end
 
   it 'preserves escaped dots' do
     given_the_ruby_regexp(/\./)
     expect_js_regex_to_be(/\./)
     expect_no_warnings
-    expect_ruby_and_js_to_match(string: 'a.b', with_results: %w(.))
+    expect_ruby_and_js_to_match(string: 'a.b', with_results: %w[.])
   end
 
   it 'preserves escaped quantifiers' do
     given_the_ruby_regexp(/\?\*\+/)
     expect_js_regex_to_be(/\?\*\+/)
     expect_no_warnings
-    expect_ruby_and_js_to_match(string: 'a?*+b', with_results: %w(?*+))
+    expect_ruby_and_js_to_match(string: 'a?*+b', with_results: %w[?*+])
   end
 
   it 'preserves newline escapes' do
@@ -87,7 +87,7 @@ describe JsRegex::Converter::EscapeConverter do
     given_the_ruby_regexp(/\{\}/)
     expect_js_regex_to_be(/\{\}/)
     expect_no_warnings
-    expect_ruby_and_js_to_match(string: 'a{}b', with_results: %w({}))
+    expect_ruby_and_js_to_match(string: 'a{}b', with_results: %w[{}])
   end
 
   it 'preserves escaped set brackets' do
@@ -195,7 +195,7 @@ describe JsRegex::Converter::EscapeConverter do
     if Gem::Version.new(Regexp::Parser::VERSION.dup) < Gem::Version.new('0.4.0')
       allow(Regexp::Scanner)
         .to receive(:scan)
-        .and_yield(:escape, :codepoint_list, "\\u{61 a 28 1F601}", 0, 17)
+        .and_yield(:escape, :codepoint_list, '\u{61 a 28 1F601}', 0, 17)
     end
 
     given_the_ruby_regexp(/\u{61 a 28 1F601}/)

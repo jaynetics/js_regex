@@ -8,35 +8,35 @@ describe JsRegex::Converter::GroupConverter do
     given_the_ruby_regexp(/(abc)/)
     expect_js_regex_to_be(/(abc)/)
     expect_no_warnings
-    expect_ruby_and_js_to_match(string: 'abc', with_results: %w(abc))
+    expect_ruby_and_js_to_match(string: 'abc', with_results: %w[abc])
   end
 
   it 'preserves passive groups' do
     given_the_ruby_regexp(/(?:abc)/)
     expect_js_regex_to_be(/(?:abc)/)
     expect_no_warnings
-    expect_ruby_and_js_to_match(string: 'abc', with_results: %w(abc))
+    expect_ruby_and_js_to_match(string: 'abc', with_results: %w[abc])
   end
 
   it 'removes names from ab-named groups' do
     given_the_ruby_regexp(/(?<protocol>http|ftp)/)
     expect_js_regex_to_be(/(http|ftp)/)
     expect_no_warnings
-    expect_ruby_and_js_to_match(string: 'ftp', with_results: %w(ftp))
+    expect_ruby_and_js_to_match(string: 'ftp', with_results: %w[ftp])
   end
 
   it 'removes names from sq-named groups' do
     given_the_ruby_regexp(/(?'protocol'http|ftp)/)
     expect_js_regex_to_be(/(http|ftp)/)
     expect_no_warnings
-    expect_ruby_and_js_to_match(string: 'ftp', with_results: %w(ftp))
+    expect_ruby_and_js_to_match(string: 'ftp', with_results: %w[ftp])
   end
 
   it 'removes comment groups' do
     given_the_ruby_regexp(/a(?# <- this matches 'a')/)
     expect_js_regex_to_be(/a/)
     expect_no_warnings
-    expect_ruby_and_js_to_match(string: 'a a a', with_results: %w(a a a))
+    expect_ruby_and_js_to_match(string: 'a a a', with_results: %w[a a a])
   end
 
   it 'drops group-specific options with warning' do

@@ -1,6 +1,6 @@
 # encoding: utf-8
 # frozen_string_literal: true
-#
+
 # This hash maps named properties that are available in Ruby's ::Regexp to
 # standard sets that can be handled by JavaScript.
 #

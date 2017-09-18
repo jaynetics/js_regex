@@ -8,7 +8,7 @@ RSpec::Core::RakeTask.new
 task mutate: :spec do
   `bundle exec codeclimate-test-reporter` if ENV['TRAVIS']
 
-  arguments = %w(
+  arguments = %w[
     bundle exec mutant
     --fail-fast
     --include lib
@@ -17,7 +17,7 @@ task mutate: :spec do
     --ignore-subject JsRegex::Conversion#initialize
     --ignore-subject JsRegex::Converter::Context*
     -- JsRegex*
-  )
+  ]
 
   system(*arguments) || raise('Mutant task is not successful')
 end

@@ -1,5 +1,5 @@
 # frozen_string_literal: true
-#
+
 # JsRegex converts ::Regexp instances to JavaScript.
 #
 # Usage:

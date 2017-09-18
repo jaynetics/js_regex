@@ -31,15 +31,15 @@ describe JsRegex::Converter::MetaConverter do
     given_the_ruby_regexp(/a\.+a/m)
     expect_js_regex_to_be(/a\.+a/)
     expect_no_warnings
-    expect_ruby_and_js_to_match(string: 'aba a.a', with_results: %w(a.a))
-    expect_ruby_and_js_to_match(string: "a\na a.a", with_results: %w(a.a))
+    expect_ruby_and_js_to_match(string: 'aba a.a', with_results: %w[a.a])
+    expect_ruby_and_js_to_match(string: "a\na a.a", with_results: %w[a.a])
   end
 
   it 'preserves the alternation meta char "|"' do
     given_the_ruby_regexp(/a|b/)
     expect_js_regex_to_be(/a|b/)
     expect_no_warnings
-    expect_ruby_and_js_to_match(string: 'a b', with_results: %w(a b))
+    expect_ruby_and_js_to_match(string: 'a b', with_results: %w[a b])
   end
 
   it 'drops unknown meta elements with warning' do

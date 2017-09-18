@@ -1,1 +1,11 @@
 require: rubocop-rspec
+
+# disable some cops that suggest changes which are incompatible with old Rubies
+Performance/RegexpMatch:
+  Enabled: false
+Performance/UnfreezeString:
+  Enabled: false
+Style/BracesAroundHashParameters:
+  Enabled: false
+Style/Encoding:
+  Enabled: false
