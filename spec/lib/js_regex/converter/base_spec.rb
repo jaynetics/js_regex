@@ -4,38 +4,197 @@
 require 'spec_helper'
 
 describe JsRegex::Converter::Base do
-  Ctx = JsRegex::Converter::Context
-
-  context 'in a valid Context' do
-    before { allow_any_instance_of(Ctx).to receive(:valid?).and_return(true) }
-
-    it 'appends to the target' do
-      expect(JsRegex.new(/abc/).source).to eq('abc')
-    end
-  end
-
-  context 'in an invalid Context' do
-    before { allow_any_instance_of(Ctx).to receive(:valid?).and_return(false) }
-
-    it 'does not append to the target' do
-      expect(JsRegex.new(/abc/).source).to eq('')
-    end
-  end
-
   describe '#warn_of_unsupported_feature' do
     it 'adds a warning with token class, subtype, data and index' do
-      unsupported_regex = JsRegex.new(/(a)\k<1>/)
-      expect(unsupported_regex.warnings.first).to eq(
-        "Dropped unsupported number ref ab backref '\\k<1>' at index 3...8"
+      conv = described_class.new
+      expr = expression_double({ type: 'bar', token: 'big', ts: 7 })
+      allow(expr).to receive(:to_s).and_return('foo')
+      allow(conv).to receive(:expression).and_return(expr)
+      allow(conv).to receive(:warnings).and_return([])
+      conv.send(:warn_of_unsupported_feature)
+      expect(conv.send(:warnings).first).to eq(
+        "Dropped unsupported big bar 'foo' at index 7"
       )
     end
 
     it 'takes an argument to override the description' do
-      conv = described_class.new(instance_double(JsRegex, warnings: []), nil)
-      allow(conv).to receive(:data).and_return('fizz')
-      conv.send(:warn_of_unsupported_feature, 'foobar')
-      expect(conv.target.warnings.first)
-        .to start_with("Dropped unsupported foobar 'fizz'")
+      conv = described_class.new
+      expr = expression_double({ type: 'bar', token: 'big', ts: 7 })
+      allow(expr).to receive(:to_s).and_return('foo')
+      allow(conv).to receive(:expression).and_return(expr)
+      allow(conv).to receive(:warnings).and_return([])
+      conv.send(:warn_of_unsupported_feature, 'fizz')
+      expect(conv.send(:warnings).first).to eq(
+        "Dropped unsupported fizz 'foo' at index 7"
+      )
+    end
+  end
+
+  describe '#convert' do
+    context 'when quantifiers are greedy (default)' do
+      it 'preserves zero-or-ones (?)' do
+        given_the_ruby_regexp(/a?/)
+        expect_js_regex_to_be(/a?/)
+        expect_no_warnings
+      end
+
+      it 'preserves zero-or-mores (*)' do
+        given_the_ruby_regexp(/a*/)
+        expect_js_regex_to_be(/a*/)
+        expect_no_warnings
+      end
+
+      it 'preserves one-or-mores (+)' do
+        given_the_ruby_regexp(/a+/)
+        expect_js_regex_to_be(/a+/)
+        expect_no_warnings
+      end
+
+      it 'preserves fixes ({x})' do
+        given_the_ruby_regexp(/a{4}/)
+        expect_js_regex_to_be(/a{4}/)
+        expect_no_warnings
+      end
+
+      it 'preserves ranges ({x,y})' do
+        given_the_ruby_regexp(/a{6,8}/)
+        expect_js_regex_to_be(/a{6,8}/)
+        expect_no_warnings
+      end
+
+      it 'preserves set quantifiers' do
+        given_the_ruby_regexp(/[a-z]{6,8}/)
+        expect_js_regex_to_be(/[a-z]{6,8}/)
+        expect_no_warnings
+      end
+
+      it 'preserves group quantifiers' do
+        given_the_ruby_regexp(/(?:a|b){6,8}/)
+        expect_js_regex_to_be(/(?:a|b){6,8}/)
+        expect_no_warnings
+      end
+    end
+
+    context 'when quantifiers are reluctant' do
+      it 'preserves zero-or-ones (??)' do
+        given_the_ruby_regexp(/a??/)
+        expect_js_regex_to_be(/a??/)
+        expect_no_warnings
+      end
+
+      it 'preserves zero-or-mores (*?)' do
+        given_the_ruby_regexp(/a*?/)
+        expect_js_regex_to_be(/a*?/)
+        expect_no_warnings
+      end
+
+      it 'preserves one-or-mores (+?)' do
+        given_the_ruby_regexp(/a+?/)
+        expect_js_regex_to_be(/a+?/)
+        expect_no_warnings
+      end
+
+      it 'preserves fixes ({x}?)' do
+        given_the_ruby_regexp(/a{4}?/)
+        expect_js_regex_to_be(/a{4}?/)
+        expect_no_warnings
+      end
+
+      it 'preserves ranges ({x,y}?)' do
+        given_the_ruby_regexp(/a{6,8}?/)
+        expect_js_regex_to_be(/a{6,8}?/)
+        expect_no_warnings
+      end
+
+      it 'preserves set quantifiers' do
+        given_the_ruby_regexp(/[a-z]{6,8}?/)
+        expect_js_regex_to_be(/[a-z]{6,8}?/)
+        expect_no_warnings
+      end
+
+      it 'preserves group quantifiers' do
+        given_the_ruby_regexp(/(?:a|b){6,8}?/)
+        expect_js_regex_to_be(/(?:a|b){6,8}?/)
+        expect_no_warnings
+      end
+    end
+
+    context 'when quantifiers are possessive' do
+      it 'emulates possessiveness for zero-or-ones (?+)' do
+        given_the_ruby_regexp(/a?+/)
+        expect_js_regex_to_be(/(?=(a?))\1(?:)/)
+        expect_no_warnings
+      end
+
+      it 'emulates possessiveness for zero-or-mores (*+)' do
+        given_the_ruby_regexp(/a*+/)
+        expect_js_regex_to_be(/(?=(a*))\1(?:)/)
+        expect_no_warnings
+      end
+
+      it 'emulates possessiveness for one-or-mores (++)' do
+        given_the_ruby_regexp(/a++/)
+        expect_js_regex_to_be(/(?=(a+))\1(?:)/)
+        expect_no_warnings
+      end
+
+      it 'emulates possessiveness for fixes ({x}+)' do
+        given_the_ruby_regexp(/a{4}+/)
+        expect_js_regex_to_be(/(?=(a{4}))\1(?:)/)
+        expect_no_warnings
+      end
+
+      it 'emulates possessiveness for ranges ({x,y}+)' do
+        given_the_ruby_regexp(/a{6,8}+/)
+        expect_js_regex_to_be(/(?=(a{6,8}))\1(?:)/)
+        expect_no_warnings
+      end
+
+      it 'emulates possessiveness for set quantifiers' do
+        given_the_ruby_regexp(/[a-z]{6,8}+/)
+        expect_js_regex_to_be(/(?=([a-z]{6,8}))\1(?:)/)
+        expect_no_warnings
+      end
+
+      it 'emulates possessiveness for group quantifiers' do
+        given_the_ruby_regexp(/(?:a|b){6,8}+/)
+        expect_js_regex_to_be(/(?=((?:a|b){6,8}))\1(?:)/)
+        expect_no_warnings
+      end
+    end
+
+    context 'when there are multiple quantifiers' do
+      it 'drops adjacent/multiplicative fixes ({x}) without warning' do
+        given_the_ruby_regexp(/a{4}{6}/)
+        expect_js_regex_to_be(/a{6}/)
+        expect_no_warnings
+      end
+
+      it 'drops adjacent/multiplicative ranges ({x,y}) without warning' do
+        given_the_ruby_regexp(/a{2,4}{3,6}/)
+        expect_js_regex_to_be(/a{3,6}/)
+        expect_no_warnings
+      end
+
+      it 'drops mixed adjacent quantifiers without warning' do
+        given_the_ruby_regexp(/ab{2,3}*/)
+        expect_js_regex_to_be(/ab*/)
+        expect_no_warnings
+      end
+
+      it 'drops multiple adjacent quantifiers without warning' do
+        given_the_ruby_regexp(/ab{2}{3}{4}{5}/)
+        expect_js_regex_to_be(/ab{5}/)
+        expect_no_warnings
+      end
+
+      it 'preserves distinct quantifiers' do
+        given_the_ruby_regexp(/a{2}b{2}c{2,3}d{2,3}e+f+g?h?i*j*/)
+        expect_js_regex_to_be(/a{2}b{2}c{2,3}d{2,3}e+f+g?h?i*j*/)
+        expect_no_warnings
+        expect_ruby_and_js_to_match(string:         'aabbccdddefghi',
+                                    with_results: %w[aabbccdddefghi])
+      end
     end
   end
 end

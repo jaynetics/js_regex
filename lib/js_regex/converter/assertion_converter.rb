@@ -16,12 +16,11 @@ class JsRegex
       def convert_data
         case subtype
         when :lookahead, :nlookahead
-          open_group(capturing: false)
+          build_group(capturing: false)
         when :nlookbehind
-          context.start_negative_lookbehind
           warn_of_unsupported_feature('negative lookbehind assertion')
         else # :lookbehind, ...
-          open_unsupported_group
+          build_unsupported_group
         end
       end
     end

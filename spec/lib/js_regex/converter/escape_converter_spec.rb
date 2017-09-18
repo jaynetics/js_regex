@@ -148,6 +148,57 @@ describe JsRegex::Converter::EscapeConverter do
     expect_ruby_and_js_to_match(string: '	', with_results: ['	'])
   end
 
+  it 'converts the control sequences style "\C-X" to unicode escapes' do
+    given_the_ruby_regexp(/.\C-*/)
+    expect_js_regex_to_be(/.\u000A/)
+    expect_no_warnings
+    expect_ruby_and_js_to_match(string: "ya\ny", with_results: ["a\n"])
+  end
+
+  it 'converts the control sequences style "\cX" to unicode escapes' do
+    given_the_ruby_regexp(/.\c*/)
+    expect_js_regex_to_be(/.\u000A/)
+    expect_no_warnings
+    expect_ruby_and_js_to_match(string: "ya\ny", with_results: ["a\n"])
+  end
+
+  it 'converts the meta sequences style "\M-X" to unicode escapes' do
+    given_the_ruby_regexp(/.\M-X/n)
+    expect_js_regex_to_be(/.\u00D8/)
+    expect_no_warnings
+
+    expect(matches_in_ruby_on("ya\xD8y".dup.force_encoding('ascii-8bit')))
+      .to eq(["a\xD8".dup.force_encoding('ascii-8bit')])
+    expect(matches_in_javascript_using_to_s_result_on("ya\u00D8y"))
+      .to eq(["a\u00D8"])
+    expect(matches_in_javascript_using_to_json_result_on("ya\u00D8y"))
+      .to eq(["a\u00D8"])
+  end
+
+  it 'converts the meta control sequences style "\M-\C-X" to unicode escapes' do
+    given_the_ruby_regexp(/.\M-\C-X/n)
+    expect_js_regex_to_be(/.\u0098/)
+    expect_no_warnings
+  end
+
+  it 'converts the meta control sequences style "\M-\cX" to unicode escapes' do
+    given_the_ruby_regexp(/.\M-\cX/n)
+    expect_js_regex_to_be(/.\u0098/)
+    expect_no_warnings
+  end
+
+  it 'converts the meta control sequences style "\C-\M-X" to unicode escapes' do
+    given_the_ruby_regexp(/.\C-\M-X/n)
+    expect_js_regex_to_be(/.\u0098/)
+    expect_no_warnings
+  end
+
+  it 'converts the meta control sequences style "\c\M-X" to unicode escapes' do
+    given_the_ruby_regexp(/.\c\M-X/n)
+    expect_js_regex_to_be(/.\u0098/)
+    expect_no_warnings
+  end
+
   it 'drops the bell char "\a" with warning' do
     given_the_ruby_regexp(/.\a/)
     expect_js_regex_to_be(/./)
@@ -156,18 +207,6 @@ describe JsRegex::Converter::EscapeConverter do
 
   it 'drops the escape char "\e" with warning' do
     given_the_ruby_regexp(/.\e/)
-    expect_js_regex_to_be(/./)
-    expect_warning
-  end
-
-  it 'drops control sequences of the style "\C-x" with warning' do
-    given_the_ruby_regexp(/.\C-d/)
-    expect_js_regex_to_be(/./)
-    expect_warning
-  end
-
-  it 'drops control sequences of the style "\cX" with warning' do
-    given_the_ruby_regexp(/.\cD/)
     expect_js_regex_to_be(/./)
     expect_warning
   end

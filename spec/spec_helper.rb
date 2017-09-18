@@ -94,14 +94,19 @@ def escape_for_js_string_evaluation(test_string)
     .gsub("\r", '\\r')
 end
 
-def expect_to_drop_token_with_warning(token_class, subtype, data = 'X')
-  conversion = JsRegex::Conversion.new(//)
-  converter = conversion.send(:converter_for_token_class, token_class)
+def expect_to_drop_token_with_warning(token_class, subtype)
+  exp = expression_double({ type: token_class, token: subtype })
+  converter = JsRegex::Converter.for(exp)
   expect(converter).to be_a(described_class)
 
-  converter.convert(token_class, subtype, data, 0, 1)
-  expect(conversion.source).to be_empty
-  expect(conversion.warnings.size).to eq(1)
+  source, warnings = converter.convert(exp, JsRegex::Converter::Context.new(//))
+  expect(source).to be_empty
+  expect(warnings.size).to eq(1)
+end
+
+def expression_double(attributes)
+  defaults = { expressions: [], quantifier: nil, to_s: 'X', ts: 0 }
+  instance_double(Regexp::Expression::Root, defaults.merge(attributes))
 end
 
 def ruby_version_at_least?(version_string)

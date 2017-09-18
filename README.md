@@ -170,7 +170,7 @@ Feel free to send suggestions, point out issues, or submit pull requests.
 
 ### Credits
 
-JsRegex uses a scanner that is part of ammar's powerful [regexp_parser](https://github.com/ammar/regexp_parser) gem.
+JsRegex uses ammar's powerful [regexp_parser](https://github.com/ammar/regexp_parser) gem.
 
 ### Outlook
 

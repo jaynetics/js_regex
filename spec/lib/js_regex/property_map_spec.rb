@@ -6,8 +6,6 @@ require 'spec_helper'
 require File.join('js_regex', 'property_map')
 
 describe JsRegex::PROPERTY_MAP do
-  let(:map) { JsRegex::PROPERTY_MAP }
-
   it 'maps named properties to standard character sets' do
     #
     # All values must be sets, else it won't be as easy to carry
@@ -28,8 +26,10 @@ describe JsRegex::PROPERTY_MAP do
     # Ignore that Ruby won't accept surrogate codepoints, though. JS does.
     #
     expect do
-      scp = JsRegex::Conversion::SURROGATE_CODEPOINT_PATTERN
-      described_class.values.each { |value| Regexp.new(value.gsub(scp, '.')) }
+      surrogate_codepoint_pattern = /\\uD[89A-F]\h\h/i
+      described_class.each_value do |value|
+        Regexp.new(value.gsub(surrogate_codepoint_pattern, '.'))
+      end
     end.not_to raise_error
   end
 

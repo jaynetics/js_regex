@@ -107,6 +107,19 @@ describe JsRegex::Converter::SetConverter do
     expect_ruby_and_js_to_match(string: 'zxa3n', with_results: %w[zxa n])
   end
 
+  it 'expands the hex type in negative sets' do
+    given_the_ruby_regexp(/[^x-y\h]+/)
+    expect_js_regex_to_be(/[^x-yA-Fa-f0-9]+/)
+    expect_no_warnings
+    expect_ruby_and_js_to_match(string: 'zxa3n', with_results: %w[z n])
+  end
+
+  it 'drops the non-hex type from negative sets with warning' do
+    given_the_ruby_regexp(/[^a-c\H]+/)
+    expect_js_regex_to_be(/[^a-c]+/)
+    expect_warning('unsupported nonhex type in negative set')
+  end
+
   it 'does not create empty sets when extracting types' do
     # whitelist #first, c.f. https://github.com/mbj/mutant/issues/616
     array = []
@@ -166,6 +179,13 @@ describe JsRegex::Converter::SetConverter do
     expect_js_regex_to_be(/(?:[x-z]|[^\x00-\x7F])+/)
     expect_no_warnings
     expect_ruby_and_js_to_match(string: 'xañbäõ_ß', with_results: %w[x ñ äõ ß])
+  end
+
+  it 'extracts double-negated \P{^-style properties from sets' do
+    given_the_ruby_regexp(/[äöüß\P{^ascii}]+/)
+    expect_js_regex_to_be(/(?:[äöüß]|[\x00-\x7F])+/)
+    expect_no_warnings
+    expect_ruby_and_js_to_match(string: 'ñbäõ_ß', with_results: %w[bä _ß])
   end
 
   it 'wraps multiple set extractions in a passive alternation group' do

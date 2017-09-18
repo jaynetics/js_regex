@@ -3,107 +3,96 @@
 require_relative 'base'
 require_relative 'literal_converter'
 require_relative 'property_converter'
-require_relative 'type_converter'
 
 class JsRegex
   module Converter
     #
     # Template class implementation.
     #
-    # This converter works a little differently from the others.
-    #
-    # It buffers anything that it finds within a set in the Context's
-    # #buffered_set_members and #buffered_set_extractions Arrays,
-    # returning an empty String for all passed tokens, and only when
-    # the set is closed does it compile and return the final String.
-    #
     class SetConverter < JsRegex::Converter::Base
       private
 
       def convert_data
-        case subtype
-        when :open then convert_open_subtype
-        when :negate then convert_negate_subtype
-        when :close then convert_close_subtype
-        when :member, :member_hex, :range, :range_hex, :escape
-          convert_member_subtype
-        when /\Aclass_/ then convert_class_subtype
-        when /\Atype_/ then convert_type_subtype
-        when :backspace then convert_backspace_subtype
-        when :intersection then warn_of_unsupported_feature('set intersection')
-        else try_replacing_potential_property_subtype
-        end
-      end
-
-      def convert_open_subtype
-        context.open_set
-        ''
-      end
-
-      def convert_negate_subtype
-        if context.nested_set?
+        base_set = expression.set_level == 0
+        if base_set
+          context.reset_set_context
+          context.negate_base_set if negative_set?
+          process_members
+          finalize_set
+        elsif negative_set?
           warn_of_unsupported_feature('nested negative set data')
+        else # positive subset
+          process_members
         end
-        context.negate_set
-        ''
       end
 
-      def convert_close_subtype
-        context.close_set
-        context.set? ? '' : finalize_set
+      def negative_set?
+        expression.negative?
       end
 
-      def convert_member_subtype
-        utf8_data = data.force_encoding('UTF-8')
-        if /[\u{10000}-\u{FFFFF}]/ =~ utf8_data
+      def process_members
+        expression.members.each { |member| process_member(member) }
+      end
+
+      def process_member(member)
+        return convert_subset(member) unless member.is_a?(String)
+
+        utf8_data = member.dup.force_encoding('UTF-8')
+        case utf8_data
+        when /[\u{10000}-\u{FFFFF}]/
           warn_of_unsupported_feature('astral plane set member')
+        when '\\h'
+          handle_hex_meta
+        when '\\H'
+          handle_nonhex_meta
+        when '&&'
+          warn_of_unsupported_feature('set intersection')
+        when /\A(?:\[:|\\([pP])\{)(\^?)([^:\}]+)/
+          handle_property($1, $2, $3)
         else
           literal_conversion = LiteralConverter.convert_data(utf8_data)
           buffer_set_member(literal_conversion)
         end
       end
 
-      def convert_class_subtype
-        negated = subtype.to_s.start_with?('class_non')
-        name = subtype[(negated ? 9 : 6)..-1]
-        try_replacing_property(name, negated)
+      HEX_RANGES = 'A-Fa-f0-9'
+      NONHEX_SET = '[^A-Fa-f0-9]'
+
+      def handle_hex_meta
+        buffer_set_member(HEX_RANGES)
       end
 
-      def try_replacing_potential_property_subtype
-        negated = data.start_with?('\\P')
-        try_replacing_property(subtype, negated)
+      def handle_nonhex_meta
+        if context.negative_base_set
+          warn_of_unsupported_feature('nonhex type in negative set')
+        else
+          buffer_set_extraction(NONHEX_SET)
+        end
       end
 
-      def try_replacing_property(name, negated)
-        if (replacement = PropertyConverter.property_replacement(name, negated))
+      def handle_property(sign, caret, name)
+        std = Regexp::Parser.parse("\\p{#{name}}").expressions.first.token
+        negated = (sign == 'P') ^ (caret == '^')
+        negated = !negated if context.negative_base_set
+        if (replacement = PropertyConverter.property_replacement(std, negated))
           buffer_set_extraction(replacement)
         else
           warn_of_unsupported_feature('property')
         end
       end
 
-      def convert_type_subtype
-        if subtype.equal?(:type_hex)
-          buffer_set_extraction(TypeConverter::HEX_EXPANSION)
-        elsif subtype.equal?(:type_nonhex)
-          buffer_set_extraction(TypeConverter::NONHEX_EXPANSION)
-        else
-          buffer_set_member(data)
-        end
+      def buffer_set_member(data)
+        context.buffered_set_members << data
       end
 
-      def convert_backspace_subtype
-        buffer_set_extraction('[\b]')
+      def buffer_set_extraction(data)
+        context.buffered_set_extractions << data
       end
 
-      def buffer_set_member(m)
-        context.buffered_set_members << m unless context.nested_negation?
-        ''
-      end
-
-      def buffer_set_extraction(e)
-        context.buffered_set_extractions << e unless context.nested_negation?
-        ''
+      def convert_subset(subset)
+        converter = JsRegex::Converter::SetConverter.new
+        _source, subset_warnings = converter.convert(subset, context)
+        warnings.concat(subset_warnings)
       end
 
       def finalize_set
@@ -125,7 +114,7 @@ class JsRegex
       end
 
       def finalize_nondepleted_set(buffered_members, buffered_extractions)
-        set = "[#{'^' if context.negative_set?(1)}#{buffered_members.join}]"
+        set = "[#{'^' if negative_set?}#{buffered_members.join}]"
         if buffered_extractions.empty?
           set
         else

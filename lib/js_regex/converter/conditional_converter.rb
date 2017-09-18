@@ -11,15 +11,11 @@ class JsRegex
       private
 
       def convert_data
-        case subtype
-        when :open
-          warn_of_unsupported_feature('conditional')
-          '('
-        when :separator, :close
-          pass_through
-        else
-          '' # one warning is enough, don't warn about other parts
+        warn_of_unsupported_feature('conditional')
+        options = subexpressions[1..-1].each_with_object([]) do |option, arr|
+          arr << convert_expressions(option.expressions) if option
         end
+        "(?:#{options.join('|')})"
       end
     end
   end

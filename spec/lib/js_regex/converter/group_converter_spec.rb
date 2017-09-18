@@ -60,16 +60,19 @@ describe JsRegex::Converter::GroupConverter do
   end
 
   it 'opens passive groups for unknown group heads' do
-    conversion = JsRegex::Conversion.new(//)
-    converter = conversion.send(:converter_for_token_class, :group)
+    e = expression_double({ type: :group, token: :unknown, to_s: '(%', ts: 0 })
+    converter = JsRegex::Converter.for(e)
     expect(converter).to be_a(described_class)
 
-    converter.convert(:group, :unknown_group_head, '(%', 0, 2)
-    expect(conversion.source).to eq('(?:')
-    expect(conversion.warnings.size).to eq(1)
+    source, warnings = converter.convert(e, JsRegex::Converter::Context.new(//))
+    expect(source).to start_with('(?:')
+    expect(warnings.size).to eq(1)
   end
 
   context 'when dealing with atomic groups' do
+    # Atomicity is emulated using backreferenced lookahead groups:
+    # http://instanceof.me/post/52245507631
+    # regex-emulate-atomic-grouping-with-lookahead
     it 'emulates them using backreferenced lookahead groups' do
       given_the_ruby_regexp(/1(?>33|3)37/)
       expect_js_regex_to_be(/1(?=(33|3))\1(?:)37/)

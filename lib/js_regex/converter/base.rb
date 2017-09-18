@@ -6,35 +6,66 @@ class JsRegex
     # Template class. Implement #convert_data in subclasses.
     #
     class Base
-      attr_reader :target, :context
+      def convert(expression, context)
+        self.context    = context
+        self.expression = expression
+        self.warnings   = []
 
-      def initialize(target, context)
-        @target = target
-        @context = context
-      end
-
-      def convert(token_class, subtype, data, start_index, end_index)
-        self.token_class = token_class
-        self.subtype = subtype
-        self.data = data
-        self.start_index = start_index
-        self.end_index = end_index
-
-        result = convert_data
-        target.source << (context.valid? ? result : '')
+        source = convert_data
+        source_with_quantifier = apply_quantifier(source)
+        [source_with_quantifier, warnings]
       end
 
       private
 
-      attr_accessor :token_class, :subtype, :data, :start_index, :end_index
+      attr_accessor :context, :expression, :warnings
 
+      def subtype
+        expression.token
+      end
+
+      def data
+        expression.text
+      end
       alias pass_through data
 
+      def apply_quantifier(source)
+        return source unless (quantifier = expression.quantifier)
+
+        if quantifier.mode == :possessive
+          # an empty passive group (?:) is appended as literal digits may follow
+          backref_num = context.captured_group_count + 1
+          "(?=(#{source}#{quantifier.text[0..-2]}))\\#{backref_num}(?:)"
+        else
+          source + quantifier.text
+        end
+      end
+
+      def convert_subexpressions
+        convert_expressions(subexpressions)
+      end
+
+      def convert_expressions(expressions)
+        expressions.each_with_object(''.dup) do |subexp, source|
+          result = Converter.for(subexp).convert(subexp, context)
+          source << result[0]
+          warnings.concat(result[1])
+        end
+      end
+
+      def subexpressions
+        expression.expressions || []
+      end
+
       def warn_of_unsupported_feature(description = nil)
-        description ||= "#{subtype} #{token_class}".tr('_', ' ')
-        full_description = "#{description} '#{data}'"
-        target.warnings << "Dropped unsupported #{full_description} "\
-                           "at index #{start_index}...#{end_index}"
+        description ||= "#{subtype} #{expression.type}".tr('_', ' ')
+        full_description = "#{description} '#{expression}'"
+        warnings << "Dropped unsupported #{full_description} "\
+                    "at index #{expression.ts}"
+        ''
+      end
+
+      def drop_without_warning
         ''
       end
     end

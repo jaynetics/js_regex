@@ -13,16 +13,19 @@ class JsRegex
       def convert_data
         case subtype
         when :alternation
-          pass_through
+          convert_alternation
         when :dot
-          ruby_multiline_mode? ? '(?:.|\n)' : '.'
+          context.multiline? ? '(?:.|\n)' : '.'
         else
           warn_of_unsupported_feature
         end
       end
 
-      def ruby_multiline_mode?
-        (target.ruby_regex.options & Regexp::MULTILINE).nonzero?
+      def convert_alternation
+        alternatives = subexpressions.each_with_object([]) do |alternative, arr|
+          arr << convert_expressions(alternative.expressions) if alternative
+        end
+        alternatives.join('|')
       end
     end
   end

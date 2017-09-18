@@ -22,48 +22,26 @@ describe JsRegex::Conversion do
     it 'includes a warnings Array at index 2' do
       expect(return_value[2]).to be_an(Array)
     end
-
-    it 'performs a sanity check before returning' do
-      expect_any_instance_of(described_class).to receive(:perform_sanity_check)
-      described_class.of(//)
-    end
   end
 
   describe '#convert_source' do
-    it 'passes the regexp to Scanner and forwards the output to converters' do
+    it 'passes the regexp to Parser and forwards the output to converters' do
       regexp = //
-      expect(Regexp::Scanner)
-        .to receive(:scan)
+      tree = expression_double({})
+      expect(Regexp::Parser)
+        .to receive(:parse)
         .with(regexp)
-        .and_yield(:literal, :foo, :bar, :fizz, :buzz)
-      expect_any_instance_of(JsRegex::Converter::LiteralConverter)
+        .and_return(tree)
+      expect_any_instance_of(JsRegex::Converter::RootConverter)
         .to receive(:convert)
-        .with(:literal, :foo, :bar, :fizz, :buzz)
+        .with(tree, an_instance_of(JsRegex::Converter::Context))
+        .and_return(['', []])
       described_class.of(regexp)
     end
   end
 
-  describe '#converter_for_token_class' do
-    it 'finds fitting converters for tokens' do
-      conversion = described_class.new(//)
-      converter = conversion.send(:converter_for_token_class, :literal)
-      expect(converter).to be_a(JsRegex::Converter::LiteralConverter)
-    end
-
-    it 'falls back to the UnsupportedTokenConverter' do
-      converter = described_class.new(//).send(:converter_for_token_class, :foo)
-      expect(converter).to be_a(JsRegex::Converter::UnsupportedTokenConverter)
-    end
-
-    it 'initializes the converters with self as target and self.context' do
-      conversion = described_class.new(//)
-      converter = conversion.send(:converter_for_token_class, :foo)
-      expect(converter.target).to eq(conversion)
-      expect(converter.context).to eq(conversion.context)
-    end
-  end
-
   describe '#convert_options' do
+    # all Ruby regexes are what is called "global" in JS
     it 'always sets the global flag' do
       given_the_ruby_regexp(//)
       expect(@js_regex.options).to eq('g')
@@ -73,7 +51,7 @@ describe JsRegex::Conversion do
       given_the_ruby_regexp(/a/i)
       expect(@js_regex.options).to eq('gi')
       expect_no_warnings
-      expect_ruby_and_js_to_match(string: 'ABab', with_results: %w(A a))
+      expect_ruby_and_js_to_match(string: 'ABab', with_results: %w[A a])
     end
 
     it 'does not carry over the multiline option' do
@@ -89,64 +67,6 @@ describe JsRegex::Conversion do
       given_the_ruby_regexp(//x)
       expect(@js_regex.options).to eq('g')
       expect_no_warnings
-    end
-  end
-
-  describe '#perform_sanity_check' do
-    let(:conversion) { described_class.new(/abc/) }
-
-    it 'puts the calculated source through Regexp#new' do
-      conversion # init
-      expect(Regexp).to receive(:new).with('abc')
-      conversion.send(:perform_sanity_check)
-    end
-
-    it 'does nothing if the source is ok' do
-      expect { conversion.send(:perform_sanity_check) }
-        .not_to change { [conversion.source, conversion.warnings] }
-    end
-
-    it 'sets source to empty if there is an error in the source' do
-      conversion.source.replace('[')
-      expect { conversion.send(:perform_sanity_check) }
-        .to change { conversion.source }.from('[').to('')
-    end
-
-    it 'adds a warning if there is an error in the source' do
-      conversion.source.replace('[')
-      expect { conversion.send(:perform_sanity_check) }
-        .to change { conversion.warnings.count }.by(1)
-      expect(conversion.warnings.last).to be_a(String)
-    end
-
-    it 'applies if there is an ArgumentError' do
-      allow(Regexp).to receive(:new).and_raise(ArgumentError)
-      expect { conversion.send(:perform_sanity_check) }
-        .to change { conversion.warnings.count }.by(1)
-    end
-
-    it 'applies if there is a RegexpError' do
-      allow(Regexp).to receive(:new).and_raise(RegexpError)
-      expect { conversion.send(:perform_sanity_check) }
-        .to change { conversion.warnings.count }.by(1)
-    end
-
-    it 'applies if there is a SyntaxError' do
-      allow(Regexp).to receive(:new).and_raise(SyntaxError)
-      expect { conversion.send(:perform_sanity_check) }
-        .to change { conversion.warnings.count }.by(1)
-    end
-
-    it 'ignores surrogate pairs since they are allowed (and needed) in JS' do
-      conversion.source.replace('\\ud83d\\ude01')
-      expect { conversion.send(:perform_sanity_check) }
-        .not_to change { [conversion.source, conversion.warnings] }
-    end
-
-    it 'ignores surrogate codepoints in sets' do
-      conversion.source.replace('[\\ud83d]')
-      expect { conversion.send(:perform_sanity_check) }
-        .not_to change { [conversion.source, conversion.warnings] }
     end
   end
 end

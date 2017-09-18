@@ -7,11 +7,11 @@ class JsRegex
     #
     # Template class implementation.
     #
-    class FreespaceConverter < JsRegex::Converter::Base
+    class RootConverter < JsRegex::Converter::Base
       private
 
       def convert_data
-        drop_without_warning
+        convert_subexpressions
       end
     end
   end

@@ -15,7 +15,7 @@ describe JsRegex do
     )
     expect_no_warnings
     expect_ruby_and_js_to_match(string: 'a@b me@s-w.com x.y@place.edu #ö+.',
-                                with_results: %w(me@s-w.com x.y@place.edu))
+                                with_results: %w[me@s-w.com x.y@place.edu])
   end
 
   it 'can handle a complex user name validation regex' do
@@ -53,11 +53,11 @@ describe JsRegex do
   end
 
   it 'can handle Ruby\'s URI regexp' do
-    given_the_ruby_regexp(URI.regexp)
+    given_the_ruby_regexp(URI::DEFAULT_PARSER.make_regexp)
     expect_no_warnings
 
-    valid_uris = %w(http://ab.de ftp://142.42.1.1:8080/ http://مثال.إختبار)
-    invalid_uris = %w(http htt?:// foo.com)
+    valid_uris = %w[http://ab.de ftp://142.42.1.1:8080/ http://مثال.إختبار]
+    invalid_uris = %w[http htt?:// foo.com]
 
     valid_uris.each do |uri|
       expect_ruby_and_js_to_match_string(uri)
@@ -71,13 +71,13 @@ describe JsRegex do
     given_the_ruby_regexp(/'/)
     expect_js_regex_to_be(/'/)
     expect_no_warnings
-    expect_ruby_and_js_to_match(string: "'", with_results: %w('))
+    expect_ruby_and_js_to_match(string: "'", with_results: %w['])
   end
 
   it 'can handle ambidextrous quotation marks' do
     given_the_ruby_regexp(/"/)
     expect_js_regex_to_be(/"/)
     expect_no_warnings
-    expect_ruby_and_js_to_match(string: '"', with_results: %w("))
+    expect_ruby_and_js_to_match(string: '"', with_results: %w["])
   end
 end

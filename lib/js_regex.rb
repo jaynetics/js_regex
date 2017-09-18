@@ -10,6 +10,7 @@
 #
 class JsRegex
   require_relative File.join('js_regex', 'conversion')
+  require_relative File.join('js_regex', 'version')
   require 'json'
 
   attr_reader :source, :options, :warnings
