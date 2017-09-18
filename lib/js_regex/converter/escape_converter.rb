@@ -39,8 +39,12 @@ class JsRegex
         case subtype
         when :codepoint_list
           convert_codepoint_list
+        when :control
+          convert_control_sequence
         when :literal
           LiteralConverter.convert_data(data)
+        when :meta_sequence
+          convert_meta_sequence
         when *ESCAPES_SHARED_BY_RUBY_AND_JS
           pass_through
         else

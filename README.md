@@ -101,6 +101,7 @@ In addition to the conversions supported by the default approach, this gem will 
 | Ruby's free-spacing mode  | / http (s?) /x    |
 | atomic groups [5]         | a(?>bcǀb)c        |
 | \h, \H, and \Z            | \h+\Z             |
+| meta and control escapes  | /\M-\C-X/         |
 | literal whitespace        | [a-z ]            |
 | nested sets               | [a-z[A-Z]]        |
 | types in sets             | [a-z\h]           |
@@ -148,7 +149,7 @@ Currently, the following functionalities can't be carried over to JavaScript. If
 | subexpression calls            | (?'a'.)\g'a'/, \G     | yes     |
 | absence operator               | (?~foo)               | yes     |
 | bell and escape chars          | \a, \e                | yes     |
-| wide hex, control, metacontrol | \x{1234}, \cD, \M-\C- | yes     |
+| wide hex escapes               | \x{1234}              | yes     |
 | astral plane scripts           | \p{Deseret}           | yes     |
 | astral plane ranges            | [&#x1f601;-&#x1f632;] | yes     |
 
