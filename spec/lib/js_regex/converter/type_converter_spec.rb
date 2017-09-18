@@ -60,6 +60,21 @@ describe JsRegex::Converter::TypeConverter do
     expect_ruby_and_js_to_match(string: 'FFxy66z', with_results: %w[xy z])
   end
 
+  it 'translates the generic linebreak type "\R"',
+     if: ruby_version_at_least?('2.0.0') do
+    given_the_ruby_regexp(/\R/)
+    expect_js_regex_to_be(/(\r\n|\r|\n)/)
+    expect_no_warnings
+    expect_ruby_and_js_to_match(string: "_\n_\r\n_", with_results: %W[\n \r\n])
+  end
+
+  it 'drops the extended grapheme type "\X" with warning',
+     if: ruby_version_at_least?('2.0.0') do
+    given_the_ruby_regexp(/a\Xb/)
+    expect_js_regex_to_be(/ab/)
+    expect_warning("Dropped unsupported xgrapheme type '\\X' at index 1")
+  end
+
   it 'drops unknown types with warning' do
     expect_to_drop_token_with_warning(:type, :an_unknown_type)
   end

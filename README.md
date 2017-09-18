@@ -85,7 +85,7 @@ advanced_ruby_regex = /[a-x&&c-z]/
 # the resulting JavaScript regex will match a-z
 js_regex = JsRegex.new(advanced_ruby_regex)
 
-js_regex.warnings # => ["Dropped unsupported set intersection '&&' at index 4...6"]
+js_regex.warnings # => ["Dropped unsupported set intersection '&&' at index 4"]
 js_regex.source # => '[a-xc-z]'
 ```
 
@@ -99,8 +99,10 @@ In addition to the conversions supported by the default approach, this gem will 
 | escaped meta chars        | \\\A              |
 | Ruby's multiline mode [4] | /.+/m             |
 | Ruby's free-spacing mode  | / http (s?) /x    |
-| atomic groups [5]         | a(?>bcǀb)c        |
-| \h, \H, and \Z            | \h+\Z             |
+| atomic groups [5]         | a(?>bc\|b)c       |
+| hex types \h and \H       | \H\h{6}           |
+| newline-ready anchor \Z   | last word\Z       |
+| generic linebreak \R      | data.split(/\R/)  |
 | meta and control escapes  | /\M-\C-X/         |
 | literal whitespace        | [a-z ]            |
 | nested sets               | [a-z[A-Z]]        |
@@ -134,21 +136,22 @@ Currently, the following functionalities can't be carried over to JavaScript. If
 | Description                    | Example               | Warning |
 |--------------------------------|-----------------------|---------|
 | lookbehind                     | (?&lt;=, (?&lt;!, \K  | yes     |
-| conditionals                   | (?(a)bǀc)             | yes     |
+| conditionals                   | (?(a)b\|c)            | yes     |
 | group-specific options         | (?i:, (?-i:           | yes     |
 | capturing group names          | (?&lt;a&gt;, (?'a'    | no      |
 | comment groups                 | (?#comment)           | no      |
 | inline comments (in x-mode)    | /[a-z] # comment/x    | no      |
+| multiplicative quantifiers     | /A{4}{6}/ =~ 'A' * 24 | no      |
 | set intersections              | [a-z&amp;&amp;[^uo]]  | yes     |
 | recursive set negation         | [^a[^b]]              | yes     |
 | possessive quantifiers         | ++, *+, ?+, {4,8}+    | yes     |
-| multiplicative quantifiers     | /A{4}{6}/ =~ 'A' * 24 | yes     |
-| forward references             | (\2twoǀ(one))         | yes     |
-| backreferences after atomics   | a(?>bcǀb)c(d)\1       | yes     |
+| forward references             | (\2two\|(one))        | yes     |
+| backreferences after atomics   | a(?>bc\|b)c(d)\1      | yes     |
 | \k-backreferences              | (a)\k&lt;1&gt;        | yes     |
 | subexpression calls            | (?'a'.)\g'a'/, \G     | yes     |
 | absence operator               | (?~foo)               | yes     |
 | bell and escape chars          | \a, \e                | yes     |
+| extended grapheme type         | \X                    | yes     |
 | wide hex escapes               | \x{1234}              | yes     |
 | astral plane scripts           | \p{Deseret}           | yes     |
 | astral plane ranges            | [&#x1f601;-&#x1f632;] | yes     |

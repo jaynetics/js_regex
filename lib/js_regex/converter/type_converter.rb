@@ -8,8 +8,9 @@ class JsRegex
     # Template class implementation.
     #
     class TypeConverter < JsRegex::Converter::Base
-      HEX_EXPANSION    = '[A-Fa-f0-9]'
-      NONHEX_EXPANSION = '[^A-Fa-f0-9]'
+      HEX_EXPANSION       = '[A-Fa-f0-9]'
+      NONHEX_EXPANSION    = '[^A-Fa-f0-9]'
+      LINEBREAK_EXPANSION = '(\r\n|\r|\n)'
 
       private
 
@@ -17,6 +18,7 @@ class JsRegex
         case subtype
         when :hex then HEX_EXPANSION
         when :nonhex then NONHEX_EXPANSION
+        when :linebreak then LINEBREAK_EXPANSION
         when :digit, :nondigit, :word, :nonword, :space, :nonspace
           pass_through
         else
