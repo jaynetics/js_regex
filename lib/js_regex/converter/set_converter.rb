@@ -13,8 +13,7 @@ class JsRegex
       private
 
       def convert_data
-        base_set = expression.set_level == 0
-        if base_set
+        if expression.set_level == 0 # reached end of set expression
           context.reset_set_context
           context.negate_base_set if negative_set?
           process_members
