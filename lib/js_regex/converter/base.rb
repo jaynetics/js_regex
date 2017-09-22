@@ -30,7 +30,7 @@ class JsRegex
       alias pass_through data
 
       def apply_quantifier(source)
-        return source unless (quantifier = expression.quantifier)
+        return source if source == '' || !(quantifier = expression.quantifier)
 
         if quantifier.mode == :possessive
           # an empty passive group (?:) is appended as literal digits may follow

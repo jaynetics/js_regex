@@ -196,5 +196,12 @@ describe JsRegex::Converter::Base do
                                     with_results: %w[aabbccdddefghi])
       end
     end
+
+    context 'when quantifiers follow dropped elements' do
+      it 'drops the quantifiers as well' do
+        given_the_ruby_regexp(/a\e{2,3}b[😁]++c/)
+        expect_js_regex_to_be(/abc/)
+      end
+    end
   end
 end
