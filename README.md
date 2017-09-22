@@ -94,35 +94,36 @@ js_regex.source # => '[a-xc-z]'
 
 In addition to the conversions supported by the default approach, this gem will correctly handle the following features:
 
-| Description               | Example           |
-|---------------------------|-------------------|
-| escaped meta chars        | \\\A              |
-| Ruby's multiline mode [4] | /.+/m             |
-| Ruby's free-spacing mode  | / http (s?) /x    |
-| atomic groups [5]         | a(?>bc\|b)c       |
-| hex types \h and \H       | \H\h{6}           |
-| newline-ready anchor \Z   | last word\Z       |
-| generic linebreak \R      | data.split(/\R/)  |
-| meta and control escapes  | /\M-\C-X/         |
-| literal whitespace        | [a-z ]            |
-| nested sets               | [a-z[A-Z]]        |
-| types in sets             | [a-z\h]           |
-| properties in sets        | [a-z\p{sc}]       |
-| posix types               | [[:alpha:]]       |
-| posix negations           | [[:^alpha:]]      |
-| unicode bmp scripts       | \p{Arabic}        |
-| unicode blocks            | \p{InBasicLatin1} |
-| unicode categories [6]    | \p{Number}        |
-| unicode properties [6]    | \p{Dash}          |
-| unicode ages [6]          | \p{Age=5.2}       |
-| unicode abbreviations [6] | \p{Mong}, \p{Sc}  |
-| unicode negations [6]     | \p{^Number}       |
-| codepoint lists           | \u{61 63 1F601}   |
-| astral plane literals [7] | &#x1f601;         |
+| Description                | Example           |
+|----------------------------|-------------------|
+| escaped meta chars         | \\\A              |
+| Ruby's multiline mode [4]  | /.+/m             |
+| Ruby's free-spacing mode   | / http (s?) /x    |
+| atomic groups [5]          | a(?>bc\|b)c       |
+| possessive quantifiers [5] | ++, *+, ?+, {4,}+ |
+| hex types \h and \H        | \H\h{6}           |
+| newline-ready anchor \Z    | last word\Z       |
+| generic linebreak \R       | data.split(/\R/)  |
+| meta and control escapes   | /\M-\C-X/         |
+| literal whitespace         | [a-z ]            |
+| nested sets                | [a-z[A-Z]]        |
+| types in sets              | [a-z\h]           |
+| properties in sets         | [a-z\p{sc}]       |
+| posix types                | [[:alpha:]]       |
+| posix negations            | [[:^alpha:]]      |
+| unicode bmp scripts        | \p{Arabic}        |
+| unicode blocks             | \p{InBasicLatin1} |
+| unicode categories [6]     | \p{Number}        |
+| unicode properties [6]     | \p{Dash}          |
+| unicode ages [6]           | \p{Age=5.2}       |
+| unicode abbreviations [6]  | \p{Mong}, \p{Sc}  |
+| unicode negations [6]      | \p{^Number}       |
+| codepoint lists            | \u{61 63 1F601}   |
+| astral plane literals [7]  | &#x1f601;         |
 
 [4] Keep in mind that [Ruby's multiline mode](http://ruby-doc.org/core-2.1.1/Regexp.html#class-Regexp-label-Options) is totally different from [JavaScript's multiline mode](http://javascript.info/regexp-multiline-mode).
 
-[5] JavaScript doesn't support atomic groups, but JsRegex emulates their behavior by substituting them with [backreferenced lookahead groups](http://instanceof.me/post/52245507631/regex-emulate-atomic-grouping-with-lookahead).
+[5] JavaScript doesn't support atomic groups or possessive quantifiers, but JsRegex emulates their behavior by substituting them with [backreferenced lookahead groups](http://instanceof.me/post/52245507631/regex-emulate-atomic-grouping-with-lookahead).
 
 [6] Some properties from these groups will result in very large JavaScript regexes.
 
@@ -144,7 +145,6 @@ Currently, the following functionalities can't be carried over to JavaScript. If
 | multiplicative quantifiers     | /A{4}{6}/ =~ 'A' * 24 | no      |
 | set intersections              | [a-z&amp;&amp;[^uo]]  | yes     |
 | recursive set negation         | [^a[^b]]              | yes     |
-| possessive quantifiers         | ++, *+, ?+, {4,8}+    | yes     |
 | forward references             | (\2two\|(one))        | yes     |
 | backreferences after atomics   | a(?>bc\|b)c(d)\1      | yes     |
 | \k-backreferences              | (a)\k&lt;1&gt;        | yes     |
