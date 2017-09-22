@@ -59,7 +59,7 @@ describe JsRegex::Converter::PropertyConverter do
     given_the_ruby_regexp(/\p{Control}/)
     expect_js_regex_to_be(/[\x00-\x1F\x7F-\u009F]/)
     expect_no_warnings
-    expect_ruby_and_js_to_match(string: "\1 \2", with_results: ["\1", "\2"])
+    expect_ruby_and_js_to_match(string: "\1 \2", with_results: %W[\1 \2])
   end
 
   it 'translates unicode derived core properties aka simple properties' do

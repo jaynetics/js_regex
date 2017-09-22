@@ -15,8 +15,8 @@ describe JsRegex::Converter::MetaConverter do
     given_the_ruby_regexp(/a.+a/m)
     expect_js_regex_to_be(/a(?:.|\n)+a/)
     expect_no_warnings
-    expect_ruby_and_js_to_match(string: 'abba', with_results: ['abba'])
-    expect_ruby_and_js_to_match(string: "ab\nba", with_results: ["ab\nba"])
+    expect_ruby_and_js_to_match(string: 'abba', with_results: %w[abba])
+    expect_ruby_and_js_to_match(string: "ab\nba", with_results: %W[ab\nba])
   end
 
   it 'does not make dots match newlines if other options are set' do

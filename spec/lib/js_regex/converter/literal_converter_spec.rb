@@ -19,7 +19,7 @@ describe JsRegex::Converter::LiteralConverter do
 /)
     expect_js_regex_to_be(/\n\n/)
     expect_no_warnings
-    expect_ruby_and_js_to_match(string: "a\n\nb", with_results: ["\n\n"])
+    expect_ruby_and_js_to_match(string: "a\n\nb", with_results: %W[\n\n])
   end
 
   it 'does not add escapes to \\n' do
@@ -34,7 +34,7 @@ describe JsRegex::Converter::LiteralConverter do
     given_the_ruby_regexp(/#{carriage_return}/)
     expect_js_regex_to_be(/\r/)
     expect_no_warnings
-    expect_ruby_and_js_to_match(string: "\r", with_results: ["\r"])
+    expect_ruby_and_js_to_match(string: "\r", with_results: %W[\r])
   end
 
   it 'replaces literal form feeds with \f' do
@@ -42,7 +42,7 @@ describe JsRegex::Converter::LiteralConverter do
     given_the_ruby_regexp(/#{form_feed}/)
     expect_js_regex_to_be(/\f/)
     expect_no_warnings
-    expect_ruby_and_js_to_match(string: "\f", with_results: ["\f"])
+    expect_ruby_and_js_to_match(string: "\f", with_results: %W[\f])
   end
 
   it 'replaces literal tabs with \t' do

@@ -241,7 +241,7 @@ describe JsRegex::Converter::SetConverter do
     given_the_ruby_regexp(/[x\b]/)
     expect_js_regex_to_be(/[x\b]/)
     expect_no_warnings
-    expect_ruby_and_js_to_match(string: "a\bz", with_results: ["\b"])
+    expect_ruby_and_js_to_match(string: "a\bz", with_results: %W[\b])
   end
 
   it 'preserves the backspace pseudo set in negated sets' do
@@ -256,13 +256,13 @@ describe JsRegex::Converter::SetConverter do
 b]/)
     expect_js_regex_to_be(/[a\nb]/)
     expect_no_warnings
-    expect_ruby_and_js_to_match(string: "x\ny", with_results: ["\n"])
+    expect_ruby_and_js_to_match(string: "x\ny", with_results: %W[\n])
   end
 
   it 'preserves newline escape members' do
     given_the_ruby_regexp(/[a\nb]/)
     expect_js_regex_to_be(/[a\nb]/)
     expect_no_warnings
-    expect_ruby_and_js_to_match(string: "x\ny", with_results: ["\n"])
+    expect_ruby_and_js_to_match(string: "x\ny", with_results: %W[\n])
   end
 end

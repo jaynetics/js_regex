@@ -8,14 +8,14 @@ describe JsRegex::Converter::AssertionConverter do
     given_the_ruby_regexp(/a(?=b)/i)
     expect_js_regex_to_be(/a(?=b)/i)
     expect_no_warnings
-    expect_ruby_and_js_to_match(string: 'aAb', with_results: ['A'])
+    expect_ruby_and_js_to_match(string: 'aAb', with_results: %w[A])
   end
 
   it 'preserves negative lookaheads' do
     given_the_ruby_regexp(/a(?!b)/i)
     expect_js_regex_to_be(/a(?!b)/i)
     expect_no_warnings
-    expect_ruby_and_js_to_match(string: 'aAb', with_results: ['a'])
+    expect_ruby_and_js_to_match(string: 'aAb', with_results: %w[a])
   end
 
   it 'makes positive lookbehinds non-lookbehind with warning' do
