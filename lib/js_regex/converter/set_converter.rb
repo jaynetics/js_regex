@@ -34,12 +34,15 @@ class JsRegex
         expression.members.each { |member| process_member(member) }
       end
 
+      ASTRAL_PLANE_PATTERN = /[\u{10000}-\u{FFFFF}]/
+      PROPERTY_PATTERN     = /\A(?:\[:|\\([pP])\{)(\^?)([^:\}]+)/
+
       def process_member(member)
         return convert_subset(member) unless member.is_a?(String)
 
         utf8_data = member.dup.force_encoding('UTF-8')
         case utf8_data
-        when /[\u{10000}-\u{FFFFF}]/
+        when ASTRAL_PLANE_PATTERN
           warn_of_unsupported_feature('astral plane set member')
         when '\\h'
           handle_hex_type
@@ -47,7 +50,7 @@ class JsRegex
           handle_nonhex_type
         when '&&'
           warn_of_unsupported_feature('set intersection')
-        when /\A(?:\[:|\\([pP])\{)(\^?)([^:\}]+)/
+        when PROPERTY_PATTERN
           handle_property($1, $2, $3)
         else
           literal_conversion = LiteralConverter.convert_data(utf8_data)
