@@ -143,11 +143,10 @@ describe JsRegex::Converter::GroupConverter do
     end
   end
 
-  if ruby_version_at_least?('2.4.1')
-    it 'drops absence operators / groups with warning' do
-      given_the_ruby_regexp(/1(?~2)3/)
-      expect_js_regex_to_be(/13/)
-      expect_warning("Dropped unsupported absence group '(?~2)' at index 1")
-    end
+  it 'drops absence operators / groups with warning',
+     if: ruby_version_at_least?('2.4.1') do
+    given_the_ruby_regexp(Regexp.new('1(?~2)3'))
+    expect_js_regex_to_be(/13/)
+    expect_warning("Dropped unsupported absence group '(?~2)' at index 1")
   end
 end
