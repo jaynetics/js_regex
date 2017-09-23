@@ -161,6 +161,30 @@ describe JsRegex::Converter::Base do
         expect_js_regex_to_be(/(?=((?:a|b){6,8}))\1(?:)/)
         expect_no_warnings
       end
+
+      it 'takes into account preceding active groups for the backreference' do
+        given_the_ruby_regexp(/(a)(b)(c)_d++/)
+        expect_js_regex_to_be(/(a)(b)(c)_(?=(d+))\4(?:)/)
+        expect_no_warnings
+      end
+
+      it 'isnt confused by preceding passive groups' do
+        given_the_ruby_regexp(/(?:c)_a++/)
+        expect_js_regex_to_be(/(?:c)_(?=(a+))\1(?:)/)
+        expect_no_warnings
+      end
+
+      it 'isnt confused by preceding lookahead groups' do
+        given_the_ruby_regexp(/(?=c)_a++/)
+        expect_js_regex_to_be(/(?=c)_(?=(a+))\1(?:)/)
+        expect_no_warnings
+      end
+
+      it 'isnt confused by preceding negative lookahead groups' do
+        given_the_ruby_regexp(/(?!=x)_a++/)
+        expect_js_regex_to_be(/(?!=x)_(?=(a+))\1(?:)/)
+        expect_no_warnings
+      end
     end
 
     context 'when there are multiple quantifiers' do

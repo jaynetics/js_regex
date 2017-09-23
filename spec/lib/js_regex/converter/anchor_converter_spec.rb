@@ -43,14 +43,16 @@ describe JsRegex::Converter::AnchorConverter do
   it 'preserves the word-boundary "\b" with a warning' do
     given_the_ruby_regexp(/\w\b/)
     expect_js_regex_to_be(/\w\b/)
-    expect_warning("boundary '\\b' at index 2 is not unicode-aware in JavaScr")
+    expect_warning("The boundary '\\b' at index 2 is not unicode-aware in "\
+                   'JavaScript, so it might act differently than in Ruby.')
     expect_ruby_and_js_to_match(string: 'abc', with_results: %w[c])
   end
 
   it 'preserves the non-word-boundary "\B" with a warning' do
     given_the_ruby_regexp(/\w\B/)
     expect_js_regex_to_be(/\w\B/)
-    expect_warning("boundary '\\B' at index 2 is not unicode-aware in JavaScr")
+    expect_warning("The boundary '\\B' at index 2 is not unicode-aware in "\
+                   'JavaScript, so it might act differently than in Ruby.')
     expect_ruby_and_js_to_match(string: 'abc', with_results: %w[a b])
   end
 

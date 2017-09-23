@@ -30,14 +30,14 @@ class JsRegex
       alias pass_through data
 
       def apply_quantifier(source)
-        return source if source == '' || !(quantifier = expression.quantifier)
+        return source if source.empty? || !(quantifier = expression.quantifier)
 
         if quantifier.mode == :possessive
           # an empty passive group (?:) is appended as literal digits may follow
           backref_num = context.captured_group_count + 1
           "(?=(#{source}#{quantifier.text[0..-2]}))\\#{backref_num}(?:)"
         else
-          source + quantifier.text
+          source + quantifier
         end
       end
 
