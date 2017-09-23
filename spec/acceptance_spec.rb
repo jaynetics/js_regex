@@ -24,8 +24,8 @@ describe JsRegex do
     expect_no_warnings
     expect_ruby_and_js_to_match(string: 'äöü-23 x_X master',
                                 with_results: ['äöü-23 x_X master'])
-    expect_ruby_and_js_to_match(string: 'a:', with_results: [])
-    expect_ruby_and_js_to_match(string: '. 9', with_results: [])
+    expect_ruby_and_js_not_to_match(string: 'a:')
+    expect_ruby_and_js_not_to_match(string: '. 9')
   end
 
   it 'can handle the email validation regex of the devise gem' do
@@ -48,7 +48,7 @@ describe JsRegex do
       expect_ruby_and_js_to_match(string: address, with_results: [address])
     end
     invalid_emails.each do |address|
-      expect_ruby_and_js_to_match(string: address, with_results: [])
+      expect_ruby_and_js_not_to_match(string: address)
     end
   end
 
@@ -60,10 +60,10 @@ describe JsRegex do
     invalid_uris = %w[http htt?:// foo.com]
 
     valid_uris.each do |uri|
-      expect_ruby_and_js_to_match_string(uri)
+      expect_ruby_and_js_to_match(string: uri)
     end
     invalid_uris.each do |uri|
-      expect_ruby_and_js_to_match(string: uri, with_results: [])
+      expect_ruby_and_js_not_to_match(string: uri)
     end
   end
 

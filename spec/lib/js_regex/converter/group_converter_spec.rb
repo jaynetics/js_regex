@@ -77,7 +77,7 @@ describe JsRegex::Converter::GroupConverter do
       given_the_ruby_regexp(/1(?>33|3)37/)
       expect_js_regex_to_be(/1(?=(33|3))\1(?:)37/)
       expect_no_warnings
-      expect_ruby_and_js_to_match(string: '1337', with_results: [])
+      expect_ruby_and_js_not_to_match(string: '1337')
       expect_ruby_and_js_to_match(string: '13337', with_results: ['13337'])
     end
 
@@ -85,7 +85,7 @@ describe JsRegex::Converter::GroupConverter do
       given_the_ruby_regexp(/(?>33|3)(?:3)(?>33|3)3/)
       expect_js_regex_to_be(/(?=(33|3))\1(?:)(?:3)(?=(33|3))\2(?:)3/)
       expect_no_warnings
-      expect_ruby_and_js_to_match(string: '3333', with_results: [])
+      expect_ruby_and_js_not_to_match(string: '3333')
       expect_ruby_and_js_to_match(string: '333333', with_results: ['333333'])
     end
 
@@ -93,8 +93,8 @@ describe JsRegex::Converter::GroupConverter do
       given_the_ruby_regexp(/1((?>33|3))37/)
       expect_js_regex_to_be(/1((?=(33|3))\2(?:))37/)
       expect_no_warnings
-      expect_ruby_and_js_to_match(string: '1337', with_results: [])
-      expect_ruby_and_js_to_match_string('13337')
+      expect_ruby_and_js_not_to_match(string: '1337')
+      expect_ruby_and_js_to_match(string: '13337')
     end
 
     it 'makes atomic groups nested in atomic groups non-atomic with warning' do
@@ -107,23 +107,23 @@ describe JsRegex::Converter::GroupConverter do
       given_the_ruby_regexp(/(a(b))_1(?>33|3)37/)
       expect_js_regex_to_be(/(a(b))_1(?=(33|3))\3(?:)37/)
       expect_no_warnings
-      expect_ruby_and_js_to_match(string: 'ab_1337', with_results: [])
-      expect_ruby_and_js_to_match_string('ab_13337')
+      expect_ruby_and_js_not_to_match(string: 'ab_1337')
+      expect_ruby_and_js_to_match(string: 'ab_13337')
     end
 
     it 'isnt confused by preceding passive groups' do
       given_the_ruby_regexp(/(?:c)_1(?>33|3)37/)
       expect_js_regex_to_be(/(?:c)_1(?=(33|3))\1(?:)37/)
       expect_no_warnings
-      expect_ruby_and_js_to_match(string: 'c_1337', with_results: [])
-      expect_ruby_and_js_to_match_string('c_13337')
+      expect_ruby_and_js_not_to_match(string: 'c_1337')
+      expect_ruby_and_js_to_match(string: 'c_13337')
     end
 
     it 'isnt confused by preceding lookahead groups' do
       given_the_ruby_regexp(/(?=c)_1(?>33|3)37/)
       expect_js_regex_to_be(/(?=c)_1(?=(33|3))\1(?:)37/)
       expect_no_warnings
-      expect_ruby_and_js_to_match(string: 'c_1337', with_results: [])
+      expect_ruby_and_js_not_to_match(string: 'c_1337')
       # Ruby won't match 'c_13337' as of v2.3.3 - maybe this is a bug.
     end
 
@@ -131,15 +131,8 @@ describe JsRegex::Converter::GroupConverter do
       given_the_ruby_regexp(/(?!=x)_1(?>33|3)37/)
       expect_js_regex_to_be(/(?!=x)_1(?=(33|3))\1(?:)37/)
       expect_no_warnings
-      expect_ruby_and_js_to_match(string: 'c_1337', with_results: [])
-      expect_ruby_and_js_to_match_string('c_13337')
-    end
-
-    it 'drops succeeding backreferences with warning' do
-      # c.f. backreference_converter_spec.rb
-      given_the_ruby_regexp(/1(?>33|3)37(a)\1/)
-      expect_js_regex_to_be(/1(?=(33|3))\1(?:)37(a)/)
-      expect_warning
+      expect_ruby_and_js_not_to_match(string: 'c_1337')
+      expect_ruby_and_js_to_match(string: 'c_13337')
     end
   end
 

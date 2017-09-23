@@ -42,21 +42,26 @@ end
 def expect_ruby_and_js_to_match(args = { string: '', with_results: [] })
   # this is a kind of quick, inline integration test, checking whether the
   # produced js really has the same matching results as the Ruby source.
-  string = args[:string]
-  results = args[:with_results]
+  data = args[:string]
+  expected = args[:with_results]
 
-  expect(matches_in_ruby_on(string)).to eq(results)
-  expect(matches_in_javascript_using_to_s_result_on(string)).to eq(results)
-  expect(matches_in_javascript_using_to_json_result_on(string)).to eq(results)
+  if expected.nil?
+    # Due to JS' different splitting of group match data, some return values
+    # are not completely identical between Ruby and JS matching calls.
+    # In that case, don't specify expected results and just check that
+    # a valid string does produce a match.
+    expect(matches_in_ruby_on(data)).not_to be_empty
+    expect(matches_in_javascript_using_to_s_result_on(data)).not_to be_empty
+    expect(matches_in_javascript_using_to_json_result_on(data)).not_to be_empty
+  else
+    expect(matches_in_ruby_on(data)).to eq(expected)
+    expect(matches_in_javascript_using_to_s_result_on(data)).to eq(expected)
+    expect(matches_in_javascript_using_to_json_result_on(data)).to eq(expected)
+  end
 end
 
-def expect_ruby_and_js_to_match_string(string)
-  # Due to JS' different splitting of group match data, some return values
-  # are not completely identical between Ruby and JS matching calls.
-  # In that case, just check that a valid string does produce a match.
-  expect(matches_in_ruby_on(string)).not_to be_empty
-  expect(matches_in_javascript_using_to_s_result_on(string)).not_to be_empty
-  expect(matches_in_javascript_using_to_json_result_on(string)).not_to be_empty
+def expect_ruby_and_js_not_to_match(args = { string: '' })
+  expect_ruby_and_js_to_match(string: args[:string], with_results: [])
 end
 
 def matches_in_ruby_on(string)

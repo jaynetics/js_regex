@@ -24,7 +24,7 @@ describe JsRegex::Converter::MetaConverter do
     expect_js_regex_to_be(/a.+a/i)
     expect_no_warnings
     expect_ruby_and_js_to_match(string: 'abba', with_results: ['abba'])
-    expect_ruby_and_js_to_match(string: "ab\nba", with_results: [])
+    expect_ruby_and_js_not_to_match(string: "ab\nba")
   end
 
   it 'does not make escaped dots match newlines in multiline mode' do
