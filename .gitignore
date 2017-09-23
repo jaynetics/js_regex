@@ -13,6 +13,8 @@
 .idea/
 .ruby-gemset
 .ruby-version
+.tags
+.tags1
 bbin/
 bin/*
 binstubs/*
