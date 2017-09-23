@@ -9,16 +9,14 @@ class JsRegex
       def convert(expression, context)
         self.context    = context
         self.expression = expression
-        self.warnings   = []
 
         source = convert_data
-        source_with_quantifier = apply_quantifier(source)
-        [source_with_quantifier, warnings]
+        apply_quantifier(source)
       end
 
       private
 
-      attr_accessor :context, :expression, :warnings
+      attr_accessor :context, :expression
 
       def subtype
         expression.token
@@ -45,9 +43,7 @@ class JsRegex
 
       def convert_expressions(expressions)
         expressions.each_with_object(''.dup) do |subexp, source|
-          result = Converter.for(subexp).convert(subexp, context)
-          source << result[0]
-          warnings.concat(result[1])
+          source << Converter.for(subexp).convert(subexp, context)
         end
       end
 
@@ -57,10 +53,13 @@ class JsRegex
 
       def warn_of_unsupported_feature(description = nil)
         description ||= "#{subtype} #{expression.type}".tr('_', ' ')
-        full_description = "#{description} '#{expression}'"
-        warnings << "Dropped unsupported #{full_description} "\
-                    "at index #{expression.ts}"
+        full_desc = "#{description} '#{expression}'"
+        warn("Dropped unsupported #{full_desc} at index #{expression.ts}")
         ''
+      end
+
+      def warn(text)
+        context.warnings << text
       end
 
       def drop_without_warning

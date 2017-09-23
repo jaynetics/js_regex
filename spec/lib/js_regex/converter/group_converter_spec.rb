@@ -60,13 +60,14 @@ describe JsRegex::Converter::GroupConverter do
   end
 
   it 'opens passive groups for unknown group heads' do
-    e = expression_double({ type: :group, token: :unknown, to_s: '(%', ts: 0 })
-    converter = JsRegex::Converter.for(e)
+    ep = expression_double({ type: :group, token: :unknown, to_s: '(%', ts: 0 })
+    converter = JsRegex::Converter.for(ep)
     expect(converter).to be_a(described_class)
 
-    source, warnings = converter.convert(e, JsRegex::Converter::Context.new(//))
+    context = JsRegex::Converter::Context.new(//)
+    source = converter.convert(ep, context)
     expect(source).to start_with('(?:')
-    expect(warnings.size).to eq(1)
+    expect(context.warnings.size).to eq(1)
   end
 
   context 'when dealing with atomic groups' do

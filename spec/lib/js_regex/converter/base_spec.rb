@@ -10,9 +10,9 @@ describe JsRegex::Converter::Base do
       expr = expression_double({ type: 'bar', token: 'big', ts: 7 })
       allow(expr).to receive(:to_s).and_return('foo')
       allow(conv).to receive(:expression).and_return(expr)
-      allow(conv).to receive(:warnings).and_return([])
+      allow(conv).to receive(:warn)
       conv.send(:warn_of_unsupported_feature)
-      expect(conv.send(:warnings).first).to eq(
+      expect(conv).to have_received(:warn).with(
         "Dropped unsupported big bar 'foo' at index 7"
       )
     end
@@ -22,9 +22,9 @@ describe JsRegex::Converter::Base do
       expr = expression_double({ type: 'bar', token: 'big', ts: 7 })
       allow(expr).to receive(:to_s).and_return('foo')
       allow(conv).to receive(:expression).and_return(expr)
-      allow(conv).to receive(:warnings).and_return([])
+      allow(conv).to receive(:warn)
       conv.send(:warn_of_unsupported_feature, 'fizz')
-      expect(conv.send(:warnings).first).to eq(
+      expect(conv).to have_received(:warn).with(
         "Dropped unsupported fizz 'foo' at index 7"
       )
     end

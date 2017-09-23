@@ -12,12 +12,14 @@ class JsRegex
                   :buffered_set_members,
                   :in_atomic_group,
                   :negative_base_set,
-                  :root_options
+                  :root_options,
+                  :warnings
 
       def initialize(ruby_regex)
         self.added_capturing_groups_after_group = Hash.new(0)
         self.capturing_group_count = 0
         self.named_group_positions = {}
+        self.warnings = []
 
         self.root_options = {}
         root_options[:m] = (ruby_regex.options & Regexp::MULTILINE).nonzero?
@@ -100,7 +102,8 @@ class JsRegex
                   :buffered_set_members,
                   :in_atomic_group,
                   :negative_base_set,
-                  :root_options
+                  :root_options,
+                  :warnings
     end
   end
 end

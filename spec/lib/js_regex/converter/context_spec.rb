@@ -20,5 +20,9 @@ describe JsRegex::Converter::Context do
     it 'sets named_group_positions to an empty Hash' do
       expect(context.instance_variable_get(:@named_group_positions)).to eq({})
     end
+
+    it 'sets warnings to an empty Array' do
+      expect(context.instance_variable_get(:@warnings)).to eq([])
+    end
   end
 end

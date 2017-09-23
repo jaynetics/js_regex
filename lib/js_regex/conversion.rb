@@ -22,7 +22,10 @@ class JsRegex
       def convert_source(ruby_regex)
         context         = Converter::Context.new(ruby_regex)
         expression_tree = Regexp::Parser.parse(ruby_regex)
-        Converter::RootConverter.new.convert(expression_tree, context)
+        [
+          Converter::RootConverter.new.convert(expression_tree, context),
+          context.warnings
+        ]
       end
 
       def convert_options(ruby_regex)

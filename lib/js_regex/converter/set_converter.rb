@@ -92,9 +92,7 @@ class JsRegex
       end
 
       def convert_subset(subset)
-        converter = JsRegex::Converter::SetConverter.new
-        _source, subset_warnings = converter.convert(subset, context)
-        warnings.concat(subset_warnings)
+        JsRegex::Converter::SetConverter.new.convert(subset, context)
       end
 
       def finalize_set
