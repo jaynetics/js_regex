@@ -105,6 +105,9 @@ In addition to the conversions supported by the default approach, this gem will 
 | newline-ready anchor \Z    | last word\Z       |
 | generic linebreak \R       | data.split(/\R/)  |
 | meta and control escapes   | /\M-\C-X/         |
+| numeric backreferences     | \1, \k&gt;1&lt;   |
+| relative backreferences    | \k&gt;-1&lt;      |
+| named backreferences       | \k&gt;foo&lt;     |
 | literal whitespace         | [a-z ]            |
 | nested sets                | [a-z[A-Z]]        |
 | types in sets              | [a-z\h]           |
@@ -146,8 +149,6 @@ Currently, the following functionalities can't be carried over to JavaScript. If
 | set intersections              | [a-z&amp;&amp;[^uo]]  | yes     |
 | recursive set negation         | [^a[^b]]              | yes     |
 | forward references             | (\2two\|(one))        | yes     |
-| backreferences after atomics   | a(?>bc\|b)c(d)\1      | yes     |
-| \k-backreferences              | (a)\k&lt;1&gt;        | yes     |
 | subexpression calls            | (?'a'.)\g'a'/, \G     | yes     |
 | absence operator               | (?~foo)               | yes     |
 | bell and escape chars          | \a, \e                | yes     |

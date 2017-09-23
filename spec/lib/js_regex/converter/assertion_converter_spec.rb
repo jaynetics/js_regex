@@ -32,7 +32,7 @@ describe JsRegex::Converter::AssertionConverter do
 
   it 'does not count towards captured groups' do
     expect_any_instance_of(JsRegex::Converter::Context)
-      .not_to receive(:captured_group_count=)
+      .not_to receive(:capturing_group_count=)
       .with(1)
     JsRegex.new(/a(?=b)/i)
   end

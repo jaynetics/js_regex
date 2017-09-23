@@ -28,15 +28,15 @@ class JsRegex
           build_unsupported_group('nested atomic group')
         else
           context.start_atomic_group
-          backref_num = context.captured_group_count + 1
-          result = build_group(head: '(?=(', tail: "))\\#{backref_num}(?:)")
+          result = context.wrap_in_backrefed_lookahead(convert_subexpressions)
           context.end_atomic_group
           result
         end
       end
 
       def build_named_group
-        # drop name without warning
+        # remember position, then drop name part without warning
+        context.store_named_group_position(expression.name)
         build_group(head: '(')
       end
 

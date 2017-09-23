@@ -10,14 +10,14 @@ class JsRegex
     class Context
       attr_reader :buffered_set_extractions,
                   :buffered_set_members,
-                  :captured_group_count,
-                  :group_count_changed,
                   :in_atomic_group,
                   :negative_base_set,
                   :root_options
 
       def initialize(ruby_regex)
-        self.captured_group_count = 0
+        self.added_capturing_groups_after_group = Hash.new(0)
+        self.capturing_group_count = 0
+        self.named_group_positions = {}
 
         self.root_options = {}
         root_options[:m] = (ruby_regex.options & Regexp::MULTILINE).nonzero?
@@ -44,7 +44,7 @@ class JsRegex
       # group context
 
       def capture_group
-        self.captured_group_count = captured_group_count + 1
+        self.capturing_group_count = capturing_group_count + 1
       end
 
       def start_atomic_group
@@ -53,15 +53,51 @@ class JsRegex
 
       def end_atomic_group
         self.in_atomic_group = false
-        self.group_count_changed = true
+      end
+
+      def wrap_in_backrefed_lookahead(content)
+        new_backref_num = capturing_group_count + 1
+        # an empty passive group (?:) is appended as literal digits may follow
+        result = "(?=(#{content}))\\#{new_backref_num}(?:)"
+        added_capturing_groups_after_group[original_capturing_group_count] += 1
+        capture_group
+        result
+      end
+
+      # takes and returns 1-indexed group positions.
+      # new is different from old if capturing groups were added in between.
+      def new_capturing_group_position(old_position)
+        increment = 0
+        added_capturing_groups_after_group.each do |after_n_groups, count|
+          increment += count if after_n_groups < old_position
+        end
+        old_position + increment
+      end
+
+      def original_capturing_group_count
+        capturing_group_count - total_added_capturing_groups
+      end
+
+      def total_added_capturing_groups
+        added_capturing_groups_after_group.values.inject(0, &:+)
+      end
+
+      def store_named_group_position(name)
+        named_group_positions[name] = capturing_group_count + 1
+      end
+
+      def fetch_named_group_position(name)
+        named_group_positions[name]
       end
 
       private
 
+      attr_accessor :added_capturing_groups_after_group,
+                    :capturing_group_count,
+                    :named_group_positions
+
       attr_writer :buffered_set_extractions,
                   :buffered_set_members,
-                  :captured_group_count,
-                  :group_count_changed,
                   :in_atomic_group,
                   :negative_base_set,
                   :root_options
