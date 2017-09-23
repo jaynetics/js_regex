@@ -9,5 +9,7 @@ Style/BracesAroundHashParameters:
   Enabled: false
 Style/Encoding:
   Enabled: false
+Style/NumericPredicate:
+  Enabled: false
 Style/SymbolArray:
   Enabled: false
