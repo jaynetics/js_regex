@@ -1,5 +1,26 @@
 # Changelog
 
+## v2.0.0
+Major refactoring. Using Regexp::Parser instead of Regexp::Scanner internally allows for higher-level conversions.
+
+### Changed
+- word boundaries \b and \B now cause warnings (see README for details)
+
+### Added
+- added support for possessive quantifiers ("++", "\*+", etc.)
+- added support for backreferences ("\2") following atomic groups
+- added support for \k-style numeric backreferences ("\k'2'")
+- added support for relative backreferences ("\k'-1'")
+- added support for named backreferences ("\k'foo'")
+- added support for the generic linebreak type \R
+- added support for control and meta escapes ("\cX", "\C-X", "\M-X", "\M-\C-X", etc.)
+
+### Fixed
+- when dropping unsupported expressions, their quantifiers are now dropped as well
+- fixed handling of hex types and backspace ("\h", "\H", "\b") within negated sets
+- double-negated properties ("\P{^...}") are now correctly treated as positive
+- conditionals are now replaced with passive instead of capturing alternation groups
+
 ## v1.2.3
 ### Fixed
 - fixed handling of escaped parentheses ("\\(" and "\\)"); thanks to https://github.com/owst
