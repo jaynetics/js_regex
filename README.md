@@ -105,9 +105,9 @@ In addition to the conversions supported by the default approach, this gem will 
 | newline-ready anchor \Z    | last word\Z       |
 | generic linebreak \R       | data.split(/\R/)  |
 | meta and control escapes   | /\M-\C-X/         |
-| numeric backreferences     | \1, \k&gt;1&lt;   |
-| relative backreferences    | \k&gt;-1&lt;      |
-| named backreferences       | \k&gt;foo&lt;     |
+| numeric backreferences     | \1, \k&lt;1&gt;   |
+| relative backreferences    | \k&lt;-1&gt;      |
+| named backreferences       | \k&lt;foo&gt;     |
 | literal whitespace         | [a-z ]            |
 | nested sets                | [a-z[A-Z]]        |
 | types in sets              | [a-z\h]           |
