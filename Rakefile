@@ -14,8 +14,9 @@ task mutate: :spec do
     --include lib
     --require js_regex
     --use rspec
-    --ignore-subject JsRegex::Conversion#initialize
-    --ignore-subject JsRegex::Converter::Context*
+    --ignore-subject JsRegex::Converter::EscapeConverter#control_sequence_to_s
+    --ignore-subject JsRegex::Converter::EscapeConverter#meta_char_to_char_code
+    --ignore-subject JsRegex::Converter::SetConverter#standardize_property_name
     -- JsRegex*
   ]
 

@@ -42,6 +42,25 @@ describe JsRegex::Converter::MetaConverter do
     expect_ruby_and_js_to_match(string: 'a b', with_results: %w[a b])
   end
 
+  it 'preserves recursive alternations' do
+    given_the_ruby_regexp(/a|(b|c)/)
+    expect_js_regex_to_be(/a|(b|c)/)
+    expect_no_warnings
+    expect_ruby_and_js_to_match(string: 'c', with_results: %w[c])
+  end
+
+  it 'applies further conversions to alternation branches' do
+    given_the_ruby_regexp(/(b\e|c)/)
+    expect_js_regex_to_be(/(b|c)/)
+    expect_warning
+  end
+
+  it 'drops depleted alternation branches' do
+    given_the_ruby_regexp(/(\e|ccc)/)
+    expect_js_regex_to_be(/(ccc)/)
+    expect_warning
+  end
+
   it 'drops unknown meta elements with warning' do
     expect_to_drop_token_with_warning(:meta, :an_unknown_meta)
   end

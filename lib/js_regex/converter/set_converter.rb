@@ -13,7 +13,7 @@ class JsRegex
       private
 
       def convert_data
-        if expression.set_level == 0 # reached end of set expression
+        if expression.set_level.equal?(0) # reached end of set expression
           context.reset_set_context
           context.negate_base_set if negative_set?
           process_members
@@ -30,14 +30,14 @@ class JsRegex
       end
 
       def process_members
-        expression.members.each { |member| process_member(member) }
+        expression.each { |member| process_member(member) }
       end
 
       ASTRAL_PLANE_PATTERN = /[\u{10000}-\u{FFFFF}]/
       PROPERTY_PATTERN     = /\A(?:\[:|\\([pP])\{)(\^?)([^:\}]+)/
 
       def process_member(member)
-        return convert_subset(member) unless member.is_a?(String)
+        return convert_subset(member) unless member.instance_of?(String)
 
         utf8_data = member.dup.force_encoding('UTF-8')
         case utf8_data
@@ -73,14 +73,20 @@ class JsRegex
       end
 
       def handle_property(sign, caret, name)
-        std = Regexp::Parser.parse("\\p{#{name}}").expressions.first.token
-        negated = (sign == 'P') ^ (caret == '^')
-        negated = !negated if context.negative_base_set
+        if context.negative_base_set
+          return warn_of_unsupported_feature('property in negative set')
+        end
+        std = standardize_property_name(name)
+        negated = sign.eql?('P') ^ caret.eql?('^')
         if (replacement = PropertyConverter.property_replacement(std, negated))
           buffer_set_extraction(replacement)
         else
           warn_of_unsupported_feature('property')
         end
+      end
+
+      def standardize_property_name(name)
+        Regexp::Parser.parse("\\p{#{name}}").expressions.first.token
       end
 
       def buffer_set_member(data)
@@ -92,7 +98,7 @@ class JsRegex
       end
 
       def convert_subset(subset)
-        JsRegex::Converter::SetConverter.new.convert(subset, context)
+        SetConverter.new.convert(subset, context)
       end
 
       def finalize_set

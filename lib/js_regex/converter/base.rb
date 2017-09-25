@@ -42,13 +42,11 @@ class JsRegex
       end
 
       def convert_expressions(expressions)
-        expressions.each_with_object(''.dup) do |subexp, source|
-          source << Converter.for(subexp).convert(subexp, context)
-        end
+        expressions.map { |exp| Converter.for(exp).convert(exp, context) }.join
       end
 
       def subexpressions
-        expression.expressions || []
+        expression.expressions
       end
 
       def warn_of_unsupported_feature(description = nil)

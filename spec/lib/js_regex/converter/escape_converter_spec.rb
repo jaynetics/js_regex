@@ -148,6 +148,49 @@ describe JsRegex::Converter::EscapeConverter do
     expect_ruby_and_js_to_match(string: '	', with_results: ['	'])
   end
 
+  it 'drops the bell char "\a" with warning' do
+    given_the_ruby_regexp(/.\a/)
+    expect_js_regex_to_be(/./)
+    expect_warning
+  end
+
+  it 'drops the escape char "\e" with warning' do
+    given_the_ruby_regexp(/.\e/)
+    expect_js_regex_to_be(/./)
+    expect_warning
+  end
+
+  it 'drops the subexpression rematcher "\G" with warning' do
+    given_the_ruby_regexp(/(.)\G/)
+    expect_js_regex_to_be(/(.)/)
+    expect_warning
+  end
+
+  it 'drops ab-named subexpression calls ("\g") with warning' do
+    given_the_ruby_regexp(/(?<x>.)\g<x>/)
+    expect_js_regex_to_be(/(.)/)
+    expect_warning
+  end
+
+  it 'drops sq-named subexpression calls ("\g") with warning' do
+    given_the_ruby_regexp(/(?'x'.)\g'x'/)
+    expect_js_regex_to_be(/(.)/)
+    expect_warning
+  end
+
+  it 'converts codepoint lists, escaping meta chars and using surrogates' do
+    given_the_ruby_regexp(/\u{61 a 28 1F601}/)
+    expect(@js_regex.source).to eq('a\n\(\ud83d\ude01')
+    expect_ruby_and_js_to_match(string: "_a\n(😁_", with_results: %W[a\n(😁])
+  end
+
+  it 'puts quantifiers at the end of codepoint list conversions' do
+    given_the_ruby_regexp(/\u{61 62 63}+/)
+    expect_js_regex_to_be(/abc+/)
+    expect_ruby_and_js_to_match(string: '_abca_', with_results: %w[abc])
+    expect_ruby_and_js_to_match(string: '_abcc_', with_results: %w[abcc])
+  end
+
   it 'converts the control sequences style "\C-X" to unicode escapes' do
     given_the_ruby_regexp(/.\C-*/)
     expect_js_regex_to_be(/.\u000A/)
@@ -197,41 +240,5 @@ describe JsRegex::Converter::EscapeConverter do
     given_the_ruby_regexp(/.\c\M-X/n)
     expect_js_regex_to_be(/.\u0098/)
     expect_no_warnings
-  end
-
-  it 'drops the bell char "\a" with warning' do
-    given_the_ruby_regexp(/.\a/)
-    expect_js_regex_to_be(/./)
-    expect_warning
-  end
-
-  it 'drops the escape char "\e" with warning' do
-    given_the_ruby_regexp(/.\e/)
-    expect_js_regex_to_be(/./)
-    expect_warning
-  end
-
-  it 'drops the subexpression rematcher "\G" with warning' do
-    given_the_ruby_regexp(/(.)\G/)
-    expect_js_regex_to_be(/(.)/)
-    expect_warning
-  end
-
-  it 'drops ab-named subexpression calls ("\g") with warning' do
-    given_the_ruby_regexp(/(?<x>.)\g<x>/)
-    expect_js_regex_to_be(/(.)/)
-    expect_warning
-  end
-
-  it 'drops sq-named subexpression calls ("\g") with warning' do
-    given_the_ruby_regexp(/(?'x'.)\g'x'/)
-    expect_js_regex_to_be(/(.)/)
-    expect_warning
-  end
-
-  it 'converts codepoint lists, escaping meta chars and using surrogates' do
-    given_the_ruby_regexp(/\u{61 a 28 1F601}/)
-    expect(@js_regex.source).to eq('a\\n\\(\\ud83d\\ude01')
-    expect_ruby_and_js_to_match(string: "_a\n(😁_", with_results: %W[a\n(😁])
   end
 end

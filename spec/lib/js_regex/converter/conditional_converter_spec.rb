@@ -24,4 +24,16 @@ describe JsRegex::Converter::ConditionalConverter do
     expect_js_regex_to_be(Regexp.new('(a)?(?:b|c)'))
     expect_warning("unsupported conditional '(?('condition')b|c)'")
   end
+
+  it 'applies further conversions to the branches',
+     if: ruby_version_at_least?('2.0') do
+    given_the_ruby_regexp(Regexp.new('(a)?(?(1)b\e|c)'))
+    expect_js_regex_to_be(Regexp.new('(a)?(?:b|c)'))
+  end
+
+  it 'drops depleted branches',
+     if: ruby_version_at_least?('2.0') do
+    given_the_ruby_regexp(Regexp.new('(a)?(?(1)\e|c)'))
+    expect_js_regex_to_be(Regexp.new('(a)?(?:c)'))
+  end
 end

@@ -121,7 +121,7 @@ describe JsRegex::Converter::SetConverter do
   end
 
   it 'does not create empty sets when extracting types' do
-    # whitelist #first, c.f. https://github.com/mbj/mutant/issues/616
+    # whitelist Array#first, c.f. https://github.com/mbj/mutant/issues/616
     array = []
     allow_any_instance_of(JsRegex::Converter::Context)
       .to receive(:buffered_set_extractions)
@@ -167,6 +167,13 @@ describe JsRegex::Converter::SetConverter do
     expect_ruby_and_js_to_match(string: 'ñbäõ_ß', with_results: %w[bä _ß])
   end
 
+  it 'extracts abbreviated \p-style properties from sets' do
+    given_the_ruby_regexp(/[ä\p{ahex}]+/)
+    expect_js_regex_to_be(/(?:[ä]|[\u0030-\u0039\u0041-\u0046\u0061-\u0066])+/)
+    expect_no_warnings
+    expect_ruby_and_js_to_match(string: 'ñbäõ_ß', with_results: %w[bä])
+  end
+
   it 'extracts negative \p{^-style properties from sets' do
     given_the_ruby_regexp(/[x-z\p{^ascii}]+/)
     expect_js_regex_to_be(/(?:[x-z]|[^\x00-\x7F])+/)
@@ -188,9 +195,16 @@ describe JsRegex::Converter::SetConverter do
     expect_ruby_and_js_to_match(string: 'ñbäõ_ß', with_results: %w[bä _ß])
   end
 
+  it 'wraps set extractions in a passive alternation group with the set' do
+    given_the_ruby_regexp(/[a-f\p{ascii}]+/)
+    expect_js_regex_to_be(/(?:[a-f]|[\x00-\x7F])+/)
+    expect_no_warnings
+    expect_ruby_and_js_to_match(string: 'efghß', with_results: %w[efgh])
+  end
+
   it 'wraps multiple set extractions in a passive alternation group' do
-    given_the_ruby_regexp(/[\h\p{ascii}]+/)
-    expect_js_regex_to_be(/(?:[A-Fa-f0-9]|[\x00-\x7F])+/)
+    given_the_ruby_regexp(/[a-f\p{ascii}\p{ascii}]+/)
+    expect_js_regex_to_be(/(?:[a-f]|[\x00-\x7F]|[\x00-\x7F])+/)
     expect_no_warnings
     expect_ruby_and_js_to_match(string: 'efghß', with_results: %w[efgh])
   end
@@ -207,6 +221,19 @@ describe JsRegex::Converter::SetConverter do
     expect_js_regex_to_be(/[a-z]+/)
     expect_no_warnings
     expect_ruby_and_js_to_match(string: 'abc', with_results: %w[abc])
+  end
+
+  it 'creates an alternation when extracting all set contents' do
+    given_the_ruby_regexp(/[\H[:ascii:]]+/)
+    expect_js_regex_to_be(/(?:[^A-Fa-f0-9]|[\x00-\x7F])+/)
+    expect_no_warnings
+    expect_ruby_and_js_to_match(string: 'zxa3n', with_results: %w[zxa3n])
+  end
+
+  it 'drops properties in negative sets with warning' do
+    given_the_ruby_regexp(/[^a\p{ascii}]+/)
+    expect_js_regex_to_be(/[^a]+/)
+    expect_warning('property in negative set')
   end
 
   it 'drops set intersections with warning' do

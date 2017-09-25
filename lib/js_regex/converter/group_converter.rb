@@ -57,8 +57,7 @@ class JsRegex
       def build_group(opts = {})
         context.capture_group unless opts[:capturing].equal?(false)
         head = opts[:head] || pass_through
-        tail = opts[:tail] || ')'
-        "#{head}#{convert_subexpressions}#{tail}"
+        "#{head}#{convert_subexpressions})"
       end
     end
   end

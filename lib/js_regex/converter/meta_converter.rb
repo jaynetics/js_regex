@@ -22,10 +22,11 @@ class JsRegex
       end
 
       def convert_alternation
-        alternatives = subexpressions.each_with_object([]) do |alternative, arr|
-          arr << convert_expressions(alternative.expressions) if alternative
+        branches = subexpressions.each_with_object([]) do |branch, arr|
+          converted_branch = convert_expressions(branch.expressions)
+          arr << converted_branch unless converted_branch.eql?('')
         end
-        alternatives.join('|')
+        branches.join('|')
       end
     end
   end

@@ -7,13 +7,13 @@ describe JsRegex::Converter::Base do
   describe '#warn_of_unsupported_feature' do
     it 'adds a warning with token class, subtype, data and index' do
       conv = described_class.new
-      expr = expression_double({ type: 'bar', token: 'big', ts: 7 })
+      expr = expression_double({ type: 'bar', token: 'big_bad', ts: 7 })
       allow(expr).to receive(:to_s).and_return('foo')
       allow(conv).to receive(:expression).and_return(expr)
       allow(conv).to receive(:warn)
       conv.send(:warn_of_unsupported_feature)
       expect(conv).to have_received(:warn).with(
-        "Dropped unsupported big bar 'foo' at index 7"
+        "Dropped unsupported big bad bar 'foo' at index 7"
       )
     end
 
@@ -27,6 +27,15 @@ describe JsRegex::Converter::Base do
       expect(conv).to have_received(:warn).with(
         "Dropped unsupported fizz 'foo' at index 7"
       )
+    end
+
+    it 'returns an empty string to be appended to the converted source' do
+      conv = described_class.new
+      expr = expression_double({ type: 'bar', token: 'big', ts: 7 })
+      allow(expr).to receive(:to_s).and_return('foo')
+      allow(conv).to receive(:expression).and_return(expr)
+      allow(conv).to receive(:warn)
+      expect(conv.send(:warn_of_unsupported_feature, 'fizz')).to eq('')
     end
   end
 
@@ -226,6 +235,37 @@ describe JsRegex::Converter::Base do
         given_the_ruby_regexp(/a\e{2,3}b[😁]++c/)
         expect_js_regex_to_be(/abc/)
       end
+    end
+  end
+
+  describe '#convert_subexpressions' do
+    it 'concatenates the conversion result of multiple subexpressions' do
+      given_the_ruby_regexp(/(a|b)/)
+      expect_js_regex_to_be(/(a|b)/)
+    end
+  end
+
+  describe '#drop_without_warning' do
+    it 'returns an empty string to be appended to the source' do
+      expect(described_class.new.send(:drop_without_warning)).to eq('')
+    end
+
+    it 'does not generate warnings' do
+      converter = described_class.new
+      context = JsRegex::Converter::Context.new(//)
+      allow(converter).to receive(:context).and_return(context)
+      expect { described_class.new.send(:drop_without_warning) }
+        .not_to(change { context.warnings.count })
+    end
+  end
+
+  describe '#warn' do
+    it 'adds a warning to the context' do
+      converter = described_class.new
+      context = JsRegex::Converter::Context.new(//)
+      allow(converter).to receive(:context).and_return(context)
+      expect { converter.send(:warn, 'foo') }
+        .to(change { context.warnings }.from([]).to(['foo']))
     end
   end
 end

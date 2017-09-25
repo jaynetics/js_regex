@@ -25,17 +25,17 @@ class JsRegex
 
       def convert_number_ref
         # after regexp_parser update, replace data[/\d+/] with expression.number
-        "\\#{context.new_capturing_group_position(data[/\d+/].to_i)}"
+        "\\#{context.new_capturing_group_position(Integer(data[/\d+/]))}"
       end
 
       def convert_number_rel_ref
-        groups = Array(1..context.original_capturing_group_count)
-        absolute_position = groups[expression.number.to_i]
+        absolute_position = Integer(expression.number) +
+                            context.original_capturing_group_count + 1
         "\\#{context.new_capturing_group_position(absolute_position)}"
       end
 
       def convert_name_ref
-        "\\#{context.fetch_named_group_position(expression.name)}"
+        "\\#{context.named_group_positions.fetch(expression.name)}"
       end
     end
   end

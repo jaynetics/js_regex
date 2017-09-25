@@ -18,14 +18,18 @@ describe JsRegex::Converter::GroupConverter do
     expect_ruby_and_js_to_match(string: 'abc', with_results: %w[abc])
   end
 
-  it 'removes names from ab-named groups' do
+  it 'removes names from ab-named groups but remembers their position' do
+    expect_any_instance_of(JsRegex::Converter::Context)
+      .to receive(:store_named_group_position).with('protocol')
     given_the_ruby_regexp(/(?<protocol>http|ftp)/)
     expect_js_regex_to_be(/(http|ftp)/)
     expect_no_warnings
     expect_ruby_and_js_to_match(string: 'ftp', with_results: %w[ftp])
   end
 
-  it 'removes names from sq-named groups' do
+  it 'removes names from sq-named groups but remembers their position' do
+    expect_any_instance_of(JsRegex::Converter::Context)
+      .to receive(:store_named_group_position).with('protocol')
     given_the_ruby_regexp(/(?'protocol'http|ftp)/)
     expect_js_regex_to_be(/(http|ftp)/)
     expect_no_warnings

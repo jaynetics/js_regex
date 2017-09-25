@@ -11,6 +11,7 @@ class JsRegex
       attr_reader :buffered_set_extractions,
                   :buffered_set_members,
                   :in_atomic_group,
+                  :named_group_positions,
                   :negative_base_set,
                   :root_options,
                   :warnings
@@ -22,13 +23,13 @@ class JsRegex
         self.warnings = []
 
         self.root_options = {}
-        root_options[:m] = (ruby_regex.options & Regexp::MULTILINE).nonzero?
+        root_options[:m] = !(ruby_regex.options & Regexp::MULTILINE).equal?(0)
       end
 
       # option context
 
       def multiline?
-        root_options[:m]
+        root_options.fetch(:m)
       end
 
       # set context
@@ -88,19 +89,15 @@ class JsRegex
         named_group_positions[name] = capturing_group_count + 1
       end
 
-      def fetch_named_group_position(name)
-        named_group_positions[name]
-      end
-
       private
 
       attr_accessor :added_capturing_groups_after_group,
-                    :capturing_group_count,
-                    :named_group_positions
+                    :capturing_group_count
 
       attr_writer :buffered_set_extractions,
                   :buffered_set_members,
                   :in_atomic_group,
+                  :named_group_positions,
                   :negative_base_set,
                   :root_options,
                   :warnings

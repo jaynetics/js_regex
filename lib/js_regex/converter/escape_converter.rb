@@ -48,7 +48,7 @@ class JsRegex
         when *ESCAPES_SHARED_BY_RUBY_AND_JS
           pass_through
         else
-          # Bell, Escape, HexWide, Control, Meta, MetaControl, ...
+          # Bell, Escape, HexWide, ...
           warn_of_unsupported_feature
         end
       end
@@ -63,31 +63,31 @@ class JsRegex
 
       def convert_control_sequence
         convert_meta_control_sequence ||
-          unicode_escape_for(control_char_to_s(data[-1]))
+          unicode_escape_for(control_sequence_to_s(data))
       end
 
       def convert_meta_sequence
         convert_meta_control_sequence ||
-          unicode_escape_for(meta_char_to_s(data[-1]))
+          unicode_escape_for(meta_char_to_char_code(data[-1]))
       end
 
       def convert_meta_control_sequence
-        return false unless expression.class.to_s.include?('MetaControl')
-        unicode_escape_for(meta_char_to_s(control_char_to_s(data[-1])))
+        return unless expression.class.to_s.include?('MetaControl')
+        unicode_escape_for(meta_char_to_char_code(control_sequence_to_s(data)))
       end
 
       def unicode_escape_for(char)
         "\\u#{char.ord.to_s(16).upcase.rjust(4, '0')}"
       end
 
-      def control_char_to_s(control_char)
-        five_lsb = control_char.unpack('B*').first[-5..-1]
+      def control_sequence_to_s(control_sequence)
+        five_lsb = control_sequence.unpack('B*').first[-5..-1]
         ["000#{five_lsb}"].pack('B*')
       end
 
-      def meta_char_to_s(meta_char)
+      def meta_char_to_char_code(meta_char)
         byte_value = meta_char.ord
-        byte_value < 128 ? (byte_value + 128).chr : meta_char
+        byte_value < 128 ? byte_value + 128 : byte_value
       end
     end
   end

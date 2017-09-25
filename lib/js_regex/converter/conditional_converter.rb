@@ -12,10 +12,11 @@ class JsRegex
 
       def convert_data
         warn_of_unsupported_feature('conditional')
-        options = subexpressions[1..-1].each_with_object([]) do |option, arr|
-          arr << convert_expressions(option.expressions) if option
+        branches = subexpressions.drop(1).each_with_object([]) do |branch, arr|
+          converted_branch = convert_expressions(branch)
+          arr << converted_branch unless converted_branch.eql?('')
         end
-        "(?:#{options.join('|')})"
+        "(?:#{branches.join('|')})"
       end
     end
   end

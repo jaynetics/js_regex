@@ -52,6 +52,14 @@ describe JsRegex::Converter::BackreferenceConverter do
     expect_ruby_and_js_to_match(string: 'abca')
   end
 
+  it 'substitutes relative backreferences to nested groups correctly' do
+    given_the_ruby_regexp(/(a(b)a)\k<-1>/)
+    expect_js_regex_to_be(/(a(b)a)\2/)
+    expect_no_warnings
+    expect_ruby_and_js_not_to_match(string: 'abaa')
+    expect_ruby_and_js_to_match(string: 'abab')
+  end
+
   it 'substitutes ab named backreferences ("\k<foo>") with numeric ones' do
     given_the_ruby_regexp(/(a)(?<foo>b)(c)\k<foo>/)
     expect_js_regex_to_be(/(a)(b)(c)\2/)
@@ -160,5 +168,11 @@ describe JsRegex::Converter::BackreferenceConverter do
       expect_ruby_and_js_not_to_match(string: 'Xa')
       expect_ruby_and_js_to_match(string: 'XaX')
     end
+  end
+
+  it 'drops subexpression calls with warning' do
+    given_the_ruby_regexp(/((.)\2{2})\g<1>*/)
+    expect_js_regex_to_be(/((.)\2{2})/)
+    expect_warning
   end
 end
