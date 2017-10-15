@@ -24,7 +24,7 @@ Gem::Specification.new do |s|
 
   s.required_ruby_version = '>= 1.9.1'
 
-  s.add_dependency 'regexp_parser', '>= 0.4.6', '<= 0.5.0'
+  s.add_dependency 'regexp_parser', '>= 0.4.7', '<= 0.5.0'
 
   s.add_development_dependency 'rake', '~> 12.0'
   s.add_development_dependency 'rspec-core', '~> 3.5'
