@@ -24,8 +24,7 @@ class JsRegex
       end
 
       def convert_number_ref
-        # after regexp_parser update, replace data[/\d+/] with expression.number
-        "\\#{context.new_capturing_group_position(Integer(data[/\d+/]))}"
+        "\\#{context.new_capturing_group_position(Integer(expression.number))}"
       end
 
       def convert_number_rel_ref
