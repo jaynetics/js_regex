@@ -50,8 +50,9 @@ describe JsRegex::Converter::GroupConverter do
     expect_ruby_and_js_to_match(string: 'aa', with_results: %w[aa])
   end
 
-  it 'drops all encoding options with warning' do
-    given_the_ruby_regexp(/a(?adu:a)a/)
+  it 'drops all encoding options with warning',
+     if: ruby_version_at_least?('2.0.0') do
+    given_the_ruby_regexp(Regexp.new('a(?adu:a)a'))
     expect_js_regex_to_be(/a(a)a/)
     expect_warning('encoding options ["a", "d", "u"]')
   end
