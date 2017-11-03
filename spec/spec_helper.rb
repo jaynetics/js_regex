@@ -8,6 +8,13 @@ if JsRegex::PERFORM_FULL_BUILD
   SimpleCov.start
 end
 
+# whitelist some mutations
+defined?(Mutant) && Mutant::Mutator::Node::Send.prepend(Module.new do
+  def emit_selector_replacement
+    super unless [:first, :=~].include?(selector)
+  end
+end)
+
 RSpec.configure do |config|
   config.mock_with(:rspec) { |mocks| mocks.verify_partial_doubles = true }
 end

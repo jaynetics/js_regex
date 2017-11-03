@@ -121,13 +121,6 @@ describe JsRegex::Converter::SetConverter do
   end
 
   it 'does not create empty sets when extracting types' do
-    # whitelist Array#first, c.f. https://github.com/mbj/mutant/issues/616
-    array = []
-    allow_any_instance_of(JsRegex::Converter::Context)
-      .to receive(:buffered_set_extractions)
-      .and_return(array)
-    expect(array).to receive(:first).and_call_original
-
     given_the_ruby_regexp(/[\H]+/)
     expect_js_regex_to_be(/[^A-Fa-f0-9]+/)
     expect_no_warnings
