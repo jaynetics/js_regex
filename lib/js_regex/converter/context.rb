@@ -10,10 +10,10 @@ class JsRegex
     class Context
       attr_reader :buffered_set_extractions,
                   :buffered_set_members,
+                  :case_insensitive_root,
                   :in_atomic_group,
                   :named_group_positions,
                   :negative_base_set,
-                  :root_options,
                   :warnings
 
       def initialize(ruby_regex)
@@ -22,14 +22,8 @@ class JsRegex
         self.named_group_positions = {}
         self.warnings = []
 
-        self.root_options = {}
-        root_options[:m] = !(ruby_regex.options & Regexp::MULTILINE).equal?(0)
-      end
-
-      # option context
-
-      def multiline?
-        root_options.fetch(:m)
+        self.case_insensitive_root =
+          !(ruby_regex.options & Regexp::IGNORECASE).equal?(0)
       end
 
       # set context
@@ -96,10 +90,10 @@ class JsRegex
 
       attr_writer :buffered_set_extractions,
                   :buffered_set_members,
+                  :case_insensitive_root,
                   :in_atomic_group,
                   :named_group_positions,
                   :negative_base_set,
-                  :root_options,
                   :warnings
     end
   end

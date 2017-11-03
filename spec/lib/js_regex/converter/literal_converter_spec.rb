@@ -65,6 +65,24 @@ describe JsRegex::Converter::LiteralConverter do
     expect_ruby_and_js_to_match(string: '😁', with_results: %w[😁])
   end
 
+  it 'converts to a swapcase set if a local i-option applies' do
+    given_the_ruby_regexp(/a(?i:b)c(?i)d/)
+    expect_js_regex_to_be(/a([bB])c[dD]/)
+    expect_ruby_and_js_to_match(string: 'aBcD', with_results: %w[aBcD])
+  end
+
+  it 'does not create a swapcase set for literals without case' do
+    given_the_ruby_regexp(/1(?i:2)3(?i)4/)
+    expect_js_regex_to_be(/1(2)34/)
+    expect_ruby_and_js_to_match(string: '1234', with_results: %w[1234])
+  end
+
+  it 'warns for case-sensitive literals in case-insensitive regexes' do
+    given_the_ruby_regexp(/a(?-i)b/i)
+    expect_warning("nested case-sensitive literal 'b'")
+    expect_js_regex_to_be(/ab/i)
+  end
+
   it 'lets all other literals pass through' do
     given_the_ruby_regexp(/aü_1>!/)
     expect_js_regex_to_be(/aü_1>!/)

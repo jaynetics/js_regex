@@ -100,6 +100,7 @@ In addition to the conversions supported by the default approach, this gem will 
 | Ruby's multiline mode [4]  | /.+/m             |
 | Ruby's free-spacing mode   | / http (s?) /x    |
 | atomic groups [5]          | a(?>bc\|b)c       |
+| option groups/switches     | (?i-m:..), (?x).. |
 | possessive quantifiers [5] | ++, *+, ?+, {4,}+ |
 | hex types \h and \H        | \H\h{6}           |
 | newline-ready anchor \Z    | last word\Z       |
@@ -141,7 +142,7 @@ Currently, the following functionalities can't be carried over to JavaScript. If
 |--------------------------------|-----------------------|---------|
 | lookbehind                     | (?&lt;=, (?&lt;!, \K  | yes     |
 | conditionals                   | (?(a)b\|c)            | yes     |
-| group-specific options         | (?i:, (?-i:           | yes     |
+| local encoding options         | (?u:\w)               | yes     |
 | capturing group names          | (?&lt;a&gt;, (?'a'    | no      |
 | comment groups                 | (?#comment)           | no      |
 | inline comments (in x-mode)    | /[a-z] # comment/x    | no      |
@@ -179,4 +180,4 @@ JsRegex uses ammar's powerful [regexp_parser](https://github.com/ammar/regexp_pa
 
 ### Outlook
 
-A few more of the unsupported features listed above could be implemented with some work. For instance, set intersection might be achieved by expanding set members and ranges, intersecting them manually, and then recompressing them into new ranges. Something similar could be done for certain group-specific options, e.g. case-insensitive groups could be substituted by alternations with case-swapped members. However, no amount of effort will lead to a full solution. Some regex behavior is simply impossible to achieve in JavaScript, and [litte seems to be happening](https://mail.mozilla.org/pipermail/es-discuss/2013-September/033867.html) that could change that.
+Only a few more of the unsupported features listed above could be implemented with some work. For instance, set intersection might be achieved by expanding set members and ranges, intersecting them manually, and then recompressing them into new ranges. However, no amount of effort will lead to a full solution. Some regex behavior is simply impossible to achieve in JavaScript, and [litte seems to be happening](https://mail.mozilla.org/pipermail/es-discuss/2013-September/033867.html) that could change that.

@@ -43,7 +43,20 @@ class JsRegex
       private
 
       def convert_data
-        self.class.convert_data(data)
+        result = self.class.convert_data(data)
+        if context.case_insensitive_root && !expression.case_insensitive?
+          warn_of_unsupported_feature('nested case-sensitive literal')
+        elsif !context.case_insensitive_root && expression.case_insensitive?
+          return handle_locally_case_insensitive_literal(result)
+        end
+        result
+      end
+
+      HAS_CASE_PATTERN = /[\p{lower}\p{upper}]/
+
+      def handle_locally_case_insensitive_literal(literal)
+        return literal unless literal =~ HAS_CASE_PATTERN
+        "[#{literal}#{literal.swapcase}]"
       end
     end
   end

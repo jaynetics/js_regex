@@ -25,28 +25,14 @@ describe JsRegex::Converter::Context do
       expect(context.send(:warnings)).to eq([])
     end
 
-    it 'sets root_options[:m] to true if the regex has the m-flag' do
-      context = described_class.new(//m)
-      expect(context.root_options[:m]).to be true
-    end
-
-    it 'sets root_options[:m] to false if the regex does not have the m-flag' do
+    it 'sets #case_insensitive_root to true if the regex has the i-flag' do
       context = described_class.new(//i)
-      expect(context.root_options[:m]).to be false
-    end
-  end
-
-  # option context
-
-  describe '#multiline?' do
-    it 'is true if root_options[:m] is true' do
-      allow(context).to receive(:root_options).and_return({ m: true })
-      expect(context.multiline?).to be true
+      expect(context.case_insensitive_root).to be true
     end
 
-    it 'is false if root_options[:m] is false' do
-      allow(context).to receive(:root_options).and_return({ m: false })
-      expect(context.multiline?).to be false
+    it 'sets #case_insensitive_root to false if the regex has no i-flag' do
+      context = described_class.new(//m)
+      expect(context.case_insensitive_root).to be false
     end
   end
 

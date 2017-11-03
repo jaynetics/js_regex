@@ -292,4 +292,31 @@ b]/)
     expect_no_warnings
     expect_ruby_and_js_to_match(string: "x\ny", with_results: %W[\n])
   end
+
+  it 'adds case-swapped literal member dupes if subject to a local i-option' do
+    given_the_ruby_regexp(/[a](?i)[a](?-i:[a](?i:[^a-fG-Y]))/)
+    expect_js_regex_to_be(/[a][aA]([a]([^a-fA-FG-Yg-y]))/)
+    expect_no_warnings
+    expect_ruby_and_js_to_match(string: 'aAaZ', with_results: %w[aAaZ])
+    expect_ruby_and_js_not_to_match(string: 'AAaZ')
+  end
+
+  it 'does not add duplicates for literal members that cant be swapped' do
+    given_the_ruby_regexp(/(?i:[A 1234567890_B])/)
+    expect_js_regex_to_be(/([Aa 1234567890_Bb])/)
+    expect_no_warnings
+    expect_ruby_and_js_to_match(string: '1', with_results: %w[1])
+  end
+
+  it 'does not add case-swapped ranges that would be illegal' do
+    given_the_ruby_regexp(/(?i:[A-z])/)
+    expect_js_regex_to_be(/([A-z])/)
+    expect_warning('nested case-insensitive range')
+  end
+
+  it 'warns for case-sensitive members in case-insensitive regexes' do
+    given_the_ruby_regexp(/[a](?-i)[b]/i)
+    expect_warning("nested case-sensitive set member '[b]'")
+    expect_js_regex_to_be(/[a][b]/i)
+  end
 end

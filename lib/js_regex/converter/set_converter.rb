@@ -52,8 +52,7 @@ class JsRegex
         when PROPERTY_PATTERN
           handle_property($1, $2, $3)
         else
-          literal_conversion = LiteralConverter.convert_data(utf8_data)
-          buffer_set_member(literal_conversion)
+          handle_literal(utf8_data)
         end
       end
 
@@ -83,6 +82,31 @@ class JsRegex
         else
           warn_of_unsupported_feature('property')
         end
+      end
+
+      def handle_literal(utf8_data)
+        conversion = LiteralConverter.convert_data(utf8_data)
+        if context.case_insensitive_root && !expression.case_insensitive?
+          warn_of_unsupported_feature('nested case-sensitive set member')
+        elsif !context.case_insensitive_root && expression.case_insensitive?
+          return handle_locally_case_insensitive_literal(conversion)
+        end
+        buffer_set_member(conversion)
+      end
+
+      DESCENDING_CASE_RANGE_PATTERN = /\p{upper}-\p{lower}/
+
+      def handle_locally_case_insensitive_literal(literal)
+        buffer_set_member(
+          if literal =~ DESCENDING_CASE_RANGE_PATTERN
+            warn_of_unsupported_feature(
+              'nested case-insensitive range going from upper to lower case'
+            )
+            literal
+          else
+            [literal, literal.swapcase].uniq
+          end
+        )
       end
 
       def standardize_property_name(name)
