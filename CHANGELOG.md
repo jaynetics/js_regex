@@ -1,5 +1,13 @@
 # Changelog
 
+## v2.1.0
+### Added
+- added support for option groups and switches ("(?-m:.)", "(?i)a", etc.)
+- added warning for unsupported encoding options ("(?d:\w)", "(?u)", etc.)
+
+### Fixed
+- fixed handling of whitespace following x-switches ("(?x)", "(?-x)")
+
 ## v2.0.0
 Major refactoring. Using Regexp::Parser instead of Regexp::Scanner internally allows for higher-level conversions.
 
