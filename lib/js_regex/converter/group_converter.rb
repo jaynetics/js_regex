@@ -41,8 +41,12 @@ class JsRegex
       end
 
       def build_options_group
-        warn_of_unsupported_feature('group-specific options')
-        build_group(head: '(')
+        unless (encoding_options = data.scan(/[adu]/)).empty?
+          warn_of_unsupported_feature("encoding options #{encoding_options}")
+        end
+        # TODO: replace this check in Regexp::Parser v1
+        switch_only = !data.include?(':')
+        switch_only ? drop_without_warning : build_group(head: '(')
       end
 
       def build_passive_group

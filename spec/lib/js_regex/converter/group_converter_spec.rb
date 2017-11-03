@@ -43,10 +43,17 @@ describe JsRegex::Converter::GroupConverter do
     expect_ruby_and_js_to_match(string: 'a a a', with_results: %w[a a a])
   end
 
-  it 'drops group-specific options with warning' do
-    given_the_ruby_regexp(/a(?i-m:a)a/m)
+  it 'drops switch groups without warning' do
+    given_the_ruby_regexp(/a(?m-x)a/)
+    expect_js_regex_to_be(/aa/)
+    expect_no_warnings
+    expect_ruby_and_js_to_match(string: 'aa', with_results: %w[aa])
+  end
+
+  it 'drops all encoding options with warning' do
+    given_the_ruby_regexp(/a(?adu:a)a/)
     expect_js_regex_to_be(/a(a)a/)
-    expect_warning('group-specific options')
+    expect_warning('encoding options ["a", "d", "u"]')
   end
 
   it 'works following positive lookbehind assertions' do
