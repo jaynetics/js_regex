@@ -35,6 +35,22 @@ describe JsRegex::Converter::MetaConverter do
     expect_ruby_and_js_to_match(string: "a\na a.a", with_results: %w[a.a])
   end
 
+  it 'ensures dots match newlines if the multiline option is set via groups' do
+    given_the_ruby_regexp(/a(?m:.(?-m:.)).(?m).a/)
+    expect_js_regex_to_be(/a((?:.|\n)(.)).(?:.|\n)a/)
+    expect_no_warnings
+    expect_ruby_and_js_to_match(string: "abbb\na", with_results: %W[abbb\na])
+    expect_ruby_and_js_not_to_match(string: "abb\nba")
+  end
+
+  it 'does not make dots match newlines if the multiline option is disabled' do
+    given_the_ruby_regexp(/a(?-m).(?m).a/m)
+    expect_js_regex_to_be(/a.(?:.|\n)a/)
+    expect_no_warnings
+    expect_ruby_and_js_to_match(string: "ab\na", with_results: %W[ab\na])
+    expect_ruby_and_js_not_to_match(string: "a\nba")
+  end
+
   it 'preserves the alternation meta char "|"' do
     given_the_ruby_regexp(/a|b/)
     expect_js_regex_to_be(/a|b/)

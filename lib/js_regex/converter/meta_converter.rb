@@ -15,7 +15,7 @@ class JsRegex
         when :alternation
           convert_alternation
         when :dot
-          context.multiline? ? '(?:.|\n)' : '.'
+          expression.multiline? ? '(?:.|\n)' : '.'
         else
           warn_of_unsupported_feature
         end
