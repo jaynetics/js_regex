@@ -16,7 +16,6 @@
 .tags
 .tags1
 bbin/
-bin/*
 binstubs/*
 bundler_stubs/*
 coverage
