@@ -6,8 +6,6 @@ require 'rspec/core/rake_task'
 RSpec::Core::RakeTask.new
 
 task mutate: :spec do
-  `bundle exec codeclimate-test-reporter` if ENV['TRAVIS']
-
   arguments = %w[
     bundle exec mutant
     --fail-fast

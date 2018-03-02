@@ -33,7 +33,6 @@ Gem::Specification.new do |s|
   s.add_development_dependency 'therubyracer', '~> 0.12'
 
   if JsRegex::PERFORM_FULL_BUILD
-    s.add_development_dependency 'codeclimate-test-reporter', '~> 1.0'
     s.add_development_dependency 'mutant-rspec', '~> 0.8'
   end
 end

@@ -1,13 +1,6 @@
 # encoding: utf-8
 # frozen_string_literal: true
 
-require_relative File.join('..', 'build')
-
-if JsRegex::PERFORM_FULL_BUILD
-  require 'simplecov'
-  SimpleCov.start
-end
-
 # whitelist some mutations
 defined?(Mutant) && Mutant::Mutator::Node::Send.prepend(Module.new do
   def emit_selector_replacement
