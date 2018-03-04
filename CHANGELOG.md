@@ -1,5 +1,12 @@
 # Changelog
 
+## v2.2.0
+### Added
+- added support for the most recent unicode age properties (BMP parts only)
+
+### Fixed
+- fixed handling of \p{Pc}, \p{Nl} and several other, older unicode properties; thanks to https://github.com/mojavelinux
+
 ## v2.1.0
 ### Added
 - added support for option groups and switches ("(?-m:.)", "(?i)a", etc.)
