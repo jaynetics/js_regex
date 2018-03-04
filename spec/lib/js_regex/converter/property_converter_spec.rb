@@ -93,7 +93,7 @@ describe JsRegex::Converter::PropertyConverter do
   it 'translates unicode ages',
      if: ruby_version_at_least?('1.9.3') do
     given_the_ruby_regexp(Regexp.new('\p{Age=2.0}'))
-    expect(@js_regex.source).to end_with('\uD7A3]')
+    expect(@js_regex.source).to end_with('\uFFFD]')
     expect_no_warnings
     expect_ruby_and_js_to_match(string: 'A؜힣', with_results: %w[A 힣])
   end
