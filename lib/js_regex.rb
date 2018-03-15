@@ -13,11 +13,10 @@ class JsRegex
   require_relative File.join('js_regex', 'version')
   require 'json'
 
-  attr_reader :source, :options, :warnings, :add_g_flag
+  attr_reader :source, :options, :warnings
 
   def initialize(ruby_regex, optional_arguments = {})
-    @add_g_flag = optional_arguments[:add_g_flag] || true
-    @source, @options, @warnings = Conversion.of(ruby_regex, @add_g_flag)
+    @source, @options, @warnings = Conversion.of(ruby_regex, optional_arguments)
   end
 
   def to_h
