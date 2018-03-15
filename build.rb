@@ -1,5 +1,5 @@
 # frozen_string_literal: true
 
 class JsRegex
-  PERFORM_FULL_BUILD = RUBY_VERSION.start_with?('2.4')
+  PERFORM_FULL_BUILD = RUBY_VERSION.start_with?('2.5')
 end
