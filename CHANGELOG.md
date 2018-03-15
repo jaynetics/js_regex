@@ -1,5 +1,10 @@
 # Changelog
 
+## v2.2.1
+### Fixed
+- fixed handling of superfluous forward slash escapes; thanks to https://github.com/JasonBarnabe for the cue
+- fixed quantification of astral plane literals by wrapping their surrogate pair substitution in a passive group
+
 ## v2.2.0
 ### Added
 - added support for the most recent unicode age properties (BMP parts only)
