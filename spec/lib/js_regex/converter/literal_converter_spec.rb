@@ -61,8 +61,14 @@ describe JsRegex::Converter::LiteralConverter do
 
   it 'converts astral plane literals to surrogate pairs' do
     given_the_ruby_regexp(/😁/)
-    expect(@js_regex.source).to eq('\\ud83d\\ude01')
+    expect(@js_regex.source).to eq('(?:\\ud83d\\ude01)')
     expect_ruby_and_js_to_match(string: '😁', with_results: %w[😁])
+  end
+
+  it 'wraps substitutional surrogate pairs to ensure correct quantification' do
+    given_the_ruby_regexp(/😁{2}/)
+    expect(@js_regex.source).to eq('(?:\\ud83d\\ude01){2}')
+    expect_ruby_and_js_to_match(string: '😁😁😁😁', with_results: %w[😁😁 😁😁])
   end
 
   it 'converts to a swapcase set if a local i-option applies' do

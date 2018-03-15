@@ -180,7 +180,7 @@ describe JsRegex::Converter::EscapeConverter do
 
   it 'converts codepoint lists, escaping meta chars and using surrogates' do
     given_the_ruby_regexp(/\u{61 a 28 1F601}/)
-    expect(@js_regex.source).to eq('a\n\(\ud83d\ude01')
+    expect(@js_regex.source).to eq('a\n\((?:\ud83d\ude01)')
     expect_ruby_and_js_to_match(string: "_a\n(😁_", with_results: %W[a\n(😁])
   end
 

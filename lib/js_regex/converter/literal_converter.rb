@@ -27,7 +27,7 @@ class JsRegex
           base = astral_char.codepoints.first - 65_536
           high = ((base / 1024).floor + 55_296).to_s(16)
           low  = (base % 1024 + 56_320).to_s(16)
-          "\\u#{high}\\u#{low}"
+          "(?:\\u#{high}\\u#{low})"
         end
 
         def escape_literal_forward_slashes(data)
