@@ -15,9 +15,9 @@ class JsRegex
           if data =~ ASTRAL_PLANE_CODEPOINT_PATTERN
             surrogate_pair_for(data)
           else
-            escape_literal_forward_slashes(data)
-            ensure_json_compatibility(data)
-            data
+            ensure_json_compatibility(
+              ensure_forward_slashes_are_escaped(data)
+            )
           end
         end
 
@@ -30,13 +30,13 @@ class JsRegex
           "(?:\\u#{high}\\u#{low})"
         end
 
-        def escape_literal_forward_slashes(data)
+        def ensure_forward_slashes_are_escaped(data)
           # literal slashes would signify the pattern end in JsRegex#to_s
-          data.gsub!('/', '\\/')
+          data.gsub(%r{\\?/}, '\\/')
         end
 
         def ensure_json_compatibility(data)
-          data.gsub!(/\\?[\f\n\r\t]/) { |lit| Regexp.escape(lit.delete('\\')) }
+          data.gsub(%r{\\?([\f\n\r\t])}) { Regexp.escape($1) }
         end
       end
 

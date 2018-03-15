@@ -59,6 +59,14 @@ describe JsRegex::Converter::LiteralConverter do
     expect_ruby_and_js_to_match(string: 'a//b', with_results: %w[//])
   end
 
+  it 'does not double escape single-escaped forward slashes' do
+    # c.f. https://github.com/janosch-x/js_regex/issues/6
+    given_the_ruby_regexp(%r{\/})
+    expect(@js_regex.source).to eq('\\/')
+    expect_no_warnings
+    expect_ruby_and_js_to_match(string: 'a/b', with_results: %w[/])
+  end
+
   it 'converts astral plane literals to surrogate pairs' do
     given_the_ruby_regexp(/😁/)
     expect(@js_regex.source).to eq('(?:\\ud83d\\ude01)')
