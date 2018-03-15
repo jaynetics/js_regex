@@ -12,7 +12,7 @@ class JsRegex
 
     class << self
       def of(ruby_regex, optional_arguments = {})
-        @add_g_flag = optional_arguments[:add_g_flag] || true
+        @add_g_flag = optional_arguments.key?(:add_g_flag) ? optional_arguments[:add_g_flag] : true
 
         source, warnings = convert_source(ruby_regex)
         options          = convert_options(ruby_regex)

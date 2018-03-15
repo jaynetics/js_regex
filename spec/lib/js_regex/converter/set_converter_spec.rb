@@ -312,4 +312,24 @@ b]/)
     expect_warning("nested case-sensitive set member '[b]'")
     expect_js_regex_to_be(/[a][b]/i)
   end
+
+  context 'with add_g_flag false' do
+    it 'sets no g flag' do
+      given_the_ruby_regexp(/pattern/, add_g_flag: false)
+      expect_js_regex_options_to_be('')
+    end
+  end
+  context 'with add_g_flag true' do
+    it 'sets g flag' do
+      given_the_ruby_regexp(/pattern/, add_g_flag: true)
+      expect_js_regex_options_to_be('g')
+    end
+  end
+
+  context 'without add_g_falg' do
+    it 'adds g flag by default' do
+      given_the_ruby_regexp(/pattern/)
+      expect_js_regex_options_to_be('g')
+    end
+  end
 end
