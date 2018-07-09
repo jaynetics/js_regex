@@ -1,5 +1,9 @@
 # Changelog
 
+## v2.2.2
+### Fixed
+- fixed errors on new Ruby versions by upgrading regexp_parser dependency
+
 ## v2.2.1
 ### Fixed
 - fixed handling of superfluous forward slash escapes; thanks to https://github.com/JasonBarnabe for the cue
