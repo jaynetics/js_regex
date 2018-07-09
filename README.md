@@ -3,7 +3,6 @@
 
 [![Gem Version](https://badge.fury.io/rb/js_regex.svg)](http://badge.fury.io/rb/js_regex)
 [![Build Status](https://travis-ci.org/janosch-x/js_regex.svg?branch=master)](https://travis-ci.org/janosch-x/js_regex)
-[![Dependency Status](https://gemnasium.com/janosch-x/js_regex.svg)](https://gemnasium.com/janosch-x/js_regex)
 [![Code Climate](https://codeclimate.com/github/janosch-x/js_regex/badges/gpa.svg)](https://codeclimate.com/github/janosch-x/js_regex)
 
 This is a Ruby gem that translates Ruby's regular expressions to the JavaScript flavor.
@@ -154,7 +153,7 @@ Currently, the following functionalities can't be carried over to JavaScript. If
 | bell and escape chars          | \a, \e                | yes     |
 | extended grapheme type         | \X                    | yes     |
 | wide hex escapes               | \x{1234}              | yes     |
-| astral plane scripts           | \p{Deseret}           | yes     |
+| astral plane properties        | \p{Deseret}, p{Emoji} | yes     |
 | astral plane ranges            | [&#x1f601;-&#x1f632;] | yes     |
 
 In addition, the word boundaries `\b` and `\B` cause warnings since they are not unicode-ready in JavaScript. Unfortunately this [holds true even for the latest versions of JavaScript](http://www.ecma-international.org/ecma-262/6.0/#sec-runtime-semantics-iswordchar-abstract-operation).
