@@ -17,13 +17,16 @@ require 'js_regex'
 require 'v8' # gem 'therubyracer'
 JS_CONTEXT = V8::Context.new
 
-def given_the_ruby_regexp(ruby_regex)
+def given_the_ruby_regexp(ruby_regex, optional_arguments = {})
   @ruby_regex = ruby_regex
-  @js_regex = JsRegex.new(ruby_regex)
+  @js_regex = JsRegex.new(ruby_regex, optional_arguments)
 end
 
 def expect_js_regex_to_be(expected)
   expect(@js_regex.source).to eq(expected.source)
+end
+def expect_js_regex_options_to_be(expected)
+  expect(@js_regex.options).to eq(expected)
 end
 
 def expect_no_warnings

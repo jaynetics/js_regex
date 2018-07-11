@@ -11,7 +11,9 @@ class JsRegex
     require_relative 'converter'
 
     class << self
-      def of(ruby_regex)
+      def of(ruby_regex, optional_arguments = {})
+        @add_g_flag = optional_arguments.key?(:add_g_flag) ? optional_arguments[:add_g_flag] : true
+
         source, warnings = convert_source(ruby_regex)
         options          = convert_options(ruby_regex)
         [source, options, warnings]
@@ -30,7 +32,10 @@ class JsRegex
 
       def convert_options(ruby_regex)
         ignore_case = (ruby_regex.options & Regexp::IGNORECASE).nonzero?
-        ignore_case ? 'gi' : 'g'
+        regex_options = ''
+        regex_options += 'g' if @add_g_flag
+        regex_options += 'i' if ignore_case
+        regex_options
       end
     end
   end
