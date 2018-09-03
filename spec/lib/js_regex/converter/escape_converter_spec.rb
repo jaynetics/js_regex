@@ -1,4 +1,3 @@
-# encoding: utf-8
 # frozen_string_literal: true
 
 #
@@ -148,39 +147,23 @@ describe JsRegex::Converter::EscapeConverter do
     expect_ruby_and_js_to_match(string: '	', with_results: ['	'])
   end
 
-  it 'drops the bell char "\a" with warning' do
+  it 'replaces the bell char "\a" with a hex escape' do
     given_the_ruby_regexp(/.\a/)
-    expect_js_regex_to_be(/./)
-    expect_warning
+    expect_js_regex_to_be(/.\x07/)
+    expect_no_warnings
+    expect_ruby_and_js_to_match(string: "ab\ac", with_results: ["b\a"])
   end
 
-  it 'drops the escape char "\e" with warning' do
+  it 'replaces the escape char "\e" with a hex escape' do
     given_the_ruby_regexp(/.\e/)
-    expect_js_regex_to_be(/./)
-    expect_warning
-  end
-
-  it 'drops the subexpression rematcher "\G" with warning' do
-    given_the_ruby_regexp(/(.)\G/)
-    expect_js_regex_to_be(/(.)/)
-    expect_warning
-  end
-
-  it 'drops ab-named subexpression calls ("\g") with warning' do
-    given_the_ruby_regexp(/(?<x>.)\g<x>/)
-    expect_js_regex_to_be(/(.)/)
-    expect_warning
-  end
-
-  it 'drops sq-named subexpression calls ("\g") with warning' do
-    given_the_ruby_regexp(/(?'x'.)\g'x'/)
-    expect_js_regex_to_be(/(.)/)
-    expect_warning
+    expect_js_regex_to_be(/.\x1B/)
+    expect_no_warnings
+    expect_ruby_and_js_to_match(string: "ab\ec", with_results: ["b\e"])
   end
 
   it 'converts codepoint lists, escaping meta chars and using surrogates' do
     given_the_ruby_regexp(/\u{61 a 28 1F601}/)
-    expect(@js_regex.source).to eq('a\n\((?:\ud83d\ude01)')
+    expect(js_regex_source).to eq('a\n\((?:\ud83d\ude01)')
     expect_ruby_and_js_to_match(string: "_a\n(😁_", with_results: %W[a\n(😁])
   end
 

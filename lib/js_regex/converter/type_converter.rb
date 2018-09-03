@@ -8,8 +8,17 @@ class JsRegex
     # Template class implementation.
     #
     class TypeConverter < JsRegex::Converter::Base
-      HEX_EXPANSION       = '[A-Fa-f0-9]'
-      NONHEX_EXPANSION    = '[^A-Fa-f0-9]'
+      TYPES_SHARED_BY_RUBY_AND_JS = %i[
+        digit
+        nondigit
+        word
+        nonword
+        space
+        nonspace
+      ].freeze
+
+      HEX_EXPANSION       = '[0-9A-Fa-f]'
+      NONHEX_EXPANSION    = '[^0-9A-Fa-f]'
       LINEBREAK_EXPANSION = '(\r\n|\r|\n)'
 
       private
@@ -19,7 +28,7 @@ class JsRegex
         when :hex then HEX_EXPANSION
         when :nonhex then NONHEX_EXPANSION
         when :linebreak then LINEBREAK_EXPANSION
-        when :digit, :nondigit, :word, :nonword, :space, :nonspace
+        when *TYPES_SHARED_BY_RUBY_AND_JS
           pass_through
         else
           warn_of_unsupported_feature

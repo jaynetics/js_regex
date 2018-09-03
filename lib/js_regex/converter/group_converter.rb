@@ -16,7 +16,7 @@ class JsRegex
         when :capture then build_group
         when :comment then drop_without_warning
         when :named then build_named_group
-        when :options then build_options_group
+        when :options, :options_switch then build_options_group
         when :passive then build_passive_group
         when :absence then warn_of_unsupported_feature
         else build_unsupported_group
@@ -44,8 +44,7 @@ class JsRegex
         unless (encoding_options = data.scan(/[adu]/)).empty?
           warn_of_unsupported_feature("encoding options #{encoding_options}")
         end
-        # TODO: replace this check in Regexp::Parser v1
-        switch_only = !data.include?(':')
+        switch_only = subtype.equal?(:options_switch)
         switch_only ? drop_without_warning : build_group(head: '(')
       end
 

@@ -1,7 +1,7 @@
 # frozen_string_literal: true
 
 require_relative 'base'
-require_relative File.join('..', 'property_map')
+require 'character_set'
 
 class JsRegex
   module Converter
@@ -9,24 +9,6 @@ class JsRegex
     # Template class implementation.
     #
     class PropertyConverter < JsRegex::Converter::Base
-      class << self
-        def property_replacement(property_name, negated = nil)
-          replacement = PROPERTY_MAP[property_name.downcase.to_sym]
-          negated ? negated_property_replacement(replacement) : replacement
-        end
-
-        private
-
-        def negated_property_replacement(property_string)
-          return nil unless property_string
-          if property_string.start_with?('[^')
-            property_string.sub('[^', '[')
-          else
-            property_string.sub('[', '[^')
-          end
-        end
-      end
-
       private
 
       def convert_data
@@ -34,8 +16,29 @@ class JsRegex
       end
 
       def convert_property(negated = nil)
-        replace = self.class.property_replacement(subtype, negated)
-        replace || warn_of_unsupported_feature
+        content = CharacterSet.of_property(subtype)
+        if expression.case_insensitive? && !context.case_insensitive_root
+          content = content.case_insensitive
+        end
+
+        if negated
+          if content.astral_part.empty?
+            return "[^#{content.to_s(format: :js)}]"
+          else
+            warn_of_unsupported_feature('astral plane negation by property')
+          end
+        elsif Converter.surrogate_pair_limit.nil? ||
+              Converter.surrogate_pair_limit >= content.astral_part.size
+          return content.to_s_with_surrogate_alternation
+        else
+          warn_of_unsupported_feature('large astral plane match of property')
+        end
+
+        bmp_part = content.bmp_part
+        return '' if bmp_part.empty?
+
+        string = bmp_part.to_s(format: :js)
+        negated ? "[^#{string}]" : "[#{string}]"
       end
     end
   end

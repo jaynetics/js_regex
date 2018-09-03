@@ -1,4 +1,3 @@
-# encoding: utf-8
 # frozen_string_literal: true
 
 require 'spec_helper'
@@ -54,6 +53,12 @@ describe JsRegex::Converter::AnchorConverter do
     expect_warning("The boundary '\\B' at index 2 is not unicode-aware in "\
                    'JavaScript, so it might act differently than in Ruby.')
     expect_ruby_and_js_to_match(string: 'abc', with_results: %w[a b])
+  end
+
+  it 'drops the previous match anchor "\G" with warning' do
+    given_the_ruby_regexp(/(.)\G/)
+    expect_js_regex_to_be(/(.)/)
+    expect_warning
   end
 
   it 'drops unknown anchors with warning' do

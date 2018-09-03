@@ -5,11 +5,9 @@ Performance/RegexpMatch:
   Enabled: false
 Performance/UnfreezeString:
   Enabled: false
-Style/BracesAroundHashParameters:
-  Enabled: false
 Style/Encoding:
   Enabled: false
 Style/NumericPredicate:
   Enabled: false
-Style/SymbolArray:
+Style/UnpackFirst:
   Enabled: false

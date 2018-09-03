@@ -1,10 +1,9 @@
-# encoding: utf-8
 # frozen_string_literal: true
 
 # whitelist some mutations
 defined?(Mutant) && Mutant::Mutator::Node::Send.prepend(Module.new do
   def emit_selector_replacement
-    super unless [:first, :=~].include?(selector)
+    super unless %i[first =~].include?(selector)
   end
 end)
 
@@ -23,7 +22,7 @@ def given_the_ruby_regexp(ruby_regex)
 end
 
 def expect_js_regex_to_be(expected)
-  expect(@js_regex.source).to eq(expected.source)
+  expect(js_regex_source).to eq(expected.source)
 end
 
 def expect_no_warnings
@@ -37,6 +36,10 @@ end
 
 def expect_warnings(count)
   expect(@js_regex.warnings.count).to eq(count)
+end
+
+def js_regex_source
+  @js_regex.source
 end
 
 def expect_ruby_and_js_to_match(args = { string: '', with_results: [] })
@@ -100,7 +103,7 @@ def escape_for_js_string_evaluation(test_string)
 end
 
 def expect_to_drop_token_with_warning(token_class, subtype)
-  exp = expression_double({ type: token_class, token: subtype })
+  exp = expression_double(type: token_class, token: subtype)
   converter = JsRegex::Converter.for(exp)
   expect(converter).to be_a(described_class)
 
@@ -111,10 +114,7 @@ def expect_to_drop_token_with_warning(token_class, subtype)
 end
 
 def expression_double(attributes)
-  defaults = { expressions: [], quantifier: nil, to_s: 'X', ts: 0 }
+  defaults = { case_insensitive?: false, expressions: [],
+               quantifier: nil, to_s: 'X', ts: 0 }
   instance_double(Regexp::Expression::Root, defaults.merge(attributes))
-end
-
-def ruby_version_at_least?(version_string)
-  Gem::Version.new(RUBY_VERSION.dup) >= Gem::Version.new(version_string)
 end

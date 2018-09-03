@@ -1,4 +1,3 @@
-# encoding: utf-8
 # frozen_string_literal: true
 
 require 'spec_helper'
@@ -7,7 +6,7 @@ describe JsRegex::Converter::Base do
   describe '#warn_of_unsupported_feature' do
     it 'adds a warning with token class, subtype, data and index' do
       conv = described_class.new
-      expr = expression_double({ type: 'bar', token: 'big_bad', ts: 7 })
+      expr = expression_double(type: 'bar', token: 'big_bad', ts: 7)
       allow(expr).to receive(:to_s).and_return('foo')
       allow(conv).to receive(:expression).and_return(expr)
       allow(conv).to receive(:warn)
@@ -19,7 +18,7 @@ describe JsRegex::Converter::Base do
 
     it 'takes an argument to override the description' do
       conv = described_class.new
-      expr = expression_double({ type: 'bar', token: 'big', ts: 7 })
+      expr = expression_double(type: 'bar', token: 'big', ts: 7)
       allow(expr).to receive(:to_s).and_return('foo')
       allow(conv).to receive(:expression).and_return(expr)
       allow(conv).to receive(:warn)
@@ -31,7 +30,7 @@ describe JsRegex::Converter::Base do
 
     it 'returns an empty string to be appended to the converted source' do
       conv = described_class.new
-      expr = expression_double({ type: 'bar', token: 'big', ts: 7 })
+      expr = expression_double(type: 'bar', token: 'big', ts: 7)
       allow(expr).to receive(:to_s).and_return('foo')
       allow(conv).to receive(:expression).and_return(expr)
       allow(conv).to receive(:warn)
@@ -232,7 +231,7 @@ describe JsRegex::Converter::Base do
 
     context 'when quantifiers follow dropped elements' do
       it 'drops the quantifiers as well' do
-        given_the_ruby_regexp(/a\e{2,3}b[😁]++c/)
+        given_the_ruby_regexp(/a\G{2,3}b\G++c/)
         expect_js_regex_to_be(/abc/)
       end
     end

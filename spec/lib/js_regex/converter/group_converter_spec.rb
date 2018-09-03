@@ -1,4 +1,3 @@
-# encoding: utf-8
 # frozen_string_literal: true
 
 require 'spec_helper'
@@ -50,8 +49,7 @@ describe JsRegex::Converter::GroupConverter do
     expect_ruby_and_js_to_match(string: 'aa', with_results: %w[aa])
   end
 
-  it 'drops all encoding options with warning',
-     if: ruby_version_at_least?('2.0.0') do
+  it 'drops all encoding options with warning' do
     given_the_ruby_regexp(Regexp.new('a(?adu:a)a'))
     expect_js_regex_to_be(/a(a)a/)
     expect_warning('encoding options ["a", "d", "u"]')
@@ -72,7 +70,7 @@ describe JsRegex::Converter::GroupConverter do
   end
 
   it 'opens passive groups for unknown group heads' do
-    ep = expression_double({ type: :group, token: :unknown, to_s: '(%', ts: 0 })
+    ep = expression_double(type: :group, token: :unknown, to_s: '(%', ts: 0)
     converter = JsRegex::Converter.for(ep)
     expect(converter).to be_a(described_class)
 
@@ -150,7 +148,7 @@ describe JsRegex::Converter::GroupConverter do
   end
 
   it 'drops absence operators / groups with warning',
-     if: ruby_version_at_least?('2.4.1') do
+     if: (Gem::Version.new(RUBY_VERSION.dup) >= Gem::Version.new('2.4.1')) do
     given_the_ruby_regexp(Regexp.new('1(?~2)3'))
     expect_js_regex_to_be(/13/)
     expect_warning("Dropped unsupported absence group '(?~2)' at index 1")

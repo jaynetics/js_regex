@@ -8,12 +8,10 @@ class JsRegex
     # The Converters themselves are stateless.
     #
     class Context
-      attr_reader :buffered_set_extractions,
-                  :buffered_set_members,
+      attr_reader :ast,
                   :case_insensitive_root,
                   :in_atomic_group,
                   :named_group_positions,
-                  :negative_base_set,
                   :warnings
 
       def initialize(ruby_regex)
@@ -22,20 +20,8 @@ class JsRegex
         self.named_group_positions = {}
         self.warnings = []
 
-        self.case_insensitive_root =
-          !(ruby_regex.options & Regexp::IGNORECASE).equal?(0)
-      end
-
-      # set context
-
-      def negate_base_set
-        self.negative_base_set = true
-      end
-
-      def reset_set_context
-        self.buffered_set_extractions = []
-        self.buffered_set_members = []
-        self.negative_base_set = false
+        self.ast = Regexp::Parser.parse(ruby_regex)
+        self.case_insensitive_root = ast.case_insensitive?
       end
 
       # group context
@@ -75,10 +61,6 @@ class JsRegex
         capturing_group_count - total_added_capturing_groups
       end
 
-      def total_added_capturing_groups
-        added_capturing_groups_after_group.values.inject(0, &:+)
-      end
-
       def store_named_group_position(name)
         named_group_positions[name] = capturing_group_count + 1
       end
@@ -88,13 +70,15 @@ class JsRegex
       attr_accessor :added_capturing_groups_after_group,
                     :capturing_group_count
 
-      attr_writer :buffered_set_extractions,
-                  :buffered_set_members,
+      attr_writer :ast,
                   :case_insensitive_root,
                   :in_atomic_group,
                   :named_group_positions,
-                  :negative_base_set,
                   :warnings
+
+      def total_added_capturing_groups
+        added_capturing_groups_after_group.values.inject(0, &:+)
+      end
     end
   end
 end

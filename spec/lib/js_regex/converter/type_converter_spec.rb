@@ -1,4 +1,3 @@
-# encoding: utf-8
 # frozen_string_literal: true
 
 require 'spec_helper'
@@ -48,28 +47,26 @@ describe JsRegex::Converter::TypeConverter do
 
   it 'translates the hex type "\h"' do
     given_the_ruby_regexp(/\h+/)
-    expect_js_regex_to_be(/[A-Fa-f0-9]+/)
+    expect_js_regex_to_be(/[0-9A-Fa-f]+/)
     expect_no_warnings
     expect_ruby_and_js_to_match(string: 'FF__FF', with_results: %w[FF FF])
   end
 
   it 'translates the nonhex type "\H"' do
     given_the_ruby_regexp(/\H+/)
-    expect_js_regex_to_be(/[^A-Fa-f0-9]+/)
+    expect_js_regex_to_be(/[^0-9A-Fa-f]+/)
     expect_no_warnings
     expect_ruby_and_js_to_match(string: 'FFxy66z', with_results: %w[xy z])
   end
 
-  it 'translates the generic linebreak type "\R"',
-     if: ruby_version_at_least?('2.0.0') do
+  it 'translates the generic linebreak type "\R"' do
     given_the_ruby_regexp(/\R/)
     expect_js_regex_to_be(/(\r\n|\r|\n)/)
     expect_no_warnings
     expect_ruby_and_js_to_match(string: "_\n_\r\n_", with_results: %W[\n \r\n])
   end
 
-  it 'drops the extended grapheme type "\X" with warning',
-     if: ruby_version_at_least?('2.0.0') do
+  it 'drops the extended grapheme type "\X" with warning' do
     given_the_ruby_regexp(/a\Xb/)
     expect_js_regex_to_be(/ab/)
     expect_warning("Dropped unsupported xgrapheme type '\\X' at index 1")

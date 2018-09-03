@@ -1,4 +1,3 @@
-# encoding: utf-8
 # frozen_string_literal: true
 
 require 'spec_helper'
@@ -41,15 +40,17 @@ describe JsRegex::Conversion do
   end
 
   describe '#convert_options' do
+    let(:options) { @js_regex.options }
+
     # all Ruby regexes are what is called "global" in JS
     it 'always sets the global flag' do
       given_the_ruby_regexp(//)
-      expect(@js_regex.options).to eq('g')
+      expect(options).to eq('g')
     end
 
     it 'carries over the case-insensitive option' do
       given_the_ruby_regexp(/a/i)
-      expect(@js_regex.options).to eq('gi')
+      expect(options).to eq('gi')
       expect_no_warnings
       expect_ruby_and_js_to_match(string: 'ABab', with_results: %w[A a])
     end
@@ -58,14 +59,14 @@ describe JsRegex::Conversion do
       # this would be bad since JS' multiline option is different from Ruby's.
       # c.f. meta_converter_spec.rb for option-based token handling.
       given_the_ruby_regexp(//m)
-      expect(@js_regex.options).to eq('g')
+      expect(options).to eq('g')
       expect_no_warnings
     end
 
     it 'does not carry over the extended option' do
       # c.f. freespace_converter_spec.rb for option-based token handling.
       given_the_ruby_regexp(//x)
-      expect(@js_regex.options).to eq('g')
+      expect(options).to eq('g')
       expect_no_warnings
     end
   end

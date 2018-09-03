@@ -1,4 +1,3 @@
-# encoding: utf-8
 # frozen_string_literal: true
 
 require 'spec_helper'
@@ -170,9 +169,33 @@ describe JsRegex::Converter::BackreferenceConverter do
     end
   end
 
-  it 'drops subexpression calls with warning' do
-    given_the_ruby_regexp(/((.)\2{2})\g<1>*/)
-    expect_js_regex_to_be(/((.)\2{2})/)
-    expect_warning
+  it 'replaces numbered subexpression calls with the targeted subexpression' do
+    given_the_ruby_regexp(/(foo)(bar)\g<2>+/)
+    expect_js_regex_to_be(/(foo)(bar)(bar)+/)
+    expect_no_warnings
+    expect_ruby_and_js_not_to_match(string: 'foobar')
+    expect_ruby_and_js_to_match(string: 'foobarbar')
+  end
+
+  it 'replaces relative subexpression calls with the targeted subexpression' do
+    given_the_ruby_regexp(/(foo)(bar)\g<-2>+/)
+    expect_js_regex_to_be(/(foo)(bar)(foo)+/)
+    expect_no_warnings
+    expect_ruby_and_js_not_to_match(string: 'foobar')
+    expect_ruby_and_js_to_match(string: 'foobarfoo')
+  end
+
+  it 'replaces named subexpression calls with the targeted subexpression' do
+    given_the_ruby_regexp(/(foo)(?<x>bar)(baz)\g<x>+/)
+    expect_js_regex_to_be(/(foo)(bar)(baz)(bar)+/)
+    expect_no_warnings
+    expect_ruby_and_js_not_to_match(string: 'foobarbaz')
+    expect_ruby_and_js_to_match(string: 'foobarbazbar')
+  end
+
+  it 'drops whole-pattern recursion calls with warning' do
+    given_the_ruby_regexp(/(a(b|\g<0>))/)
+    expect_js_regex_to_be(/(a(b))/)
+    expect_warning('whole-pattern recursion')
   end
 end

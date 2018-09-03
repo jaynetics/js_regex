@@ -1,4 +1,3 @@
-# encoding: utf-8
 # frozen_string_literal: true
 
 #
@@ -54,7 +53,7 @@ describe JsRegex::Converter::LiteralConverter do
 
   it 'converts literal forward slashes to forward slash escapes' do
     given_the_ruby_regexp(%r{//})
-    expect(@js_regex.source).to eq('\\/\\/')
+    expect(js_regex_source).to eq('\\/\\/')
     expect_no_warnings
     expect_ruby_and_js_to_match(string: 'a//b', with_results: %w[//])
   end
@@ -62,20 +61,20 @@ describe JsRegex::Converter::LiteralConverter do
   it 'does not double escape single-escaped forward slashes' do
     # c.f. https://github.com/janosch-x/js_regex/issues/6
     given_the_ruby_regexp(%r{\/})
-    expect(@js_regex.source).to eq('\\/')
+    expect(js_regex_source).to eq('\\/')
     expect_no_warnings
     expect_ruby_and_js_to_match(string: 'a/b', with_results: %w[/])
   end
 
   it 'converts astral plane literals to surrogate pairs' do
     given_the_ruby_regexp(/😁/)
-    expect(@js_regex.source).to eq('(?:\\ud83d\\ude01)')
+    expect(js_regex_source).to eq('(?:\\ud83d\\ude01)')
     expect_ruby_and_js_to_match(string: '😁', with_results: %w[😁])
   end
 
   it 'wraps substitutional surrogate pairs to ensure correct quantification' do
     given_the_ruby_regexp(/😁{2}/)
-    expect(@js_regex.source).to eq('(?:\\ud83d\\ude01){2}')
+    expect(js_regex_source).to eq('(?:\\ud83d\\ude01){2}')
     expect_ruby_and_js_to_match(string: '😁😁😁😁', with_results: %w[😁😁 😁😁])
   end
 

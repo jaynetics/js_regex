@@ -1,4 +1,3 @@
-# encoding: utf-8
 # frozen_string_literal: true
 
 require 'spec_helper'
@@ -66,13 +65,13 @@ describe JsRegex::Converter::MetaConverter do
   end
 
   it 'applies further conversions to alternation branches' do
-    given_the_ruby_regexp(/(b\e|c)/)
+    given_the_ruby_regexp(/(b\G|c)/)
     expect_js_regex_to_be(/(b|c)/)
     expect_warning
   end
 
   it 'drops depleted alternation branches' do
-    given_the_ruby_regexp(/(\e|ccc)/)
+    given_the_ruby_regexp(/(\G|ccc)/)
     expect_js_regex_to_be(/(ccc)/)
     expect_warning
   end

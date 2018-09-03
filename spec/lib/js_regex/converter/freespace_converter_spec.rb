@@ -1,4 +1,3 @@
-# encoding: utf-8
 # frozen_string_literal: true
 
 #
@@ -78,8 +77,8 @@ describe JsRegex::Converter::FreespaceConverter do
       given_the_ruby_regexp(/Multiple    #   comment 1
                              Comments!   #   comment 2
                             /)
-      expect(@js_regex.source).to include('Multiple    #   comment 1')
-      expect(@js_regex.source).to include('Comments!   #   comment 2')
+      expect(js_regex_source).to include('Multiple    #   comment 1')
+      expect(js_regex_source).to include('Comments!   #   comment 2')
       expect_no_warnings
     end
 

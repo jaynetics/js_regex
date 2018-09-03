@@ -20,10 +20,9 @@ class JsRegex
       private
 
       def convert_source(ruby_regex)
-        context         = Converter::Context.new(ruby_regex)
-        expression_tree = Regexp::Parser.parse(ruby_regex)
+        context = Converter::Context.new(ruby_regex)
         [
-          Converter::RootConverter.new.convert(expression_tree, context),
+          Converter::RootConverter.new.convert(context.ast, context),
           context.warnings
         ]
       end

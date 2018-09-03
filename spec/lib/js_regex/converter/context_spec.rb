@@ -1,4 +1,3 @@
-# encoding: utf-8
 # frozen_string_literal: true
 
 require 'spec_helper'
@@ -33,36 +32,6 @@ describe JsRegex::Converter::Context do
     it 'sets #case_insensitive_root to false if the regex has no i-flag' do
       context = described_class.new(//m)
       expect(context.case_insensitive_root).to be false
-    end
-  end
-
-  # set context
-
-  describe '#negate_base_set' do
-    it 'sets negate_base_set to true' do
-      context.instance_variable_set(:@negative_base_set, false)
-      context.negate_base_set
-      expect(context.negative_base_set).to be true
-    end
-  end
-
-  describe '#reset_set_context' do
-    it 'sets buffered_set_extractions to []' do
-      context.instance_variable_set(:@buffered_set_extractions, ['foo'])
-      context.reset_set_context
-      expect(context.buffered_set_extractions).to eq([])
-    end
-
-    it 'sets buffered_set_members to []' do
-      context.instance_variable_set(:@buffered_set_members, ['foo'])
-      context.reset_set_context
-      expect(context.buffered_set_members).to eq([])
-    end
-
-    it 'sets negative_base_set to false' do
-      context.instance_variable_set(:@negative_base_set, true)
-      context.reset_set_context
-      expect(context.negative_base_set).to eq(false)
     end
   end
 
@@ -120,7 +89,7 @@ describe JsRegex::Converter::Context do
   describe '#new_capturing_group_position' do
     it 'increments the passed position by count of groups added before it' do
       allow(context).to receive(:added_capturing_groups_after_group)
-        .and_return({ 1 => 100, 2 => 100, 3 => 100, 4 => 100, 5 => 100 })
+        .and_return(1 => 100, 2 => 100, 3 => 100, 4 => 100, 5 => 100)
       expect(context.new_capturing_group_position(4)).to eq(304)
     end
 
@@ -142,14 +111,14 @@ describe JsRegex::Converter::Context do
   describe '#total_added_capturing_groups' do
     it 'returns the sum of all added capturing groups' do
       allow(context).to receive(:added_capturing_groups_after_group)
-        .and_return({ 1 => 100, 2 => 100, 3 => 100, 4 => 100, 5 => 100 })
-      expect(context.total_added_capturing_groups).to eq(500)
+        .and_return(1 => 100, 2 => 100, 3 => 100, 4 => 100, 5 => 100)
+      expect(context.send(:total_added_capturing_groups)).to eq(500)
     end
 
     it 'returns 0 if no groups have been added' do
       allow(context).to receive(:added_capturing_groups_after_group)
         .and_return({})
-      expect(context.total_added_capturing_groups).to eq(0)
+      expect(context.send(:total_added_capturing_groups)).to eq(0)
     end
   end
 

@@ -1,4 +1,3 @@
-# encoding: utf-8
 # frozen_string_literal: true
 
 require 'spec_helper'
@@ -21,7 +20,7 @@ describe JsRegex do
   it 'can handle a complex user name validation regex' do
     # https://github.com/DavyJonesLocker/client_side_validations/issues/615
     given_the_ruby_regexp(/\A[\p{L}0-9\-_\s]+\z/)
-    expect_no_warnings
+    expect_warning('astral plane')
     expect_ruby_and_js_to_match(string: 'äöü-23 x_X master',
                                 with_results: ['äöü-23 x_X master'])
     expect_ruby_and_js_not_to_match(string: 'a:')

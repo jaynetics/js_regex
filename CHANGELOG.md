@@ -4,6 +4,23 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](http://keepachangelog.com/en/1.0.0/)
 and this project adheres to [Semantic Versioning](http://semver.org/spec/v2.0.0.html).
 
+## [Unreleased]
+Major refactoring adding [character_set](https://github.com/janosch-x/character_set) and [regexp_property_values](https://github.com/janosch-x/regexp_property_values) as dependencies.
+
+### Changed
+- changed handling of unicode properties (\p{...}) and posix classes ([:...:]); their replacements now match the same codepoints as the host ruby version
+- changed required ruby version from 1.9.3 to 2.1.0
+
+### Added
+- added support for moderately sized astral plane properties (e.g. \p{emoji})
+- added full support for set nesting (e.g. "[a[^123]]")
+- added full support for set ranges (including non-literal, e.g. "[\x00-\b]")
+- added support for astral plane set members
+- added support for set intersections (e.g. "[a-z&&[^aeiou]]")
+- added support for set intersections (e.g. "[a-z&&[^aeiou]]")
+- added support for all types of subexpression calls (e.g. "(foo)\g<1>")
+- added support for bell and escape shortcuts ("\a", "\e")
+- added warnings for ranges and unicode properties with large astral plane parts
 
 ## [2.2.2] - 2018-07-09
 ### Fixed
