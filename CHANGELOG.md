@@ -1,22 +1,27 @@
 # Changelog
+All notable changes to this project will be documented in this file.
 
-## v2.2.2
+The format is based on [Keep a Changelog](http://keepachangelog.com/en/1.0.0/)
+and this project adheres to [Semantic Versioning](http://semver.org/spec/v2.0.0.html).
+
+
+## [2.2.2] - 2018-07-09
 ### Fixed
 - fixed errors on new Ruby versions by upgrading regexp_parser dependency
 
-## v2.2.1
+## [2.2.1] - 2018-03-15
 ### Fixed
 - fixed handling of superfluous forward slash escapes; thanks to https://github.com/JasonBarnabe for the cue
 - fixed quantification of astral plane literals by wrapping their surrogate pair substitution in a passive group
 
-## v2.2.0
+## [2.2.0] - 2018-03-04
 ### Added
 - added support for the most recent unicode age properties (BMP parts only)
 
 ### Fixed
 - fixed handling of \p{Pc}, \p{Nl} and several other, older unicode properties; thanks to https://github.com/mojavelinux
 
-## v2.1.0
+## [2.1.0] - 2017-11-03
 ### Added
 - added support for option groups and switches ("(?-m:.)", "(?i)a", etc.)
 - added warning for unsupported encoding options ("(?d:\w)", "(?u)", etc.)
@@ -24,7 +29,7 @@
 ### Fixed
 - fixed handling of whitespace following x-switches ("(?x)", "(?-x)")
 
-## v2.0.0
+## [2.0.0] - 2017-09-25
 Major refactoring. Using Regexp::Parser instead of Regexp::Scanner internally allows for higher-level conversions.
 
 ### Changed
@@ -45,19 +50,19 @@ Major refactoring. Using Regexp::Parser instead of Regexp::Scanner internally al
 - double-negated properties ("\P{^...}") are now correctly treated as positive
 - conditionals are now replaced with passive instead of capturing alternation groups
 
-## v1.2.3
+## [1.2.3] - 2017-04-12
 ### Fixed
 - fixed handling of escaped parentheses ("\\(" and "\\)"); thanks to https://github.com/owst
 - fixed handling of codepoint lists (e.g. \u{61 63 1F601}}.
 
-## v1.2.0
+## [1.2.0] - 2016-12-05
 ### Added
 - added support for hex escapes in character sets.
 
 ### Fixed
 - fixed an exotic bug with multiple stacked quantifiers (e.g. /a{2}{3}{4}/). they are now all removed instead of breaking the regex.
 
-## v1.1.0
+## [1.1.0] - 2016-11-28
 ### Added
 - added support for astral plane literals outside of sets by converting them to surrogate pairs
 - added support for the backspace pseudo set ([\b])
@@ -67,10 +72,10 @@ Major refactoring. Using Regexp::Parser instead of Regexp::Scanner internally al
 - fixed a bug with atomic groups nested in atomic groups. they are now made non-atomic with a warning instead of breaking the regex.
 - fixed a bug with negated properties (\p{^...} and \P{...}) in sets. they are now correctly extracted from sets.
 
-## v1.0.19
+## [1.0.19] - 2016-11-15
 ### Fixed
 - fixed handling of escaped bol/eol anchors (\^ and \$); thanks to https://github.com/tomca32
 
-## v1.0.18
+## [1.0.18] - 2016-09-04
 ### Fixed
 - fixed handling of carriage return escape sequences ("\r"); thanks to https://github.com/mrcthms
