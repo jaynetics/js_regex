@@ -96,6 +96,13 @@ describe JsRegex::Converter::EscapeConverter do
     expect_ruby_and_js_to_match(string: 'a[]b', with_results: %w([]))
   end
 
+  it 'preserves escaped alternation chars' do
+    given_the_ruby_regexp(/\|/)
+    expect_js_regex_to_be(/\|/)
+    expect_no_warnings
+    expect_ruby_and_js_to_match(string: 'a|b', with_results: %w[|])
+  end
+
   it 'preserves escaped meta chars / types' do
     given_the_ruby_regexp(/\\h\\H\\s\\S\\d\\D\\w\\W/)
     expect_js_regex_to_be(/\\h\\H\\s\\S\\d\\D\\w\\W/)

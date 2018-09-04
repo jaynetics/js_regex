@@ -10,6 +10,7 @@ class JsRegex
     #
     class EscapeConverter < JsRegex::Converter::Base
       ESCAPES_SHARED_BY_RUBY_AND_JS = %i[
+        alternation
         backslash
         backspace
         bol

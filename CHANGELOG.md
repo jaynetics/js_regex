@@ -22,6 +22,9 @@ Major refactoring adding [character_set](https://github.com/janosch-x/character_
 - added support for bell and escape shortcuts ("\a", "\e")
 - added warnings for ranges and unicode properties with large astral plane parts
 
+### Fixed
+- fixed handling of escaped alternation chars a.k.a. pipes ("\\|")
+
 ## [2.2.2] - 2018-07-09
 ### Fixed
 - fixed errors on new Ruby versions by upgrading regexp_parser dependency
