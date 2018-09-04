@@ -8,6 +8,7 @@ and this project adheres to [Semantic Versioning](http://semver.org/spec/v2.0.0.
 Major refactoring adding [character_set](https://github.com/janosch-x/character_set) and [regexp_property_values](https://github.com/janosch-x/regexp_property_values) as dependencies.
 
 ### Changed
+- changed default options: the `g` flag is no longer automatically set, use `JsRegex.new(//, options: 'g')` to force it (#5)
 - changed handling of unicode properties (\p{...}) and posix classes ([:...:]); their replacements now match the same codepoints as the host ruby version
 - changed required ruby version from 1.9.3 to 2.1.0
 

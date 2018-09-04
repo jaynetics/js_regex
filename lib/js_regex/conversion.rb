@@ -11,10 +11,10 @@ class JsRegex
     require_relative 'converter'
 
     class << self
-      def of(ruby_regex)
+      def of(ruby_regex, options: nil)
         source, warnings = convert_source(ruby_regex)
-        options          = convert_options(ruby_regex)
-        [source, options, warnings]
+        options_string   = convert_options(ruby_regex, options)
+        [source, options_string, warnings]
       end
 
       private
@@ -27,9 +27,10 @@ class JsRegex
         ]
       end
 
-      def convert_options(ruby_regex)
-        ignore_case = (ruby_regex.options & Regexp::IGNORECASE).nonzero?
-        ignore_case ? 'gi' : 'g'
+      def convert_options(ruby_regex, custom_options)
+        options = custom_options.to_s.scan(/[gimuy]/)
+        options << 'i' if (ruby_regex.options & Regexp::IGNORECASE).nonzero?
+        options.uniq.sort.join
       end
     end
   end

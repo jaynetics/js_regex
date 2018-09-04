@@ -31,34 +31,39 @@ In Ruby:
 ```ruby
 require 'js_regex'
 
-ruby_hex_regex = /\h+/
+ruby_hex_regex = /\h+/i
 
 js_regex = JsRegex.new(ruby_hex_regex)
 
 js_regex.warnings # => []
 js_regex.source # => '[0-9A-Fa-f]+'
-js_regex.options # => 'g'
+js_regex.options # => ''
 ```
 
-If you want to inject the result directly into JavaScript, use `#to_s` or String interpolation. E.g. in inline JavaScript in HAML or SLIM you can simply do:
+An `options:` argument lets you force options:
+
+```ruby
+JsRegex.new(/./i, options: 'g').to_h
+# => {source: '.', options: 'gi'}
+```
+
+Set the [g flag](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/RegExp/global) like this if you want to use the regex to find or replace multiple matches per string.
+
+To inject the result directly into JavaScript, use `#to_s` or String interpolation. E.g. in inline JavaScript in HAML or SLIM you can simply do:
 
 ```javascript
 var regExp = #{js_regex};
 ```
 
-If you want to convey it as a data attribute of a DOM element, use `#to_h`.
-
-```ruby
-js_regex.to_h # => {source: '[0-9A-Fa-f]+', options: 'g'}
-```
-
-Use `#to_json` if you want to send it as JSON. In a Rails controller you can simply do:
+Use `#to_json` if you want to send it as JSON or `#to_h` to include it as a data attribute of a DOM element.
 
 ```ruby
 render json: js_regex
+
+js_regex.to_h # => {source: '[0-9A-Fa-f]+', options: ''}
 ```
 
-To turn the data attribute or parsed JSON object back into a regex in JavaScript, use the `new RegExp()` constructor:
+To turn the data attribute or parsed JSON back into a regex in JavaScript, use the `new RegExp()` constructor:
 
 ```javascript
 var regExp = new RegExp(jsonObj.source, jsonObj.options);
@@ -110,7 +115,7 @@ In addition to the conversions supported by the default approach, this gem will 
 | numeric backreferences        | \1, \k&lt;1&gt;       |
 | relative backreferences       | \k&lt;-1&gt;          |
 | named backreferences          | \k&lt;foo&gt;         |
-| numeric subexpression calls   | \1, \g&lt;1&gt;       |
+| numeric subexpression calls   | \g&lt;1&gt;           |
 | relative subexpression calls  | \g&lt;-1&gt;          |
 | named subexpression calls     | \g&lt;foo&gt;         |
 | literal whitespace            | [a-z ]                |
@@ -141,7 +146,9 @@ In addition to the conversions supported by the default approach, this gem will 
 <a name='UF'></a>
 ### Unsupported Features
 
-Currently, the following functionalities can't be carried over to JavaScript. If you try to convert a regex that uses these features, corresponding parts of the pattern will be dropped from the result. In most of these cases that will lead to a warning, but changes that are not considered risky happen without warning. E.g. comments are removed silently because that won't lead to any operational differences between the Ruby and JavaScript regexes.
+Currently, the following functionalities can't be carried over to JavaScript. If you try to convert a regex that uses these features, corresponding parts of the pattern will be dropped from the result.
+
+In most of these cases that will lead to a warning, but changes that are not considered risky happen without warning. E.g. comments are removed silently because that won't lead to any operational differences between the Ruby and JavaScript regexes.
 
 | Description                    | Example               | Warning |
 |--------------------------------|-----------------------|---------|
@@ -178,4 +185,6 @@ Feel free to send suggestions, point out issues, or submit pull requests.
 
 ### Outlook
 
-Possible future improvements might include an "ES6 mode" using [the `u` flag](https://javascript.info/regexp-unicode), which would allow for much more concise representations of astral plane properties and sets. As far as supported conversions are concerned, this gem is almost feature-complete. Most of the unsupported features listed above are impossible to replicate in JavaScript, and [litte seems to be happening](https://mail.mozilla.org/pipermail/es-discuss/2013-September/033867.html) that could change that.
+Possible future improvements might include an "ES6 mode" using the [u flag](https://javascript.info/regexp-unicode), which would allow for much more concise representations of astral plane properties and sets.
+
+As far as supported conversions are concerned, this gem is almost feature-complete. Most of the unsupported features listed above are impossible to replicate in JavaScript, and [litte seems to be happening](https://mail.mozilla.org/pipermail/es-discuss/2013-September/033867.html) that could change that.

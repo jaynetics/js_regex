@@ -18,7 +18,7 @@ JS_CONTEXT = V8::Context.new
 
 def given_the_ruby_regexp(ruby_regex)
   @ruby_regex = ruby_regex
-  @js_regex = JsRegex.new(ruby_regex)
+  @js_regex = JsRegex.new(ruby_regex, options: 'g')
 end
 
 def expect_js_regex_to_be(expected)

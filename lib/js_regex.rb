@@ -15,8 +15,8 @@ class JsRegex
 
   attr_reader :source, :options, :warnings
 
-  def initialize(ruby_regex)
-    @source, @options, @warnings = Conversion.of(ruby_regex)
+  def initialize(ruby_regex, options: nil)
+    @source, @options, @warnings = Conversion.of(ruby_regex, options: options)
   end
 
   def to_h

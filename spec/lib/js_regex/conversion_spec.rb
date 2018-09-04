@@ -40,34 +40,33 @@ describe JsRegex::Conversion do
   end
 
   describe '#convert_options' do
-    let(:options) { @js_regex.options }
+    it 'includes the options g, i, m, u, y if forced' do
+      expect(JsRegex.new(/a/, options: 'g').options).to     eq('g')
+      expect(JsRegex.new(/a/, options: 'i').options).to     eq('i')
+      expect(JsRegex.new(/a/, options: 'gimuy').options).to eq('gimuy')
+      expect(JsRegex.new(/a/, options: %w[g m]).options).to eq('gm')
+    end
 
-    # all Ruby regexes are what is called "global" in JS
-    it 'always sets the global flag' do
-      given_the_ruby_regexp(//)
-      expect(options).to eq('g')
+    it 'cannot be forced to include other options' do
+      expect(JsRegex.new(/a/, options: 'f').options).to     eq('')
+      expect(JsRegex.new(/a/, options: 'fLüYz').options).to eq('')
+      expect(JsRegex.new(/a/, options: '').options).to      eq('')
+      expect(JsRegex.new(/a/, options: []).options).to      eq('')
     end
 
     it 'carries over the case-insensitive option' do
-      given_the_ruby_regexp(/a/i)
-      expect(options).to eq('gi')
-      expect_no_warnings
-      expect_ruby_and_js_to_match(string: 'ABab', with_results: %w[A a])
+      expect(JsRegex.new(/a/i).options).to eq('i')
     end
 
     it 'does not carry over the multiline option' do
       # this would be bad since JS' multiline option is different from Ruby's.
       # c.f. meta_converter_spec.rb for option-based token handling.
-      given_the_ruby_regexp(//m)
-      expect(options).to eq('g')
-      expect_no_warnings
+      expect(JsRegex.new(/a/m).options).to eq('')
     end
 
     it 'does not carry over the extended option' do
       # c.f. freespace_converter_spec.rb for option-based token handling.
-      given_the_ruby_regexp(//x)
-      expect(options).to eq('g')
-      expect_no_warnings
+      expect(JsRegex.new(/a/x).options).to eq('')
     end
   end
 end
