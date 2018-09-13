@@ -44,8 +44,12 @@ class JsRegex
         unless (encoding_options = data.scan(/[adu]/)).empty?
           warn_of_unsupported_feature("encoding options #{encoding_options}")
         end
-        switch_only = subtype.equal?(:options_switch)
-        switch_only ? drop_without_warning : build_group(head: '(')
+        if subtype.equal?(:options_switch)
+          # can be ignored since #options on subsequent Expressions are correct
+          drop_without_warning
+        else
+          build_passive_group
+        end
       end
 
       def build_passive_group

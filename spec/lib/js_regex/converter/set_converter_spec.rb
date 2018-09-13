@@ -224,7 +224,7 @@ b]/)
 
   it 'adds case-swapped literal member dupes if subject to a local i-option' do
     given_the_ruby_regexp(/[a](?i)[a](?-i:[a](?i:[^a-fG-Y]))/)
-    expect_js_regex_to_be(/[a][Aa]([a]([\x00-\uD7FF\uE000-\uFFFF]))/)
+    expect_js_regex_to_be(/[a][Aa](?:[a](?:[\x00-\uD7FF\uE000-\uFFFF]))/)
     expect_warning('astral plane')
     expect_ruby_and_js_to_match(string: 'aAaZ', with_results: %w[aAaZ])
     expect_ruby_and_js_not_to_match(string: 'AAaZ')
@@ -232,7 +232,7 @@ b]/)
 
   it 'does not add duplicates for literal members that cant be swapped' do
     given_the_ruby_regexp(/(?i:[A1_B])/)
-    expect_js_regex_to_be(/([1AB_ab])/)
+    expect_js_regex_to_be(/(?:[1AB_ab])/)
     expect_no_warnings
     expect_ruby_and_js_to_match(string: '1', with_results: %w[1])
   end

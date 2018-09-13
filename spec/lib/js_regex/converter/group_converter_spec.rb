@@ -51,7 +51,7 @@ describe JsRegex::Converter::GroupConverter do
 
   it 'drops all encoding options with warning' do
     given_the_ruby_regexp(Regexp.new('a(?adu:a)a'))
-    expect_js_regex_to_be(/a(a)a/)
+    expect_js_regex_to_be(/a(?:a)a/)
     expect_warning('encoding options ["a", "d", "u"]')
   end
 

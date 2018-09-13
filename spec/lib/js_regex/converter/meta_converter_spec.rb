@@ -36,7 +36,7 @@ describe JsRegex::Converter::MetaConverter do
 
   it 'ensures dots match newlines if the multiline option is set via groups' do
     given_the_ruby_regexp(/a(?m:.(?-m:.)).(?m).a/)
-    expect_js_regex_to_be(/a((?:.|\n)(.)).(?:.|\n)a/)
+    expect_js_regex_to_be(/a(?:(?:.|\n)(?:.)).(?:.|\n)a/)
     expect_no_warnings
     expect_ruby_and_js_to_match(string: "abbb\na", with_results: %W[abbb\na])
     expect_ruby_and_js_not_to_match(string: "abb\nba")

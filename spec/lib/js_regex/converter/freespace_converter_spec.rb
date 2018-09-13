@@ -33,7 +33,7 @@ describe JsRegex::Converter::FreespaceConverter do
 
     it 'drops whitespace in extended-mode groups' do
       given_the_ruby_regexp(/ He(?x: ll )o /)
-      expect_js_regex_to_be(/ He(ll)o /)
+      expect_js_regex_to_be(/ He(?:ll)o /)
       expect_no_warnings
       expect_ruby_and_js_to_match(string:        ' Hello ',
                                   with_results: [' Hello '])
@@ -57,7 +57,7 @@ describe JsRegex::Converter::FreespaceConverter do
 
     it 'does not drop whitespace in non-extended-mode groups' do
       given_the_ruby_regexp(/ He(?-x: ll )o /x)
-      expect_js_regex_to_be(/He( ll )o/)
+      expect_js_regex_to_be(/He(?: ll )o/)
       expect_no_warnings
       expect_ruby_and_js_to_match(string:        'He ll o',
                                   with_results: ['He ll o'])

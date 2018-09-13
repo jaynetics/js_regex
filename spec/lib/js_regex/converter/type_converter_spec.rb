@@ -61,7 +61,7 @@ describe JsRegex::Converter::TypeConverter do
 
   it 'translates the generic linebreak type "\R"' do
     given_the_ruby_regexp(/\R/)
-    expect_js_regex_to_be(/(\r\n|\r|\n)/)
+    expect_js_regex_to_be(/(?:\r\n|\r|\n)/)
     expect_no_warnings
     expect_ruby_and_js_to_match(string: "_\n_\r\n_", with_results: %W[\n \r\n])
   end
