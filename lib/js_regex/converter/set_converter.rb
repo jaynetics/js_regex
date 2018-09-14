@@ -10,6 +10,11 @@ class JsRegex
     #
     # Template class implementation.
     #
+    # Unlike other converters, this one does not recurse on subexpressions,
+    # since many are unsupported by JavaScript. If it detects incompatible
+    # children, it uses the `character_set` gem to establish the codepoints
+    # matched by the whole set and build a completely new set string.
+    #
     class SetConverter < JsRegex::Converter::Base
       private
 
@@ -42,7 +47,7 @@ class JsRegex
           return false
         end
 
-        # check for subexpressions that need conversion
+        # check for children needing conversion (#each_expression is recursive)
         expression.each_expression do |node|
           case node.type
           when :literal

@@ -8,20 +8,19 @@ class JsRegex
     #
     # Template class implementation.
     #
+    # Uses the `character_set` and `regexp_property_values` gems to get the
+    # codepoints matched by the property and build a set string from them.
+    #
     class PropertyConverter < JsRegex::Converter::Base
       private
 
       def convert_data
-        convert_property
-      end
-
-      def convert_property(negated = nil)
         content = CharacterSet.of_property(subtype)
         if expression.case_insensitive? && !context.case_insensitive_root
           content = content.case_insensitive
         end
 
-        if negated
+        if expression.negative?
           if content.astral_part.empty?
             return "[^#{content.to_s(format: :js)}]"
           else
@@ -38,7 +37,7 @@ class JsRegex
         return '' if bmp_part.empty?
 
         string = bmp_part.to_s(format: :js)
-        negated ? "[^#{string}]" : "[#{string}]"
+        expression.negative? ? "[^#{string}]" : "[#{string}]"
       end
     end
   end

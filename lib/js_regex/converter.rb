@@ -16,7 +16,7 @@ class JsRegex
       group:       GroupConverter,
       literal:     LiteralConverter,
       meta:        MetaConverter,
-      nonproperty: NonpropertyConverter,
+      nonproperty: PropertyConverter,
       property:    PropertyConverter,
       set:         SetConverter,
       type:        TypeConverter
