@@ -74,8 +74,8 @@ describe JsRegex::Converter::GroupConverter do
     converter = JsRegex::Converter.for(ep)
     expect(converter).to be_a(described_class)
 
-    context = JsRegex::Converter::Context.new(//)
-    source = converter.convert(ep, context)
+    context = JsRegex::Converter::Context.new
+    source = converter.convert(ep, context).to_s
     expect(source).to start_with('(?:')
     expect(context.warnings.size).to eq(1)
   end

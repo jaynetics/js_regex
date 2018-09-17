@@ -9,16 +9,26 @@ class JsRegex
     #
     class LiteralConverter < JsRegex::Converter::Base
       class << self
-        ASTRAL_PLANE_CODEPOINT_PATTERN = /\A[\u{10000}-\u{FFFFF}]\z/
+        ASTRAL_PLANE_CODEPOINT_PATTERN = /[\u{10000}-\u{FFFFF}]/
 
         def convert_data(data)
           if data =~ ASTRAL_PLANE_CODEPOINT_PATTERN
-            surrogate_pair_for(data)
+            data.each_char.each_with_object(Node.new) do |chr, node|
+              if chr =~ ASTRAL_PLANE_CODEPOINT_PATTERN
+                node << surrogate_pair_for(chr)
+              else
+                node << convert_bmp_data(chr)
+              end
+            end
           else
-            ensure_json_compatibility(
-              ensure_forward_slashes_are_escaped(data)
-            )
+            convert_bmp_data(data)
           end
+        end
+
+        def convert_bmp_data(data)
+          ensure_json_compatibility(
+            ensure_forward_slashes_are_escaped(data)
+          )
         end
 
         private
@@ -56,7 +66,10 @@ class JsRegex
 
       def handle_locally_case_insensitive_literal(literal)
         return literal unless literal =~ HAS_CASE_PATTERN
-        "[#{literal}#{literal.swapcase}]"
+
+        literal.each_char.each_with_object(Node.new) do |chr, node|
+          node << (chr =~ HAS_CASE_PATTERN ? "[#{chr}#{chr.swapcase}]" : chr)
+        end
       end
     end
   end

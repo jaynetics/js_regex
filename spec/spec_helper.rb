@@ -107,8 +107,8 @@ def expect_to_drop_token_with_warning(token_class, subtype)
   converter = JsRegex::Converter.for(exp)
   expect(converter).to be_a(described_class)
 
-  context = JsRegex::Converter::Context.new(//)
-  source = converter.convert(exp, context)
+  context = JsRegex::Converter::Context.new
+  source = converter.convert(exp, context).to_s
   expect(source).to be_empty
   expect(context.warnings.size).to eq(1)
 end

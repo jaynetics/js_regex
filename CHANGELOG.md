@@ -6,9 +6,15 @@ and this project adheres to [Semantic Versioning](http://semver.org/spec/v2.0.0.
 
 ## [Unreleased]
 
+### Added
+- added support for conditionals ("(a)?(?(1)b|c)")
+- added support for forward-referring subexpression calls ("\g<+2>")
+
 ### Fixed
-- fixed an exotic bug where atomic groups weren't treated correctly if preceded by the linebreak type ("\R")
-- improved substitutions of option groups ("(?i:...)") by making them passive instead of capturing
+- empty alternation branches ("(a|)") are no longer removed since the potential for a zero-width match might be intended
+- fixed conversion of astral plane literals with lengths greater than one
+- fixed handling of locally case-insensitive literals (following e.g. "(?i)") with lengths greater than one
+- fixed a rare bug where backreferences, atomic groups and subexpression calls weren't handled correctly if preceded by either the linebreak type ("\R") or an option group with children ("(?i:...)")
 
 ## [3.0.0] - 2018-09-04
 Major refactoring adding [character_set](https://github.com/janosch-x/character_set) and [regexp_property_values](https://github.com/janosch-x/regexp_property_values) as dependencies.

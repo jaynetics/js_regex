@@ -37,7 +37,7 @@ class JsRegex
         else
           warn_of_unsupported_feature('large astral plane match of set')
           bmp_part = content.bmp_part
-          bmp_part.empty? ? '' : bmp_part.to_s(format: :js, in_brackets: true)
+          bmp_part.empty? ? drop : bmp_part.to_s(format: :js, in_brackets: true)
         end
       end
 

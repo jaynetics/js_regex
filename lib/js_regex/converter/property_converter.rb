@@ -34,7 +34,7 @@ class JsRegex
         end
 
         bmp_part = content.bmp_part
-        return '' if bmp_part.empty?
+        return drop if bmp_part.empty?
 
         string = bmp_part.to_s(format: :js)
         expression.negative? ? "[^#{string}]" : "[#{string}]"

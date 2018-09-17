@@ -3,15 +3,18 @@
 class JsRegex
   module Converter
     #
-    # Template class. Implement #convert_data in subclasses.
+    # Template class. Implement #convert_data in subclasses and return
+    # instance of String or Node from it.
     #
     class Base
+      # returns instance of Node with #quantifier attached.
       def convert(expression, context)
         self.context    = context
         self.expression = expression
 
-        source = convert_data
-        apply_quantifier(source)
+        node = convert_data
+        node = Node.new(node) if node.instance_of?(String)
+        apply_quantifier(node)
       end
 
       private
@@ -27,41 +30,49 @@ class JsRegex
       end
       alias pass_through data
 
-      def apply_quantifier(source)
-        return source if source.empty? || !(quantifier = expression.quantifier)
+      def apply_quantifier(node)
+        return node if node.dropped? || (qtf = expression.quantifier).nil?
 
-        if quantifier.mode.equal?(:possessive)
-          context.wrap_in_backrefed_lookahead(source + quantifier.text[0..-2])
+        if qtf.possessive?
+          node.update(quantifier: qtf.text[0..-2])
+          return wrap_in_backrefed_lookahead([node])
         else
-          source + quantifier
+          node.update(quantifier: qtf)
         end
+
+        node
       end
 
       def convert_subexpressions
-        convert_expressions(subexpressions)
+        Node.new(*expression.expressions.map { |exp| convert_expression(exp) })
       end
 
-      def convert_expressions(expressions)
-        expressions.map { |exp| Converter.for(exp).convert(exp, context) }.join
-      end
-
-      def subexpressions
-        expression.expressions
+      def convert_expression(expression)
+        Converter.convert(expression, context)
       end
 
       def warn_of_unsupported_feature(description = nil)
         description ||= "#{subtype} #{expression.type}".tr('_', ' ')
         full_desc = "#{description} '#{expression}'"
         warn("Dropped unsupported #{full_desc} at index #{expression.ts}")
-        ''
+        drop
       end
 
       def warn(text)
         context.warnings << text
       end
 
-      def drop_without_warning
-        ''
+      def drop
+        Node.new(type: :dropped)
+      end
+      alias drop_without_warning drop
+
+      def wrap_in_backrefed_lookahead(content)
+        backref_num = context.capturing_group_count + 1
+        backref_num_node = Node.new(backref_num.to_s, type: :backref_num)
+        context.increment_local_capturing_group_count
+        # an empty passive group (?:) is appended as literal digits may follow
+        Node.new('(?=(', *content, '))\\', backref_num_node, '(?:)')
       end
     end
   end

@@ -11,12 +11,20 @@ class JsRegex
       private
 
       def convert_data
-        warn_of_unsupported_feature('conditional')
-        branches = subexpressions.drop(1).each_with_object([]) do |branch, arr|
-          converted_branch = convert_expressions(branch)
-          arr << converted_branch unless converted_branch.eql?('')
+        case subtype
+        when :open      then mark_conditional
+        when :condition then drop_without_warning
+        else                 warn_of_unsupported_feature
         end
-        "(?:#{branches.join('|')})"
+      end
+
+      def mark_conditional
+        reference = expression.reference
+        node = Node.new('(?:', reference: reference, type: :conditional)
+        expression.branches.each do |branch|
+          node << Node.new('(?:', convert_expression(branch), ')')
+        end
+        node << ')'
       end
     end
   end

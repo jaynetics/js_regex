@@ -71,9 +71,25 @@ describe JsRegex::Converter::MetaConverter do
   end
 
   it 'drops depleted alternation branches' do
-    given_the_ruby_regexp(/(\G|ccc)/)
-    expect_js_regex_to_be(/(ccc)/)
-    expect_warning
+    given_the_ruby_regexp(/(\G|\G|ccc|jjj|\G|xxx|\G)/)
+    expect_js_regex_to_be(/(ccc|jjj|xxx)/)
+    expect_warnings(4)
+  end
+
+  it 'does not drop alternation branches that started out empty' do
+    given_the_ruby_regexp(/(|ccc)/)
+    expect_js_regex_to_be(/(|ccc)/)
+    expect_no_warnings
+  end
+
+  it 'does not drop alternation branches containing supported calls' do
+    given_the_ruby_regexp(/(a)(\g<1>|ccc)/)
+    expect_js_regex_to_be(/(a)((a)|ccc)/)
+  end
+
+  it 'does not drop alternation branches containing empty groups' do
+    given_the_ruby_regexp(/((()|())|()+|ccc)/)
+    expect_js_regex_to_be(/((()|())|()+|ccc)/)
   end
 
   it 'drops unknown meta elements with warning' do

@@ -9,6 +9,8 @@ class JsRegex
   class Conversion
     require 'regexp_parser'
     require_relative 'converter'
+    require_relative 'node'
+    require_relative 'second_pass'
 
     class << self
       def of(ruby_regex, options: nil)
@@ -20,11 +22,11 @@ class JsRegex
       private
 
       def convert_source(ruby_regex)
-        context = Converter::Context.new(ruby_regex)
-        [
-          Converter::RootConverter.new.convert(context.ast, context),
-          context.warnings
-        ]
+        tree = Regexp::Parser.parse(ruby_regex)
+        context = Converter::Context.new(case_insensitive_root: tree.i?)
+        converted_tree = Converter.convert(tree, context)
+        final_tree = SecondPass.call(converted_tree)
+        [final_tree.to_s, context.warnings]
       end
 
       def convert_options(ruby_regex, custom_options)

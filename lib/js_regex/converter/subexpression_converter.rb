@@ -7,7 +7,7 @@ class JsRegex
     #
     # Template class implementation.
     #
-    class RootConverter < JsRegex::Converter::Base
+    class SubexpressionConverter < JsRegex::Converter::Base
       private
 
       def convert_data

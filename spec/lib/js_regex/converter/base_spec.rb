@@ -34,7 +34,7 @@ describe JsRegex::Converter::Base do
       allow(expr).to receive(:to_s).and_return('foo')
       allow(conv).to receive(:expression).and_return(expr)
       allow(conv).to receive(:warn)
-      expect(conv.send(:warn_of_unsupported_feature, 'fizz')).to eq('')
+      expect(conv.send(:warn_of_unsupported_feature, 'fizz').to_s).to eq('')
     end
   end
 
@@ -246,12 +246,12 @@ describe JsRegex::Converter::Base do
 
   describe '#drop_without_warning' do
     it 'returns an empty string to be appended to the source' do
-      expect(described_class.new.send(:drop_without_warning)).to eq('')
+      expect(described_class.new.send(:drop_without_warning).to_s).to eq('')
     end
 
     it 'does not generate warnings' do
       converter = described_class.new
-      context = JsRegex::Converter::Context.new(//)
+      context = JsRegex::Converter::Context.new
       allow(converter).to receive(:context).and_return(context)
       expect { described_class.new.send(:drop_without_warning) }
         .not_to(change { context.warnings.count })
@@ -261,10 +261,39 @@ describe JsRegex::Converter::Base do
   describe '#warn' do
     it 'adds a warning to the context' do
       converter = described_class.new
-      context = JsRegex::Converter::Context.new(//)
+      context = JsRegex::Converter::Context.new
       allow(converter).to receive(:context).and_return(context)
       expect { converter.send(:warn, 'foo') }
         .to(change { context.warnings }.from([]).to(['foo']))
+    end
+  end
+
+  describe '#wrap_in_backrefed_lookahead' do
+    let(:converter) { described_class.new }
+    let(:context) { JsRegex::Converter::Context.new }
+    before { allow(converter).to receive(:context).and_return(context) }
+
+    it 'returns the expression wrapped in a backreferenced lookahead' do
+      expect(converter.send(:wrap_in_backrefed_lookahead, 'foo').to_s)
+        .to eq('(?=(foo))\\1(?:)')
+    end
+
+    it 'increases the count of captured groups' do
+      expect { converter.send(:wrap_in_backrefed_lookahead, 'foo') }
+        .to change { context.send(:capturing_group_count) }.from(0).to(1)
+    end
+
+    it 'increases the new_capturing_group_position for any following group' do
+      expect(context.new_capturing_group_position(4)).to eq(4)
+      converter.send(:wrap_in_backrefed_lookahead, 'foo')
+      expect(context.new_capturing_group_position(4)).to eq(5)
+    end
+
+    it 'doesnt increase the new_capturing_group_position of preceding groups' do
+      context.capture_group
+      expect(context.new_capturing_group_position(1)).to eq(1)
+      converter.send(:wrap_in_backrefed_lookahead, 'foo')
+      expect(context.new_capturing_group_position(1)).to eq(1)
     end
   end
 end

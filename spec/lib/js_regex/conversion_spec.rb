@@ -26,16 +26,30 @@ describe JsRegex::Conversion do
   describe '#convert_source' do
     it 'passes the regexp to Parser and forwards the output to converters' do
       regexp = //
-      tree = expression_double({})
+      tree = expression_double({i?: false})
       expect(Regexp::Parser)
         .to receive(:parse)
         .with(regexp)
         .and_return(tree)
-      expect_any_instance_of(JsRegex::Converter::RootConverter)
+      expect(JsRegex::Converter)
         .to receive(:convert)
         .with(tree, an_instance_of(JsRegex::Converter::Context))
-        .and_return(['', []])
+        .and_return(JsRegex::Node.new(''))
       described_class.of(regexp)
+    end
+
+    it 'sets Context#case_insensitive_root to true if the regex has the i-flag' do
+      expect(JsRegex::Converter::Context)
+        .to receive(:new).with(case_insensitive_root: true)
+        .and_call_original
+      described_class.of(//i)
+    end
+
+    it 'sets Context#case_insensitive_root to false if the regex has no i-flag' do
+      expect(JsRegex::Converter::Context)
+        .to receive(:new).with(case_insensitive_root: false)
+        .and_call_original
+      described_class.of(//m)
     end
   end
 

@@ -3,31 +3,18 @@
 require 'spec_helper'
 
 describe JsRegex::Converter::ConditionalConverter do
-  it 'makes conditional groups non-conditional with warning' do
-    given_the_ruby_regexp(Regexp.new('(a)?(?(1)b|c)'))
-    expect_js_regex_to_be(Regexp.new('(a)?(?:b|c)'))
-    expect_warning("unsupported conditional '(?(1)b|c)'")
-  end
+  # see second_pass_spec.rb for tests of the final results
+  it 'marks conditionals for SecondPass conversion' do
+    conditional = Regexp::Parser.parse(/(a)(?(1)b|c)/)[1]
 
-  it 'makes ab-named conditional groups non-conditional with warning' do
-    given_the_ruby_regexp(Regexp.new('(?<condition>a)?(?(<condition>)b|c)'))
-    expect_js_regex_to_be(Regexp.new('(a)?(?:b|c)'))
-    expect_warning("unsupported conditional '(?(<condition>)b|c)'")
-  end
+    result = JsRegex::Converter.convert(conditional)
 
-  it 'makes sq-named conditional groups non-conditional with warning' do
-    given_the_ruby_regexp(Regexp.new("(?'condition'a)?(?('condition')b|c)"))
-    expect_js_regex_to_be(Regexp.new('(a)?(?:b|c)'))
-    expect_warning("unsupported conditional '(?('condition')b|c)'")
-  end
-
-  it 'applies further conversions to the branches' do
-    given_the_ruby_regexp(Regexp.new('(a)?(?(1)b\G|c)'))
-    expect_js_regex_to_be(Regexp.new('(a)?(?:b|c)'))
-  end
-
-  it 'drops depleted branches' do
-    given_the_ruby_regexp(Regexp.new('(a)?(?(1)\G|c)'))
-    expect_js_regex_to_be(Regexp.new('(a)?(?:c)'))
+    expect(result).to be_a JsRegex::Node
+    expect(result.reference).to eq 1
+    expect(result.type).to eq :conditional
+    expect(result.children[0].to_s).to eq '(?:'
+    expect(result.children[1].to_s).to eq '(?:b)'
+    expect(result.children[2].to_s).to eq '(?:c)'
+    expect(result.children[3].to_s).to eq ')'
   end
 end

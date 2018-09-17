@@ -72,6 +72,12 @@ describe JsRegex::Converter::LiteralConverter do
     expect_ruby_and_js_to_match(string: '😁', with_results: %w[😁])
   end
 
+  it 'converts multiple astral plane literals to surrogate pairs' do
+    given_the_ruby_regexp(/😁😁/)
+    expect(js_regex_source).to eq('(?:\\ud83d\\ude01)(?:\\ud83d\\ude01)')
+    expect_ruby_and_js_to_match(string: '😁😁', with_results: %w[😁😁])
+  end
+
   it 'wraps substitutional surrogate pairs to ensure correct quantification' do
     given_the_ruby_regexp(/😁{2}/)
     expect(js_regex_source).to eq('(?:\\ud83d\\ude01){2}')
@@ -82,6 +88,12 @@ describe JsRegex::Converter::LiteralConverter do
     given_the_ruby_regexp(/a(?i:b)c(?i)d/)
     expect_js_regex_to_be(/a(?:[bB])c[dD]/)
     expect_ruby_and_js_to_match(string: 'aBcD', with_results: %w[aBcD])
+  end
+
+  it 'converts a literal run to distinct, individually quantified sets' do
+    given_the_ruby_regexp(/a(?i)bc-yz{2}/)
+    expect_js_regex_to_be(/a[bB][cC]-[yY][zZ]{2}/)
+    expect_ruby_and_js_to_match(string: 'aBc-YzZ', with_results: %w[aBc-YzZ])
   end
 
   it 'does not create a swapcase set for literals without case' do

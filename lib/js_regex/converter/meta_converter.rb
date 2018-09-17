@@ -13,7 +13,7 @@ class JsRegex
       def convert_data
         case subtype
         when :alternation
-          convert_alternation
+          convert_alternatives
         when :dot
           expression.multiline? ? '(?:.|\n)' : '.'
         else
@@ -21,12 +21,15 @@ class JsRegex
         end
       end
 
-      def convert_alternation
-        branches = subexpressions.each_with_object([]) do |branch, arr|
-          converted_branch = convert_expressions(branch.expressions)
-          arr << converted_branch unless converted_branch.eql?('')
+      def convert_alternatives
+        kept_any = false
+
+        convert_subexpressions.map do |node|
+          dropped = !node.children.empty? && node.children.all?(&:dropped?)
+          node.children.unshift('|') if kept_any.equal?(true) && !dropped
+          kept_any = true unless dropped
+          node
         end
-        branches.join('|')
       end
     end
   end

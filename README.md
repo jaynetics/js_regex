@@ -105,6 +105,7 @@ In addition to the conversions supported by the default approach, this gem will 
 | Ruby's multiline mode [4]     | /.+/m                 |
 | Ruby's free-spacing mode      | / http (s?) /x        |
 | atomic groups [5]             | a(?>bc\|b)c           |
+| conditionals                  | (?(1)b), (?(<a>)b\|c) |
 | option groups/switches        | (?i-m:..), (?x)..     |
 | possessive quantifiers [5]    | ++, *+, ?+, {4,}+     |
 | hex types \h and \H           | \H\h{6}               |
@@ -153,18 +154,16 @@ In most of these cases that will lead to a warning, but changes that are not con
 | Description                    | Example               | Warning |
 |--------------------------------|-----------------------|---------|
 | lookbehind                     | (?&lt;=, (?&lt;!, \K  | yes     |
-| conditionals                   | (?(a)b\|c)            | yes     |
 | local encoding options         | (?u:\w)               | yes     |
+| whole pattern recursion        | \g<0>                 | yes     |
+| previous match anchor          | \G                    | yes     |
+| extended grapheme type         | \X                    | yes     |
+| large astral plane ranges      | [a-\u{10FFFF}]        | yes     |
+| absence groups                 | (?~foo)               | yes     |
 | capturing group names          | (?&lt;a&gt;, (?'a'    | no      |
 | comment groups                 | (?#comment)           | no      |
 | inline comments (in x-mode)    | /[a-z] # comment/x    | no      |
 | multiplicative quantifiers     | /A{4}{6}/ =~ 'A' * 24 | no      |
-| forward references             | (\2two\|(one))        | yes     |
-| whole pattern recursion        | \g<0>                 | yes     |
-| absence groups                 | (?~foo)               | yes     |
-| previous match anchor          | \G                    | yes     |
-| extended grapheme type         | \X                    | yes     |
-| large astral plane ranges      | [a-\u{10FFFF}]        | yes     |
 
 In addition, the word boundaries `\b` and `\B` cause warnings since they are not unicode-ready in JavaScript. Unfortunately this [holds true even for the latest versions of JavaScript](http://www.ecma-international.org/ecma-262/6.0/#sec-runtime-semantics-iswordchar-abstract-operation).
 

@@ -28,7 +28,7 @@ class JsRegex
           build_unsupported_group('nested atomic group')
         else
           context.start_atomic_group
-          result = context.wrap_in_backrefed_lookahead(convert_subexpressions)
+          result = wrap_in_backrefed_lookahead(convert_subexpressions)
           context.end_atomic_group
           result
         end
@@ -37,7 +37,7 @@ class JsRegex
       def build_named_group
         # remember position, then drop name part without warning
         context.store_named_group_position(expression.name)
-        build_group(head: '(')
+        build_group(head: '(', reference: expression.name)
       end
 
       def build_options_group
@@ -62,9 +62,19 @@ class JsRegex
       end
 
       def build_group(opts = {})
-        context.capture_group unless opts[:capturing].equal?(false)
         head = opts[:head] || pass_through
-        "#{head}#{convert_subexpressions})"
+        if opts[:capturing].equal?(false)
+          return Node.new(*group_with_head(head))
+        end
+
+        context.capture_group
+
+        ref = opts[:reference] || expression.number
+        Node.new(*group_with_head(head), reference: ref, type: :captured_group)
+      end
+
+      def group_with_head(head)
+        [head, *convert_subexpressions, ')']
       end
     end
   end

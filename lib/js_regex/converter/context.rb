@@ -8,20 +8,19 @@ class JsRegex
     # The Converters themselves are stateless.
     #
     class Context
-      attr_reader :ast,
+      attr_reader :capturing_group_count,
                   :case_insensitive_root,
                   :in_atomic_group,
                   :named_group_positions,
                   :warnings
 
-      def initialize(ruby_regex)
+      def initialize(case_insensitive_root: false)
         self.added_capturing_groups_after_group = Hash.new(0)
         self.capturing_group_count = 0
         self.named_group_positions = {}
         self.warnings = []
 
-        self.ast = Regexp::Parser.parse(ruby_regex)
-        self.case_insensitive_root = ast.case_insensitive?
+        self.case_insensitive_root = case_insensitive_root
       end
 
       # group context
@@ -38,13 +37,9 @@ class JsRegex
         self.in_atomic_group = false
       end
 
-      def wrap_in_backrefed_lookahead(content)
-        new_backref_num = capturing_group_count + 1
-        # an empty passive group (?:) is appended as literal digits may follow
-        result = "(?=(#{content}))\\#{new_backref_num}(?:)"
+      def increment_local_capturing_group_count
         added_capturing_groups_after_group[original_capturing_group_count] += 1
         capture_group
-        result
       end
 
       # takes and returns 1-indexed group positions.
@@ -67,10 +62,9 @@ class JsRegex
 
       private
 
-      attr_accessor :added_capturing_groups_after_group,
-                    :capturing_group_count
+      attr_accessor :added_capturing_groups_after_group
 
-      attr_writer :ast,
+      attr_writer :capturing_group_count,
                   :case_insensitive_root,
                   :in_atomic_group,
                   :named_group_positions,

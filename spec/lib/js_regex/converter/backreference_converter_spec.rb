@@ -169,33 +169,56 @@ describe JsRegex::Converter::BackreferenceConverter do
     end
   end
 
-  it 'replaces numbered subexpression calls with the targeted subexpression' do
-    given_the_ruby_regexp(/(foo)(bar)\g<2>+/)
-    expect_js_regex_to_be(/(foo)(bar)(bar)+/)
-    expect_no_warnings
-    expect_ruby_and_js_not_to_match(string: 'foobar')
-    expect_ruby_and_js_to_match(string: 'foobarbar')
-  end
+  # see second_pass_spec.rb for tests of the final subexp call results
+  context 'when dealing with subexp calls' do
+    it 'marks subexp calls for SecondPass conversion' do
+      conditional = Regexp::Parser.parse(/(a)\g<1>/).last
 
-  it 'replaces relative subexpression calls with the targeted subexpression' do
-    given_the_ruby_regexp(/(foo)(bar)\g<-2>+/)
-    expect_js_regex_to_be(/(foo)(bar)(foo)+/)
-    expect_no_warnings
-    expect_ruby_and_js_not_to_match(string: 'foobar')
-    expect_ruby_and_js_to_match(string: 'foobarfoo')
-  end
+      result = JsRegex::Converter.convert(conditional)
 
-  it 'replaces named subexpression calls with the targeted subexpression' do
-    given_the_ruby_regexp(/(foo)(?<x>bar)(baz)\g<x>+/)
-    expect_js_regex_to_be(/(foo)(bar)(baz)(bar)+/)
-    expect_no_warnings
-    expect_ruby_and_js_not_to_match(string: 'foobarbaz')
-    expect_ruby_and_js_to_match(string: 'foobarbazbar')
-  end
+      expect(result).to be_a JsRegex::Node
+      expect(result.reference).to eq 1
+      expect(result.type).to eq :subexp_call
+    end
 
-  it 'drops whole-pattern recursion calls with warning' do
-    given_the_ruby_regexp(/(a(b|\g<0>))/)
-    expect_js_regex_to_be(/(a(b))/)
-    expect_warning('whole-pattern recursion')
+    it 'marks named subexp calls for SecondPass conversion' do
+      conditional = Regexp::Parser.parse(/(?<A>a)\g<A>/).last
+
+      result = JsRegex::Converter.convert(conditional)
+
+      expect(result).to be_a JsRegex::Node
+      expect(result.reference).to eq 'A'
+      expect(result.type).to eq :subexp_call
+    end
+
+    it 'marks relative subexp calls for SecondPass conversion' do
+      conditional = Regexp::Parser.parse(/(a)(b)\g<-1>/).last
+      context = JsRegex::Converter::Context.new
+      2.times { context.capture_group }
+
+      result = JsRegex::Converter.convert(conditional, context)
+
+      expect(result).to be_a JsRegex::Node
+      expect(result.reference).to eq 2
+      expect(result.type).to eq :subexp_call
+    end
+
+    it 'marks forward-referring subexp calls for SecondPass conversion' do
+      conditional = Regexp::Parser.parse(/(a)\g<+1>(b)/)[1]
+      context = JsRegex::Converter::Context.new
+      context.capture_group # only preceding group is captured at this point
+
+      result = JsRegex::Converter.convert(conditional, context)
+
+      expect(result).to be_a JsRegex::Node
+      expect(result.reference).to eq 2
+      expect(result.type).to eq :subexp_call
+    end
+
+    it 'drops whole-pattern recursion calls with warning' do
+      given_the_ruby_regexp(/(a(b|\g<0>))/)
+      expect_js_regex_to_be(/(a(b))/)
+      expect_warning('whole-pattern recursion')
+    end
   end
 end

@@ -55,9 +55,9 @@ class JsRegex
       end
 
       def convert_codepoint_list
-        expression.chars.map do |char|
-          LiteralConverter.convert_data(Regexp.escape(char))
-        end.join
+        expression.chars.each_with_object(Node.new) do |char, node|
+          node << LiteralConverter.convert_data(Regexp.escape(char))
+        end
       end
 
       def unicode_escape_codepoint

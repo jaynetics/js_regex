@@ -3,7 +3,7 @@
 require 'spec_helper'
 
 describe JsRegex::Converter::Context do
-  let(:context) { described_class.new(//) }
+  let(:context) { described_class.new }
 
   describe '#initialize' do
     it 'sets added_capturing_groups_after_group to empty Hash with default 0' do
@@ -24,13 +24,13 @@ describe JsRegex::Converter::Context do
       expect(context.send(:warnings)).to eq([])
     end
 
-    it 'sets #case_insensitive_root to true if the regex has the i-flag' do
-      context = described_class.new(//i)
+    it 'sets #case_insensitive_root to true if passed true' do
+      context = described_class.new(case_insensitive_root: true)
       expect(context.case_insensitive_root).to be true
     end
 
-    it 'sets #case_insensitive_root to false if the regex has no i-flag' do
-      context = described_class.new(//m)
+    it 'sets #case_insensitive_root to false if passed false' do
+      context = described_class.new(case_insensitive_root: false)
       expect(context.case_insensitive_root).to be false
     end
   end
@@ -57,32 +57,6 @@ describe JsRegex::Converter::Context do
       context.instance_variable_set(:@in_atomic_group, true)
       context.end_atomic_group
       expect(context.in_atomic_group).to be false
-    end
-  end
-
-  describe '#wrap_in_backrefed_lookahead' do
-    before { context.instance_variable_set(:@capturing_group_count, 2) }
-
-    it 'returns the expression wrapped in a backreferenced lookahead' do
-      expect(context.wrap_in_backrefed_lookahead('foo'))
-        .to eq('(?=(foo))\\3(?:)')
-    end
-
-    it 'increases the count of captured groups' do
-      expect { context.wrap_in_backrefed_lookahead('foo') }
-        .to change { context.send(:capturing_group_count) }.from(2).to(3)
-    end
-
-    it 'increases the new_capturing_group_position for any following group' do
-      expect(context.new_capturing_group_position(4)).to eq(4)
-      context.wrap_in_backrefed_lookahead('foo')
-      expect(context.new_capturing_group_position(4)).to eq(5)
-    end
-
-    it 'doesnt increase the new_capturing_group_position of preceding groups' do
-      expect(context.new_capturing_group_position(1)).to eq(1)
-      context.wrap_in_backrefed_lookahead('foo')
-      expect(context.new_capturing_group_position(1)).to eq(1)
     end
   end
 
