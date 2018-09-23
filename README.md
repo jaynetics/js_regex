@@ -1,4 +1,3 @@
-
 # JsRegex
 
 [![Gem Version](https://badge.fury.io/rb/js_regex.svg)](http://badge.fury.io/rb/js_regex)
@@ -7,14 +6,7 @@
 
 This is a Ruby gem that translates Ruby's regular expressions to the JavaScript flavor.
 
-It has two advantages when compared to the most widespread approach
-[[1]](https://dockyard.com/blog/ruby/2011/11/18/convert-ruby-regexp-to-javascript-regex)
-[[2]](https://github.com/rails/rails/blob/b67043393b5ed6079989513299fe303ec3bc133b/actionpack/lib/action_dispatch/routing/inspector.rb#L42)
-[[3]](https://github.com/DavyJonesLocker/client_side_validations/blob/7f0a570f3d88628aeeb6cd61864a8af61ebbf887/lib/client_side_validations/core_ext/regexp.rb#L3)
-:
-
-1. It [can handle far more](#SF) of Ruby's regex capabilities.
-2. If any incompatibilities remain, it returns [helpful warnings](#HW) to indicate them.
+It can handle [far more](#SF) of Ruby's regex capabilities than a [search-and-replace approach](https://github.com/rails/rails/blob/b67043393b5ed6079989513299fe303ec3bc133b/actionpack/lib/action_dispatch/routing/inspector.rb#L42), and if any incompatibilities remain, it returns [helpful warnings](#HW) to indicate them.
 
 This means you'll have better chances of translating your regexes, and if there is still a problem, at least you'll know.
 
@@ -102,12 +94,12 @@ In addition to the conversions supported by the default approach, this gem will 
 | Description                   | Example               |
 |-------------------------------|-----------------------|
 | escaped meta chars            | \\\A                  |
-| Ruby's multiline mode [4]     | /.+/m                 |
+| Ruby's multiline mode [1]     | /.+/m                 |
 | Ruby's free-spacing mode      | / http (s?) /x        |
-| atomic groups [5]             | a(?>bc\|b)c           |
-| conditionals                  | (?(1)b), (?(<a>)b\|c) |
+| atomic groups [2]             | a(?>bc\|b)c           |
+| conditionals                  | (?(1)b), (?('a')b\|c) |
 | option groups/switches        | (?i-m:..), (?x)..     |
-| possessive quantifiers [5]    | ++, *+, ?+, {4,}+     |
+| possessive quantifiers [2]    | ++, *+, ?+, {4,}+     |
 | hex types \h and \H           | \H\h{6}               |
 | bell and escape shortcuts     | \a, \e                |
 | newline-ready anchor \Z       | last word\Z           |
@@ -128,21 +120,19 @@ In addition to the conversions supported by the default approach, this gem will 
 | posix types                   | [[:alpha:]]           |
 | posix negations               | [[:^alpha:]]          |
 | codepoint lists               | \u{61 63 1F601}       |
-| unicode properties [6]        | \p{Arabic}, \p{Dash}  |
-| unicode abbreviations [6]     | \p{Mong}, \p{Sc}      |
-| unicode negations [6]         | \p{^Number}           |
-| astral plane properties [6][7]| \p{emoji}             |
-| astral plane literals [7]     | &#x1f601;             |
-| astral plane ranges [7]       | [&#x1f601;-&#x1f632;] |
+| unicode properties [3]        | \p{Arabic}, \p{Dash}  |
+| unicode abbreviations [3]     | \p{Mong}, \p{Sc}      |
+| unicode negations [3]         | \p{^Number}           |
+| astral plane properties [2][3]| \p{emoji}             |
+| astral plane literals [2]     | &#x1f601;             |
+| astral plane ranges [2]       | [&#x1f601;-&#x1f632;] |
 
 
-[4] Keep in mind that [Ruby's multiline mode](http://ruby-doc.org/core-2.1.1/Regexp.html#class-Regexp-label-Options) is more of a "dot-all mode" and totally different from [JavaScript's multiline mode](http://javascript.info/regexp-multiline-mode).
+[1] Keep in mind that [Ruby's multiline mode](http://ruby-doc.org/core-2.1.1/Regexp.html#class-Regexp-label-Options) is more of a "dot-all mode" and totally different from [JavaScript's multiline mode](http://javascript.info/regexp-multiline-mode).
 
-[5] JavaScript doesn't support atomic groups or possessive quantifiers, but JsRegex emulates their behavior by substituting them with [backreferenced lookahead groups](http://instanceof.me/post/52245507631/regex-emulate-atomic-grouping-with-lookahead).
+[2] See [here](#EX) for information about how this is achieved.
 
-[6] Some properties from these groups will result in large JavaScript regexes.
-
-[7] Astral plane characters are converted to surrogate pairs, so they don't require ES6. Large astral plane ranges or properties are dropped, though, to limit the size of the resulting regex.
+[3] Some properties from these groups will result in large JavaScript regexes.
 
 <a name='UF'></a>
 ### Unsupported Features
@@ -177,6 +167,34 @@ JavaScript:
 'Erkki-Sven Tüür'.split(/\b/)  // => ["Erkki", "-", "Sven", " ", "T", "üü", "r"]
 'Erkki-Sven Tüür'.split(/\b/u) // => ["Erkki", "-", "Sven", " ", "T", "üü", "r"]
 ```
+
+<a name='EX'></a>
+### How it Works
+
+JsRegex uses the gem  [regexp_parser](https://github.com/ammar/regexp_parser) to parse a Ruby Regexp.
+
+It traverses the AST returned by `regexp_parser` depth-first, and converts it to its own tree of equivalent JavaScript RegExp tokens, marking some nodes for treatment in a second pass.
+
+The second pass then carries out all modifications that require knowledge of the complete tree.
+
+After the second pass, JsRegex flat-maps the final tree into a new source string.
+
+Many Regexp tokens work in JavaScript just as they do in Ruby, or allow for a straightforward replacement, but some conversions are a little more involved.
+
+**Atomic groups and possessive quantifiers** are missing in JavaScript, so the only way to emulate their behavior is by substituting them with [backreferenced lookahead groups](http://instanceof.me/post/52245507631/regex-emulate-atomic-grouping-with-lookahead).
+
+**Astral plane characters** convert to [surrogate pairs](https://dmitripavlutin.com/what-every-javascript-developer-should-know-about-unicode/#24surrogatepairs), so they don't require ES6. JsRegex drops large astral plane ranges or properties, though, to limit the size of the resulting regex. You can opt out of this by setting `JsRegex::Converter.surrogate_pair_limit = nil`.
+
+**Properties and posix classes** expand to equivalent character sets, or surrogate pair alternations if necessary. The gem [regexp_property_values](https://github.com/janosch-x/regexp_property_values) helps by reading out their codepoints from Onigmo.
+
+**Character sets a.k.a. bracket expressions** offer many more features in Ruby compared to JavaScript. To work around this, JsRegex calls on the gem  [character_set](https://github.com/janosch-x/character_set) to calculate the matched codepoints of the whole set and build a completely new set string for all except the most simple cases.
+
+**Conditionals and subexpression calls** expand to equivalent expressions in the second pass. Two simplified examples:
+
+- the conditional `(<)?foo(?(1)>)` expands to `(?:<foo>|foo)`
+- the subexp call `(.{3})\g<1>` expands to `(.{3})(.{3})`
+
+The tricky bit here is that these expressions may be nested, and that their expansions may increase the capturing group count. This means that any following backreferences need an update. E.g. <code>(.{3})\g<1>(.{3})<b>\2</b></code> (which matches strings like "foobarquxqux") converts to <code>(.{3})(.{3})(.{3})<b>\3</b></code>.
 
 ### Contributions
 
