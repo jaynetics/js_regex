@@ -35,8 +35,8 @@ js_regex.options # => ''
 An `options:` argument lets you force options:
 
 ```ruby
-JsRegex.new(/./i, options: 'g').to_h
-# => {source: '.', options: 'gi'}
+JsRegex.new(/x/i, options: 'g').to_h
+# => {source: 'x', options: 'gi'}
 ```
 
 Set the [g flag](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/RegExp/global) like this if you want to use the regex to find or replace multiple matches per string.
