@@ -194,7 +194,7 @@ Many Regexp tokens work in JavaScript just as they do in Ruby, or allow for a st
 - the conditional `(<)?foo(?(1)>)` expands to `(?:<foo>|foo)`
 - the subexp call `(.{3})\g<1>` expands to `(.{3})(.{3})`
 
-The tricky bit here is that these expressions may be nested, and that their expansions may increase the capturing group count. This means that any following backreferences need an update. E.g. <code>(.{3})\g<1>(.{3})<b>\2</b></code> (which matches strings like "foobarquxqux") converts to <code>(.{3})(.{3})(.{3})<b>\3</b></code>.
+The tricky bit here is that these expressions may be nested, and that their expansions may increase the capturing group count. This means that any following backreferences need an update. E.g. <code>(.{3})\g<1>(.)<b>\2</b></code> (which matches strings like "FooBarXX") converts to <code>(.{3})(.{3})(.)<b>\3</b></code>.
 
 ### Contributions
 
