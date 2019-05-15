@@ -14,25 +14,21 @@ class JsRegex
       conditional
       dropped
       plain
-      subexp_call
-    ]
+    ].freeze
 
-    def initialize(*children, quantifier: nil, reference: nil, type: :plain)
-      raise ArgumentError, "bad type #{type}" unless TYPES.include?(type)
+    def initialize(*children, reference: nil, type: :plain)
       self.children = children
-      self.quantifier = quantifier
       self.reference = reference
       self.type = type
     end
 
-    def initialize_copy(orig)
-      super
-      self.children = orig.children.map(&:clone)
-      self.quantifier = orig.quantifier && orig.quantifier.clone
+    def initialize_copy(*)
+      self.children = children.map(&:clone)
     end
 
-    def map(&block)
-      clone.tap { |node| node.children.replace(children.map(&block)) }
+    def transform(&block)
+      children.map!(&block)
+      self
     end
 
     def <<(node)
@@ -58,9 +54,9 @@ class JsRegex
     end
 
     def update(attrs)
-      self.children   = attrs[:children]   if attrs.key?(:children)
-      self.quantifier = attrs[:quantifier] if attrs.key?(:quantifier)
-      self.type       = attrs[:type]       if attrs.key?(:type)
+      self.children   = attrs.fetch(:children)   if attrs.key?(:children)
+      self.quantifier = attrs.fetch(:quantifier) if attrs.key?(:quantifier)
+      self.type       = attrs.fetch(:type)       if attrs.key?(:type)
     end
 
     private

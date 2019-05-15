@@ -12,10 +12,9 @@ class JsRegex
 
       def convert_data
         case subtype
+        when :capture, :named then build_group
         when :atomic then emulate_atomic_group
-        when :capture then build_group
         when :comment then drop_without_warning
-        when :named then build_named_group
         when :options, :options_switch then build_options_group
         when :passive then build_passive_group
         when :absence then warn_of_unsupported_feature
@@ -32,12 +31,6 @@ class JsRegex
           context.end_atomic_group
           result
         end
-      end
-
-      def build_named_group
-        # remember position, then drop name part without warning
-        context.store_named_group_position(expression.name)
-        build_group(head: '(', reference: expression.name)
       end
 
       def build_options_group
@@ -62,19 +55,17 @@ class JsRegex
       end
 
       def build_group(opts = {})
-        head = opts[:head] || pass_through
-        if opts[:capturing].equal?(false)
-          return Node.new(*group_with_head(head))
-        end
+        head = opts[:head] || '('
+        tail = opts[:tail] || ')'
+        return Node.new(*wrap(head, tail)) if opts[:capturing].equal?(false)
 
         context.capture_group
-
-        ref = opts[:reference] || expression.number
-        Node.new(*group_with_head(head), reference: ref, type: :captured_group)
+        ref = expression.number
+        Node.new(*wrap(head, tail), reference: ref, type: :captured_group)
       end
 
-      def group_with_head(head)
-        [head, *convert_subexpressions, ')']
+      def wrap(head, tail)
+        [head, convert_subexpressions, tail]
       end
     end
   end

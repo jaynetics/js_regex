@@ -35,7 +35,7 @@ class JsRegex
 
         if qtf.possessive?
           node.update(quantifier: qtf.text[0..-2])
-          return wrap_in_backrefed_lookahead([node])
+          return wrap_in_backrefed_lookahead(node)
         else
           node.update(quantifier: qtf)
         end
@@ -44,7 +44,7 @@ class JsRegex
       end
 
       def convert_subexpressions
-        Node.new(*expression.expressions.map { |exp| convert_expression(exp) })
+        Node.new(*expression.map { |subexp| convert_expression(subexp) })
       end
 
       def convert_expression(expression)

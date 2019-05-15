@@ -12,14 +12,13 @@ class JsRegex
 
       def convert_data
         case subtype
-        when :open      then mark_conditional
-        when :condition then drop_without_warning
-        else                 warn_of_unsupported_feature
+        when :open then mark_conditional
+        else warn_of_unsupported_feature
         end
       end
 
       def mark_conditional
-        reference = expression.reference
+        reference = expression.referenced_expression.number
         node = Node.new('(?:', reference: reference, type: :conditional)
         expression.branches.each do |branch|
           node << Node.new('(?:', convert_expression(branch), ')')

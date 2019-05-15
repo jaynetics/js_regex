@@ -65,8 +65,10 @@ class JsRegex
       HAS_CASE_PATTERN = /[\p{lower}\p{upper}]/
 
       def handle_locally_case_insensitive_literal(literal)
-        return literal unless literal =~ HAS_CASE_PATTERN
+        literal =~ HAS_CASE_PATTERN ? case_insensitivize(literal) : literal
+      end
 
+      def case_insensitivize(literal)
         literal.each_char.each_with_object(Node.new) do |chr, node|
           node << (chr =~ HAS_CASE_PATTERN ? "[#{chr}#{chr.swapcase}]" : chr)
         end

@@ -38,7 +38,11 @@ class JsRegex
       # count of all properties supported by Ruby is 92. 75% are below 300 chars.
       #
       # Set this to nil if you need full unicode matches and size doesn't matter.
-      attr_accessor :surrogate_pair_limit
+      attr_writer :surrogate_pair_limit
+
+      def in_surrogate_pair_limit?(&pair_count)
+        @surrogate_pair_limit.nil? || @surrogate_pair_limit >= pair_count.call
+      end
     end
     self.surrogate_pair_limit = 300
   end

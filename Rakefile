@@ -6,15 +6,14 @@ require 'rspec/core/rake_task'
 RSpec::Core::RakeTask.new
 
 task mutate: :spec do
+  # TODO: remove ignore, https://github.com/mbj/mutant/issues/965
   arguments = %w[
     bundle exec mutant
     --fail-fast
     --include lib
     --require js_regex
     --use rspec
-    --ignore-subject JsRegex::Converter::EscapeConverter#control_sequence_to_s
-    --ignore-subject JsRegex::Converter::EscapeConverter#meta_char_to_char_code
-    --ignore-subject JsRegex::Converter::SetConverter#standardize_property_name
+    --ignore-subject JsRegex::Node#to_s
     -- JsRegex*
   ]
 

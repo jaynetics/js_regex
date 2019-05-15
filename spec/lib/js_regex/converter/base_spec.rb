@@ -28,13 +28,17 @@ describe JsRegex::Converter::Base do
       )
     end
 
-    it 'returns an empty string to be appended to the converted source' do
+    it 'returns a dropped node that appends as an empty string' do
       conv = described_class.new
       expr = expression_double(type: 'bar', token: 'big', ts: 7)
       allow(expr).to receive(:to_s).and_return('foo')
       allow(conv).to receive(:expression).and_return(expr)
       allow(conv).to receive(:warn)
-      expect(conv.send(:warn_of_unsupported_feature, 'fizz').to_s).to eq('')
+
+      node = conv.send(:warn_of_unsupported_feature, 'fizz')
+
+      expect(node.type).to eq :dropped
+      expect(node.to_s).to eq ''
     end
   end
 
@@ -273,9 +277,11 @@ describe JsRegex::Converter::Base do
     let(:context) { JsRegex::Converter::Context.new }
     before { allow(converter).to receive(:context).and_return(context) }
 
-    it 'returns the expression wrapped in a backreferenced lookahead' do
-      expect(converter.send(:wrap_in_backrefed_lookahead, 'foo').to_s)
-        .to eq('(?=(foo))\\1(?:)')
+    it 'returns the contents wrapped in a backreferenced lookahead' do
+      result = converter.send(:wrap_in_backrefed_lookahead, %w[foo bar])
+      expect(result.to_s).to eq('(?=(foobar))\\1(?:)')
+      expect(result.children[4].type).to eq :backref_num
+      expect(result.children[4].children).to eq %w[1]
     end
 
     it 'increases the count of captured groups' do
@@ -284,15 +290,17 @@ describe JsRegex::Converter::Base do
     end
 
     it 'increases the new_capturing_group_position for any following group' do
-      expect(context.new_capturing_group_position(4)).to eq(4)
-      converter.send(:wrap_in_backrefed_lookahead, 'foo')
-      expect(context.new_capturing_group_position(4)).to eq(5)
+      context.capture_group
+      expect(context.new_capturing_group_position(1)).to eq(1)
+      expect(converter.send(:wrap_in_backrefed_lookahead, 'foo').to_s).to include '\2'
+      expect(context.new_capturing_group_position(2)).to eq(3)
+      expect(converter.send(:wrap_in_backrefed_lookahead, 'foo').to_s).to include '\3'
     end
 
     it 'doesnt increase the new_capturing_group_position of preceding groups' do
       context.capture_group
       expect(context.new_capturing_group_position(1)).to eq(1)
-      converter.send(:wrap_in_backrefed_lookahead, 'foo')
+      expect(converter.send(:wrap_in_backrefed_lookahead, 'foo').to_s).to include '\2'
       expect(context.new_capturing_group_position(1)).to eq(1)
     end
   end

@@ -27,13 +27,13 @@ describe JsRegex::Converter::PropertyConverter do
   it 'drops astral plane properties negated with \p{^ with warning' do
     given_the_ruby_regexp(/\p{^Deseret}/)
     expect_js_regex_to_be(//)
-    expect_warning('astral plane')
+    expect_warning('astral plane negation by property')
   end
 
   it 'drops astral plane properties negated with \P with warning' do
     given_the_ruby_regexp(/\P{Deseret}/)
     expect_js_regex_to_be(//)
-    expect_warning('astral plane')
+    expect_warning('astral plane negation by property')
   end
 
   it 'translates posix types' do
@@ -59,7 +59,7 @@ describe JsRegex::Converter::PropertyConverter do
 
   it 'translates unicode properties' do
     given_the_ruby_regexp(/\p{Currency_Symbol}/)
-    expect(js_regex_source).to start_with('[$\xA2')
+    expect(js_regex_source).to start_with('(?:[$\xA2')
     expect_no_warnings
     expect_ruby_and_js_to_match(string: 'A$ü€', with_results: %w[$ €])
   end
@@ -73,24 +73,55 @@ describe JsRegex::Converter::PropertyConverter do
 
   it 'translates abbreviated unicode refrences' do
     given_the_ruby_regexp(/\p{sc}/) # == currency_symbol
-    expect(js_regex_source).to start_with('[$\xA2-')
+    expect(js_regex_source).to start_with('(?:[$\xA2-')
     expect_no_warnings
     expect_ruby_and_js_to_match(string: 'A$ü€', with_results: %w[$ €])
   end
 
   it 'translates unicode blocks' do
-    given_the_ruby_regexp(Regexp.new('\p{InBasicLatin}'))
-    expect_js_regex_to_be(Regexp.new('[\x00-\x7F]'))
+    given_the_ruby_regexp(/\p{In_CJK_Unified_Ideographs}/)
+    expect_js_regex_to_be(/[\u4E00-\u9FFF]/)
     expect_no_warnings
-    expect_ruby_and_js_to_match(string: 'añB', with_results: %w[a B])
+    expect_ruby_and_js_to_match(string: 'a帀B', with_results: %w[帀])
+  end
+
+  it 'uses case-insensitive substitutions if needed' do
+    given_the_ruby_regexp(/1(?i:\p{lower})2/)
+    expect(js_regex_source).to include('a-z')
+    expect(js_regex_source).to include('A-Z')
+  end
+
+  it 'does not use case-insensitive substitutions if everything is i anyway' do
+    given_the_ruby_regexp(/1\p{lower}2/i)
+    expect(js_regex_source).to include('a-z')
+    expect(js_regex_source).not_to include('A-Z')
+  end
+
+  it 'cuts of large astral plane shares of properties with warning' do
+    given_the_ruby_regexp(/\p{Any}/)
+    expect_js_regex_to_be(/[\x00-\uFFFF]/)
+    expect_warning('large astral plane match of property')
   end
 
   it 'drops too large astral plane properties with warning' do
     # this should concern little more than the few astral plane scripts
     # supported by Ruby, but it is also a good precaution if spacy new
     # properties are added in the future.
-    given_the_ruby_regexp(/\p{In_Supplementary_Private_Use_Area_A}/)
+    expect(JsRegex::Converter)
+      .to receive(:in_surrogate_pair_limit?) do |&block|
+      expect(block.call).to eq 672
+    end.and_return(false)
+    given_the_ruby_regexp(/\p{SignWriting}/)
     expect_js_regex_to_be(//)
-    expect_warning('astral plane')
+    expect_warning('large astral plane match of property')
+  end
+
+  it 'allows large astral plane properties if the limit allows it' do
+    expect(JsRegex::Converter)
+      .to receive(:in_surrogate_pair_limit?)
+      .and_return(true)
+    given_the_ruby_regexp(/\p{SignWriting}/)
+    expect(js_regex_source).to start_with('(?:\ud836\udc00|')
+    expect_no_warnings
   end
 end

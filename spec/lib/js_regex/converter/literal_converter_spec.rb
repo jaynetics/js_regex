@@ -102,6 +102,11 @@ describe JsRegex::Converter::LiteralConverter do
     expect_ruby_and_js_to_match(string: '1234', with_results: %w[1234])
   end
 
+  it 'does not call the more expensive conversion for literals without case' do
+    expect_any_instance_of(described_class).not_to receive(:case_insensitivize)
+    given_the_ruby_regexp(/1(?i:2)3(?i)4/)
+  end
+
   it 'warns for case-sensitive literals in case-insensitive regexes' do
     given_the_ruby_regexp(/a(?-i)b/i)
     expect_warning("nested case-sensitive literal 'b'")

@@ -31,37 +31,36 @@ class JsRegex
           warn_of_unsupported_feature('nested case-sensitive set')
         end
 
-        if Converter.surrogate_pair_limit.nil? ||
-           Converter.surrogate_pair_limit >= content.astral_part.size
+        if Converter.in_surrogate_pair_limit? { content.astral_part.size }
           content.to_s_with_surrogate_alternation
         else
           warn_of_unsupported_feature('large astral plane match of set')
           bmp_part = content.bmp_part
-          bmp_part.empty? ? drop : bmp_part.to_s(format: :js, in_brackets: true)
+          bmp_part.empty? ? drop : bmp_part.to_s(in_brackets: true)
         end
       end
 
       def directly_compatible?
-        if expression.case_insensitive? && !context.case_insensitive_root
+        if expression.case_insensitive? ^ context.case_insensitive_root
           # casefolding needed
-          return false
+          return
         end
 
         # check for children needing conversion (#each_expression is recursive)
-        expression.each_expression do |node|
-          case node.type
+        expression.each_expression do |exp|
+          case exp.type
           when :literal
             # surrogate pair substitution needed if astral
-            next if node.text.force_encoding('utf-8').ord <= 0xFFFF
+            next if exp.text.ord <= 0xFFFF
           when :set
             # conversion needed for nested sets, intersections
-            next if node.token.equal?(:range)
+            next if exp.token.equal?(:range)
           when :type
-            next if TypeConverter::TYPES_SHARED_BY_RUBY_AND_JS.include?(node.token)
+            next if TypeConverter::TYPES_SHARED_BY_RUBY_AND_JS.include?(exp.token)
           when :escape
-            next if EscapeConverter::ESCAPES_SHARED_BY_RUBY_AND_JS.include?(node.token)
+            next if EscapeConverter::ESCAPES_SHARED_BY_RUBY_AND_JS.include?(exp.token)
           end
-          return false
+          return
         end
         true
       end

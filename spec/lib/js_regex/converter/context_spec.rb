@@ -16,10 +16,6 @@ describe JsRegex::Converter::Context do
       expect(context.send(:capturing_group_count)).to eq(0)
     end
 
-    it 'sets named_group_positions to an empty Hash' do
-      expect(context.send(:named_group_positions)).to eq({})
-    end
-
     it 'sets warnings to an empty Array' do
       expect(context.send(:warnings)).to eq([])
     end
@@ -31,6 +27,11 @@ describe JsRegex::Converter::Context do
 
     it 'sets #case_insensitive_root to false if passed false' do
       context = described_class.new(case_insensitive_root: false)
+      expect(context.case_insensitive_root).to be false
+    end
+
+    it 'defaults to #case_insensitive_root == false' do
+      context = described_class.new
       expect(context.case_insensitive_root).to be false
     end
   end
@@ -57,6 +58,18 @@ describe JsRegex::Converter::Context do
       context.instance_variable_set(:@in_atomic_group, true)
       context.end_atomic_group
       expect(context.in_atomic_group).to be false
+    end
+  end
+
+  describe '#increment_local_capturing_group_count' do
+    it 'adds to added_capturing_groups_after_group based on current position' do
+      context.capture_group
+      context.increment_local_capturing_group_count
+      context.capture_group
+      context.increment_local_capturing_group_count
+      context.increment_local_capturing_group_count
+      expect(context.send(:added_capturing_groups_after_group))
+        .to eq(1 => 1, 2 => 2)
     end
   end
 
@@ -93,14 +106,6 @@ describe JsRegex::Converter::Context do
       allow(context).to receive(:added_capturing_groups_after_group)
         .and_return({})
       expect(context.send(:total_added_capturing_groups)).to eq(0)
-    end
-  end
-
-  describe '#store_named_group_position' do
-    it 'bases the position of the group on the previous count of groups' do
-      allow(context).to receive(:capturing_group_count).and_return(22)
-      context.store_named_group_position('foo')
-      expect(context.named_group_positions['foo']).to eq(23)
     end
   end
 end

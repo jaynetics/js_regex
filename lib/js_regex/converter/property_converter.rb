@@ -21,13 +21,10 @@ class JsRegex
         end
 
         if expression.negative?
-          if content.astral_part.empty?
-            return "[^#{content.to_s(format: :js)}]"
-          else
+          if content.astral_part?
             warn_of_unsupported_feature('astral plane negation by property')
           end
-        elsif Converter.surrogate_pair_limit.nil? ||
-              Converter.surrogate_pair_limit >= content.astral_part.size
+        elsif Converter.in_surrogate_pair_limit? { content.astral_part.size }
           return content.to_s_with_surrogate_alternation
         else
           warn_of_unsupported_feature('large astral plane match of property')
@@ -36,8 +33,7 @@ class JsRegex
         bmp_part = content.bmp_part
         return drop if bmp_part.empty?
 
-        string = bmp_part.to_s(format: :js)
-        expression.negative? ? "[^#{string}]" : "[#{string}]"
+        "[#{'^' if expression.negative?}#{bmp_part}]"
       end
     end
   end

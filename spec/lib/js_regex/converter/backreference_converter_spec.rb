@@ -75,6 +75,22 @@ describe JsRegex::Converter::BackreferenceConverter do
     expect_ruby_and_js_to_match(string: 'abcb')
   end
 
+  it 'marks backrefs for SecondPass conversion' do
+    backref = Regexp::Parser.parse(/(a)\1/).last
+
+    result = JsRegex::Converter.convert(backref)
+
+    expect(result).to be_a JsRegex::Node
+    expect(result.children.last.to_s).to eq '1'
+    expect(result.children.last.type).to eq :backref_num
+  end
+
+  it 'drops recursion level backreferences with warning' do
+    given_the_ruby_regexp(/(a)\k<1+1>/)
+    expect_js_regex_to_be(/(a)/)
+    expect_warning('number recursion ref')
+  end
+
   context 'when there are preceding substitutions' do
     it 'increments traditional number backrefs accordingly' do
       given_the_ruby_regexp(/(?>aa|a)(?>aa|a)(X)\1/)
@@ -140,28 +156,28 @@ describe JsRegex::Converter::BackreferenceConverter do
   end
 
   context 'when there are group additions between the backref and its target' do
-    it 'does not increments traditional number backrefs' do
+    it 'does not increment traditional number backrefs' do
       given_the_ruby_regexp(/(X)(?>aa|a)\1/)
       expect_js_regex_to_be(/(X)(?=(aa|a))\2(?:)\1/)
       expect_ruby_and_js_not_to_match(string: 'Xa')
       expect_ruby_and_js_to_match(string: 'XaX')
     end
 
-    it 'does not increments \k-style number backrefs' do
+    it 'does not increment \k-style number backrefs' do
       given_the_ruby_regexp(/(X)(?>aa|a)\k<1>/)
       expect_js_regex_to_be(/(X)(?=(aa|a))\2(?:)\1/)
       expect_ruby_and_js_not_to_match(string: 'Xa')
       expect_ruby_and_js_to_match(string: 'XaX')
     end
 
-    it 'does not increments relative number backrefs' do
+    it 'does not increment relative number backrefs' do
       given_the_ruby_regexp(/(X)(?>aa|a)\k<-1>/)
       expect_js_regex_to_be(/(X)(?=(aa|a))\2(?:)\1/)
       expect_ruby_and_js_not_to_match(string: 'Xa')
       expect_ruby_and_js_to_match(string: 'XaX')
     end
 
-    it 'does not increments name backrefs' do
+    it 'does not increment name backrefs' do
       given_the_ruby_regexp(/(?<foo>X)(?>aa|a)\k<foo>/)
       expect_js_regex_to_be(/(X)(?=(aa|a))\2(?:)\1/)
       expect_ruby_and_js_not_to_match(string: 'Xa')
@@ -169,50 +185,59 @@ describe JsRegex::Converter::BackreferenceConverter do
     end
   end
 
-  # see second_pass_spec.rb for tests of the final subexp call results
   context 'when dealing with subexp calls' do
-    it 'marks subexp calls for SecondPass conversion' do
-      conditional = Regexp::Parser.parse(/(a)\g<1>/).last
-
-      result = JsRegex::Converter.convert(conditional)
-
-      expect(result).to be_a JsRegex::Node
-      expect(result.reference).to eq 1
-      expect(result.type).to eq :subexp_call
+    it 'replaces numbered subexpression calls with the targeted subexpression' do
+      given_the_ruby_regexp(/(foo)(bar)\g<2>+/)
+      expect_js_regex_to_be(/(foo)(bar)(bar)+/)
+      expect_no_warnings
+      expect_ruby_and_js_not_to_match(string: 'foobar')
+      expect_ruby_and_js_to_match(string: 'foobarbar')
     end
 
-    it 'marks named subexp calls for SecondPass conversion' do
-      conditional = Regexp::Parser.parse(/(?<A>a)\g<A>/).last
-
-      result = JsRegex::Converter.convert(conditional)
-
-      expect(result).to be_a JsRegex::Node
-      expect(result.reference).to eq 'A'
-      expect(result.type).to eq :subexp_call
+    it 'replaces numbered subexpression calls with nested subexpressions' do
+      given_the_ruby_regexp(/(foo(bar))\g<2>+/)
+      expect_js_regex_to_be(/(foo(bar))(bar)+/)
+      expect_no_warnings
+      expect_ruby_and_js_not_to_match(string: 'foobar')
+      expect_ruby_and_js_to_match(string: 'foobarbar')
     end
 
-    it 'marks relative subexp calls for SecondPass conversion' do
-      conditional = Regexp::Parser.parse(/(a)(b)\g<-1>/).last
-      context = JsRegex::Converter::Context.new
-      2.times { context.capture_group }
-
-      result = JsRegex::Converter.convert(conditional, context)
-
-      expect(result).to be_a JsRegex::Node
-      expect(result.reference).to eq 2
-      expect(result.type).to eq :subexp_call
+    it 'replaces relative subexpression calls with the targeted subexpression' do
+      given_the_ruby_regexp(/(foo)(bar)(qux)\g<-2>+/)
+      expect_js_regex_to_be(/(foo)(bar)(qux)(bar)+/)
+      expect_no_warnings
+      expect_ruby_and_js_not_to_match(string: 'foobarqux')
+      expect_ruby_and_js_to_match(string: 'foobarquxbar')
     end
 
-    it 'marks forward-referring subexp calls for SecondPass conversion' do
-      conditional = Regexp::Parser.parse(/(a)\g<+1>(b)/)[1]
-      context = JsRegex::Converter::Context.new
-      context.capture_group # only preceding group is captured at this point
+    it 'replaces forward subexpression calls with the targeted subexpression' do
+      given_the_ruby_regexp(/(foo)\g<+2>(bar)(quz)/)
+      expect_js_regex_to_be(/(foo)(quz)(bar)(quz)/)
+      expect_no_warnings
+      expect_ruby_and_js_not_to_match(string: 'foobarquz')
+      expect_ruby_and_js_to_match(string: 'fooquzbarquz')
+    end
 
-      result = JsRegex::Converter.convert(conditional, context)
+    it 'replaces named subexpression calls with the targeted subexpression' do
+      given_the_ruby_regexp(/(foo)(?<x>bar)(baz)\g<x>+/)
+      expect_js_regex_to_be(/(foo)(bar)(baz)(bar)+/)
+      expect_no_warnings
+      expect_ruby_and_js_not_to_match(string: 'foobarbaz')
+      expect_ruby_and_js_to_match(string: 'foobarbazbar')
+    end
 
-      expect(result).to be_a JsRegex::Node
-      expect(result.reference).to eq 2
-      expect(result.type).to eq :subexp_call
+    it 'does not carry over the quantifier when replacing subexpression calls' do
+      given_the_ruby_regexp(/(foo){2}(bar)\g<1>/)
+      expect_js_regex_to_be(/(foo){2}(bar)(foo)/)
+      expect_no_warnings
+      expect_ruby_and_js_to_match(string: 'foofoobarfoo')
+    end
+
+    it 'keeps backrefs correct when replacing subexpression calls' do
+      given_the_ruby_regexp(/(foo)\g<1>(bar)\2/)
+      expect_js_regex_to_be(/(foo)(foo)(bar)\3/)
+      expect_no_warnings
+      expect_ruby_and_js_to_match(string: 'foofoobarbar')
     end
 
     it 'drops whole-pattern recursion calls with warning' do

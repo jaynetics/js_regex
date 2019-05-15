@@ -103,18 +103,19 @@ def escape_for_js_string_evaluation(test_string)
 end
 
 def expect_to_drop_token_with_warning(token_class, subtype)
-  exp = expression_double(type: token_class, token: subtype)
-  converter = JsRegex::Converter.for(exp)
-  expect(converter).to be_a(described_class)
+  given_the_token(token_class, subtype)
+  expect_js_regex_to_be(//)
+  expect_warning
+end
 
-  context = JsRegex::Converter::Context.new
-  source = converter.convert(exp, context).to_s
-  expect(source).to be_empty
-  expect(context.warnings.size).to eq(1)
+def given_the_token(token_class, subtype)
+  exp = expression_double(type: token_class, token: subtype)
+  allow(Regexp::Parser).to receive(:parse).and_return(exp)
+  @js_regex = JsRegex.new(//)
 end
 
 def expression_double(attributes)
-  defaults = { case_insensitive?: false, expressions: [],
-               quantifier: nil, to_s: 'X', ts: 0 }
+  defaults = { case_insensitive?: false, map: [].map,
+               quantifier: nil, to_s: 'X', ts: 0, i?: false }
   instance_double(Regexp::Expression::Root, defaults.merge(attributes))
 end

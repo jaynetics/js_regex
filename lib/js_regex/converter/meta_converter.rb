@@ -22,11 +22,11 @@ class JsRegex
       end
 
       def convert_alternatives
-        kept_any = false
+        kept_any = nil
 
-        convert_subexpressions.map do |node|
+        convert_subexpressions.transform do |node|
           dropped = !node.children.empty? && node.children.all?(&:dropped?)
-          node.children.unshift('|') if kept_any.equal?(true) && !dropped
+          node.children.unshift('|') if kept_any && !dropped
           kept_any = true unless dropped
           node
         end

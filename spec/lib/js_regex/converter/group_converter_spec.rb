@@ -10,6 +10,16 @@ describe JsRegex::Converter::GroupConverter do
     expect_ruby_and_js_to_match(string: 'abc', with_results: %w[abc])
   end
 
+  it 'sets Node#reference for SecondPass lookups' do
+    group = Regexp::Parser.parse(/(abc)/)[0]
+
+    result = JsRegex::Converter.convert(group)
+
+    expect(result).to be_a JsRegex::Node
+    expect(result.type).to eq(:captured_group)
+    expect(result.reference).to eq(1)
+  end
+
   it 'preserves passive groups' do
     given_the_ruby_regexp(/(?:abc)/)
     expect_js_regex_to_be(/(?:abc)/)
@@ -17,18 +27,14 @@ describe JsRegex::Converter::GroupConverter do
     expect_ruby_and_js_to_match(string: 'abc', with_results: %w[abc])
   end
 
-  it 'removes names from ab-named groups but remembers their position' do
-    expect_any_instance_of(JsRegex::Converter::Context)
-      .to receive(:store_named_group_position).with('protocol')
+  it 'removes names from ab-named groups' do
     given_the_ruby_regexp(/(?<protocol>http|ftp)/)
     expect_js_regex_to_be(/(http|ftp)/)
     expect_no_warnings
     expect_ruby_and_js_to_match(string: 'ftp', with_results: %w[ftp])
   end
 
-  it 'removes names from sq-named groups but remembers their position' do
-    expect_any_instance_of(JsRegex::Converter::Context)
-      .to receive(:store_named_group_position).with('protocol')
+  it 'removes names from sq-named groups' do
     given_the_ruby_regexp(/(?'protocol'http|ftp)/)
     expect_js_regex_to_be(/(http|ftp)/)
     expect_no_warnings
@@ -70,14 +76,9 @@ describe JsRegex::Converter::GroupConverter do
   end
 
   it 'opens passive groups for unknown group heads' do
-    ep = expression_double(type: :group, token: :unknown, to_s: '(%', ts: 0)
-    converter = JsRegex::Converter.for(ep)
-    expect(converter).to be_a(described_class)
-
-    context = JsRegex::Converter::Context.new
-    source = converter.convert(ep, context).to_s
-    expect(source).to start_with('(?:')
-    expect(context.warnings.size).to eq(1)
+    given_the_token(:group, :unknown)
+    expect_js_regex_to_be(/(?:)/)
+    expect_warning
   end
 
   context 'when dealing with atomic groups' do

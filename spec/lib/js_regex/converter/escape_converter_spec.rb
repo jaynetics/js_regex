@@ -231,4 +231,8 @@ describe JsRegex::Converter::EscapeConverter do
     expect_js_regex_to_be(/.\u0098/)
     expect_no_warnings
   end
+
+  it 'drops unknown escapes with warning' do
+    expect_to_drop_token_with_warning(:escape, :unknown)
+  end
 end

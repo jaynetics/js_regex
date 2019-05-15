@@ -28,7 +28,7 @@ describe JsRegex::Converter::SetConverter do
     it 'handles nested sets in negative sets' do
       given_the_ruby_regexp(/[^a-c[0-9]]+/)
       expect_js_regex_to_be(/[\x00-\/:-`d-\uD7FF\uE000-\uFFFF]+/)
-      expect_warning('astral plane')
+      expect_warning('large astral plane match of set')
       expect_ruby_and_js_to_match(string: 'abc123xyz', with_results: %w[xyz])
     end
 
@@ -55,7 +55,7 @@ describe JsRegex::Converter::SetConverter do
     it 'can flatten multiple sets nested in negative sets' do
       given_the_ruby_regexp(/[^a-c[x-z][0-2]]+/)
       expect_js_regex_to_be(/[\x00-\/3-`d-w{-\uD7FF\uE000-\uFFFF]+/)
-      expect_warning('astral plane')
+      expect_warning('large astral plane match of set')
       expect_ruby_and_js_to_match(string: 'bmx_123', with_results: %w[m _ 3])
     end
 
@@ -69,14 +69,14 @@ describe JsRegex::Converter::SetConverter do
     it 'can flatten deeply nested sets in negative sets' do
       given_the_ruby_regexp(/[^a-c[x-z[0-2]]]+/)
       expect_js_regex_to_be(/[\x00-\/3-`d-w{-\uD7FF\uE000-\uFFFF]+/)
-      expect_warning('astral plane')
+      expect_warning('large astral plane match of set')
       expect_ruby_and_js_to_match(string: 'bmx_123', with_results: %w[m _ 3])
     end
 
     it 'can handle deeply nested negative sets' do
       given_the_ruby_regexp(/[a-c[x-z[^0-2]]]+/)
       expect_js_regex_to_be(/[\x00-\/3-\uD7FF\uE000-\uFFFF]+/)
-      expect_warning('astral plane')
+      expect_warning('large astral plane match of set')
       expect_ruby_and_js_to_match(string: 'bmx_123', with_results: %w[bmx_ 3])
     end
 
@@ -93,6 +93,18 @@ describe JsRegex::Converter::SetConverter do
       expect_no_warnings
       expect_ruby_and_js_to_match(string: 'bmx_123', with_results: %w[m _123])
     end
+
+    it 'can handle non-astral literals in negative sets' do
+      given_the_ruby_regexp(/[^\uFFFF]/)
+      expect_js_regex_to_be(/[^\uFFFF]/)
+      expect_ruby_and_js_to_match(string: "a\uFFFFb", with_results: %w[a b])
+    end
+
+    it 'warns for astral literals in negative sets' do
+      given_the_ruby_regexp(/[^\u{10000}]/)
+      expect_js_regex_to_be(/[\x00-\uD7FF\uE000-\uFFFF]/)
+      expect_warning('large astral plane match of set')
+    end
   end
 
   it 'expands the hex type in positive sets' do
@@ -105,21 +117,35 @@ describe JsRegex::Converter::SetConverter do
   it 'handles the non-hex type in positive sets' do
     given_the_ruby_regexp(/[a-c\H]+/)
     expect_js_regex_to_be(/[\x00-\/:-@G-cg-\uD7FF\uE000-\uFFFF]+/)
-    expect_warning('astral plane')
+    expect_warning('large astral plane match of set')
     expect_ruby_and_js_to_match(string: 'zxa3n', with_results: %w[zxa n])
   end
 
   it 'handles the hex type in negative sets' do
     given_the_ruby_regexp(/[^x-y\h]+/)
-    expect_warning('astral plane')
+    expect_warning('large astral plane match of set')
     expect_ruby_and_js_to_match(string: 'zxa3n', with_results: %w[z n])
   end
 
-  it 'handles the non-hex type in negative sets' do
+  it 'expands the non-hex type in negative sets' do
     given_the_ruby_regexp(/[^a-c\H]+/)
     expect_js_regex_to_be(/[0-9A-Fd-f]+/)
     expect_no_warnings
     expect_ruby_and_js_to_match(string: 'zxa3ne', with_results: %w[3 e])
+  end
+
+  it 'does not expand types that work the same in javascript' do
+    given_the_ruby_regexp(/[\d]+/)
+    expect_js_regex_to_be(/[\d]+/)
+    expect_no_warnings
+    expect_ruby_and_js_to_match(string: 'ab34cd', with_results: %w[34])
+  end
+
+  it 'expands subsequent hex types with merging' do
+    given_the_ruby_regexp(/[\d\h]+/)
+    expect_js_regex_to_be(/[0-9A-Fa-f]+/)
+    expect_no_warnings
+    expect_ruby_and_js_to_match(string: 'zxa3ne', with_results: %w[a3 e])
   end
 
   it 'handles posix classes in sets' do
@@ -130,7 +156,7 @@ describe JsRegex::Converter::SetConverter do
 
   it 'handles negative posix classes in sets' do
     given_the_ruby_regexp(/[x-z[:^ascii:]]+/)
-    expect_warning('astral plane')
+    expect_warning('large astral plane match of set')
     expect_ruby_and_js_to_match(string: 'xañbäõ_ß', with_results: %w[x ñ äõ ß])
   end
 
@@ -149,7 +175,7 @@ describe JsRegex::Converter::SetConverter do
 
   it 'handles properties in negative sets' do
     given_the_ruby_regexp(/[^a\p{ascii}]+/)
-    expect_warning('astral plane')
+    expect_warning('large astral plane match of set')
     expect_ruby_and_js_to_match(string: 'a1ü!', with_results: %w[ü])
   end
 
@@ -167,6 +193,22 @@ describe JsRegex::Converter::SetConverter do
     expect_ruby_and_js_to_match(string: 'a😐😁A', with_results: %w[a 😁])
   end
 
+  it 'extracts 0x10000 and higher' do
+    given_the_ruby_regexp(/[𐀀]/) # 0x10000
+    expect(js_regex_source).to eq('(?:\ud800\udc00)')
+    given_the_ruby_regexp(/[𐀁]/) # 0x10001
+    expect(js_regex_source).to eq('(?:\ud800\udc01)')
+    expect_no_warnings
+  end
+
+  it 'does not extract 0xFFFF and lower' do
+    given_the_ruby_regexp(/[￾]/) # 0xFFFE
+    expect_js_regex_to_be(/[￾]/)
+    given_the_ruby_regexp(/[￿]/) # 0xFFFF
+    expect_js_regex_to_be(/[￿]/)
+    expect_no_warnings
+  end
+
   it 'handles small astral plane ranges without warning' do
     given_the_ruby_regexp(/[😁-😲]/)
     expect_no_warnings
@@ -174,15 +216,19 @@ describe JsRegex::Converter::SetConverter do
   end
 
   it 'drops large astral plane ranges with warning' do
+    expect(JsRegex::Converter)
+      .to receive(:in_surrogate_pair_limit?) do |&block|
+      expect(block.call).to eq(0x110000 - 0x10000)
+    end.and_return(false)
     given_the_ruby_regexp(/[a\u{10000}-\u{10FFFF}]/)
     expect_js_regex_to_be(/[a]/)
-    expect_warning('astral plane')
+    expect_warning('large astral plane match of set')
   end
 
   it 'does not create empty sets when dropping contents' do
     given_the_ruby_regexp(/[\u{10000}-\u{10FFFF}]/)
     expect_js_regex_to_be(//)
-    expect_warning('astral plane')
+    expect_warning('large astral plane match of set')
   end
 
   it 'preserves bmp unicode ranges' do
@@ -208,9 +254,11 @@ describe JsRegex::Converter::SetConverter do
   end
 
   it 'converts literal newline members into newline escapes' do
-    given_the_ruby_regexp(/[a
-b]/)
-    expect_js_regex_to_be(/[a\nb]/)
+    given_the_ruby_regexp(/[
+a
+b
+]/)
+    expect_js_regex_to_be(/[\na\nb\n]/)
     expect_no_warnings
     expect_ruby_and_js_to_match(string: "x\ny", with_results: %W[\n])
   end
@@ -223,11 +271,24 @@ b]/)
   end
 
   it 'adds case-swapped literal member dupes if subject to a local i-option' do
-    given_the_ruby_regexp(/[a](?i)[a](?-i:[a](?i:[^a-fG-Y]))/)
-    expect_js_regex_to_be(/[a][Aa](?:[a](?:[\x00-\uD7FF\uE000-\uFFFF]))/)
-    expect_warning('astral plane')
+    given_the_ruby_regexp(/[a](?i)[a[b]](?-i:[a](?i:[^a-fG-Y]))/)
+    expect_js_regex_to_be(/[a][ABab](?:[a](?:[\x00-\uD7FF\uE000-\uFFFF]))/)
+    expect_warning('large astral plane match of set')
     expect_ruby_and_js_to_match(string: 'aAaZ', with_results: %w[aAaZ])
     expect_ruby_and_js_not_to_match(string: 'AAaZ')
+  end
+
+  it 'does not add case-swapped members if everything is i anyway' do
+    given_the_ruby_regexp(/[a][a[b]][^A]/i)
+    expect_js_regex_to_be(/[a][ab][^A]/i)
+    expect_no_warnings
+    expect_ruby_and_js_to_match(string: 'ABZ', with_results: %w[ABZ])
+  end
+
+  it 'warns for locally case-sensitive sets' do
+    given_the_ruby_regexp(/(?-i:[a])/i)
+    expect_js_regex_to_be(/(?:[a])/i)
+    expect_warning('nested case-sensitive set')
   end
 
   it 'does not add duplicates for literal members that cant be swapped' do

@@ -17,4 +17,14 @@ describe JsRegex::Converter::ConditionalConverter do
     expect(result.children[2].to_s).to eq '(?:c)'
     expect(result.children[3].to_s).to eq ')'
   end
+
+  it 'drops the condition part without warning' do
+    given_the_ruby_regexp(/(a)(?(1)b|c)/)
+    expect(js_regex_source).not_to include '1'
+    expect_no_warnings
+  end
+
+  it 'drops unknown conditional expressions with warning' do
+    expect_to_drop_token_with_warning(:conditional, :unknown)
+  end
 end

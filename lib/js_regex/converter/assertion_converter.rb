@@ -16,7 +16,7 @@ class JsRegex
       def convert_data
         case subtype
         when :lookahead, :nlookahead
-          build_group(capturing: false)
+          build_group(head: pass_through, capturing: false)
         when :nlookbehind
           warn_of_unsupported_feature('negative lookbehind assertion')
         else # :lookbehind, ...

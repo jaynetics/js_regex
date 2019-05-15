@@ -51,6 +51,12 @@ describe JsRegex::Conversion do
         .and_call_original
       described_class.of(//m)
     end
+
+    it 'raises TypeError for Node#to_s on nodes with SecondPass processing' do
+      expect { JsRegex::Node.new(type: :conditional).to_s }.to raise_error(
+        TypeError, 'conditional must be substituted before stringification'
+      )
+    end
   end
 
   describe '#convert_options' do

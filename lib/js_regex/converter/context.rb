@@ -11,13 +11,11 @@ class JsRegex
       attr_reader :capturing_group_count,
                   :case_insensitive_root,
                   :in_atomic_group,
-                  :named_group_positions,
                   :warnings
 
       def initialize(case_insensitive_root: false)
         self.added_capturing_groups_after_group = Hash.new(0)
         self.capturing_group_count = 0
-        self.named_group_positions = {}
         self.warnings = []
 
         self.case_insensitive_root = case_insensitive_root
@@ -56,10 +54,6 @@ class JsRegex
         capturing_group_count - total_added_capturing_groups
       end
 
-      def store_named_group_position(name)
-        named_group_positions[name] = capturing_group_count + 1
-      end
-
       private
 
       attr_accessor :added_capturing_groups_after_group
@@ -67,7 +61,6 @@ class JsRegex
       attr_writer :capturing_group_count,
                   :case_insensitive_root,
                   :in_atomic_group,
-                  :named_group_positions,
                   :warnings
 
       def total_added_capturing_groups

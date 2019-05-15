@@ -23,13 +23,13 @@ In Ruby:
 ```ruby
 require 'js_regex'
 
-ruby_hex_regex = /\h+/i
+ruby_hex_regex = /0x\h+/i
 
 js_regex = JsRegex.new(ruby_hex_regex)
 
 js_regex.warnings # => []
-js_regex.source # => '[0-9A-Fa-f]+'
-js_regex.options # => ''
+js_regex.source # => '0x[0-9A-Fa-f]+'
+js_regex.options # => 'i'
 ```
 
 An `options:` argument lets you force options:
@@ -189,10 +189,9 @@ Many Regexp tokens work in JavaScript just as they do in Ruby, or allow for a st
 
 **Character sets a.k.a. bracket expressions** offer many more features in Ruby compared to JavaScript. To work around this, JsRegex calls on the gem  [character_set](https://github.com/janosch-x/character_set) to calculate the matched codepoints of the whole set and build a completely new set string for all except the most simple cases.
 
-**Conditionals and subexpression calls** expand to equivalent expressions in the second pass. Two simplified examples:
+**Conditionals** expand to equivalent expressions in the second pass, e.g. `(<)?foo(?(1)>)` expands to `(?:<foo>|foo)` (simplified example).
 
-- the conditional `(<)?foo(?(1)>)` expands to `(?:<foo>|foo)`
-- the subexp call `(.{3})\g<1>` expands to `(.{3})(.{3})`
+**Subexpression calls** are replaced with the conversion result of their target, e.g. `(.{3})\g<1>` expands to `(.{3})(.{3})`.
 
 The tricky bit here is that these expressions may be nested, and that their expansions may increase the capturing group count. This means that any following backreferences need an update. E.g. <code>(.{3})\g<1>(.)<b>\2</b></code> (which matches strings like "FooBarXX") converts to <code>(.{3})(.{3})(.)<b>\3</b></code>.
 
