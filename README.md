@@ -74,14 +74,11 @@ js_regex.warnings # => []
 If this array isn't empty, that means that your Ruby regex contained some [stuff that can't be carried over to JavaScript](#UF). You can still use the result, but this is not recommended. Most likely it won't match the same strings as your Ruby regex.
 
 ```ruby
-# this Ruby regex will match 'br', 'bur', etc.
-advanced_ruby_regex = /b(?~a)r]/
+advanced_ruby_regex = /(?<!fizz)buzz/
 
-# the resulting JavaScript regex will match 'br'
 js_regex = JsRegex.new(advanced_ruby_regex)
-
-js_regex.warnings # => ["Dropped unsupported absence group '(?~a)' at index 1"]
-js_regex.source # => 'br'
+js_regex.warnings # => ["Dropped unsupported negative lookbehind assertion '(?<!fizz)' at index 0"]
+js_regex.source # => 'buzz'
 ```
 
 Many warnings are related to JavaScript regexes not matching stuff in the astral plane. Ignoring these might be fine depending on your use case.
@@ -99,6 +96,7 @@ In addition to the conversions supported by the default approach, this gem will 
 | atomic groups [2]             | a(?>bc\|b)c           |
 | conditionals                  | (?(1)b), (?('a')b\|c) |
 | option groups/switches        | (?i-m:..), (?x)..     |
+| absence groups                | /\\\*(?~\\\*/)\\\*/   |
 | possessive quantifiers [2]    | ++, *+, ?+, {4,}+     |
 | hex types \h and \H           | \H\h{6}               |
 | bell and escape shortcuts     | \a, \e                |
@@ -149,7 +147,7 @@ In most of these cases that will lead to a warning, but changes that are not con
 | previous match anchor          | \G                    | yes     |
 | extended grapheme type         | \X                    | yes     |
 | large astral plane ranges      | [a-\u{10FFFF}]        | yes     |
-| absence groups                 | (?~foo)               | yes     |
+| variable length absence groups | (?~(a+\|bar))         | yes     |
 | capturing group names          | (?&lt;a&gt;, (?'a'    | no      |
 | comment groups                 | (?#comment)           | no      |
 | inline comments (in x-mode)    | /[a-z] # comment/x    | no      |

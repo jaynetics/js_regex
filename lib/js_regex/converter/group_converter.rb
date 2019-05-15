@@ -17,7 +17,7 @@ class JsRegex
         when :comment then drop_without_warning
         when :options, :options_switch then build_options_group
         when :passive then build_passive_group
-        when :absence then warn_of_unsupported_feature
+        when :absence then build_absence_group_if_simple
         else build_unsupported_group
         end
       end
@@ -47,6 +47,30 @@ class JsRegex
 
       def build_passive_group
         build_group(head: '(?:', capturing: false)
+      end
+
+      def build_absence_group_if_simple
+        if unmatchable_absence_group?
+          unmatchable_substitution
+        elsif expression.inner_match_length.fixed?
+          build_absence_group
+        else
+          warn_of_unsupported_feature('variable-length absence group content')
+        end
+      end
+
+      def unmatchable_absence_group?
+        expression.empty?
+      end
+
+      def unmatchable_substitution
+        '(?!)'
+      end
+
+      def build_absence_group
+        head = "(?:(?:.|\\n){,#{expression.inner_match_length.min - 1}}|(?:(?!"
+        tail = ')(?:.|\n))*)'
+        build_group(head: head, tail: tail, capturing: false)
       end
 
       def build_unsupported_group(description = nil)

@@ -148,10 +148,50 @@ describe JsRegex::Converter::GroupConverter do
     end
   end
 
-  it 'drops absence operators / groups with warning',
-     if: (Gem::Version.new(RUBY_VERSION.dup) >= Gem::Version.new('2.4.1')) do
-    given_the_ruby_regexp(Regexp.new('1(?~2)3'))
-    expect_js_regex_to_be(/13/)
-    expect_warning("Dropped unsupported absence group '(?~2)' at index 1")
+  context 'when dealing with absence groups',
+    if: (Gem::Version.new(RUBY_VERSION.dup) >= Gem::Version.new('2.4.1')) do
+
+    it 'converts simple cases to complimentary alternations' do
+      given_the_ruby_regexp(Regexp.new('1(?~23)4'))
+      expect_js_regex_to_be(/1(?:(?:.|\n){,1}|(?:(?!23)(?:.|\n))*)4/)
+      expect_no_warnings
+      expect_ruby_and_js_not_to_match(string: '1234')
+      expect_ruby_and_js_not_to_match(string: '12234')
+      expect_ruby_and_js_to_match(string: '14')
+      expect_ruby_and_js_to_match(string: '124')
+      expect_ruby_and_js_to_match(string: '134')
+      expect_ruby_and_js_to_match(string: '12224')
+      expect_ruby_and_js_to_match(string: '13334')
+    end
+
+    it 'can handle fixed quantifications' do
+      given_the_ruby_regexp(Regexp.new('A(?~\d{4})Z'))
+      expect_js_regex_to_be(/A(?:(?:.|\n){,3}|(?:(?!\d{4})(?:.|\n))*)Z/)
+      expect_no_warnings
+      expect_ruby_and_js_not_to_match(string: 'A1234Z')
+      expect_ruby_and_js_to_match(string: 'AZ')
+      expect_ruby_and_js_to_match(string: 'A123Z')
+      expect_ruby_and_js_to_match(string: 'A12X34Z')
+    end
+
+    it 'drops variably quantified cases with warning' do
+      given_the_ruby_regexp(Regexp.new('1(?~2+)3'))
+      expect_js_regex_to_be(/13/)
+      expect_warning('variable-length absence group content')
+    end
+
+    it 'drops other variable length cases with warning' do
+      given_the_ruby_regexp(Regexp.new('1(?~2|22)3'))
+      expect_js_regex_to_be(/13/)
+      expect_warning('variable-length absence group content')
+    end
+
+    it 'converts unmatchable cases to an unmatchable group' do
+      given_the_ruby_regexp(Regexp.new('1(?~)2'))
+      expect_js_regex_to_be(/1(?!)2/)
+      expect_no_warnings
+      expect_ruby_and_js_not_to_match(string: '12')
+      expect_ruby_and_js_not_to_match(string: '1X2')
+    end
   end
 end
