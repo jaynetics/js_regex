@@ -33,12 +33,6 @@ describe JsRegex do
       expect(decoded_json).to eq(js_regex.to_h)
     end
 
-    it "can be used with JavaScript's new RegExp() constructor" do
-      given_the_ruby_regexp(/[a-z]+/)
-      matches = matches_in_javascript_using_to_json_result_on('abc123')
-      expect(matches).to eq(%w[abc])
-    end
-
     it 'passes on the options parameter, defaulting to {}' do
       Hash.send(:define_method, :to_json) { |options| options }
       expect(described_class.new(//).to_json(foo: :bar)).to eq(foo: :bar)
@@ -51,28 +45,22 @@ describe JsRegex do
   end
 
   describe '#to_s' do
-    let(:return_value) { described_class.new(//).to_s }
-
     it 'returns a String' do
-      expect(return_value).to be_instance_of(String)
+      expect(described_class.new(/foo/).to_s).to eq '/foo/'
     end
 
     it 'includes options' do
-      expect(described_class.new(//i).to_s).to end_with 'i'
+      expect(described_class.new(/foo/i).to_s).to eq '/foo/i'
     end
 
-    it 'can be injected directly into JS' do
-      given_the_ruby_regexp(/[a-z]+/)
-      matches = matches_in_javascript_using_to_s_result_on('abc123')
-      expect(matches).to eq(%w[abc])
+    it 'returns /(?:)/ if the source is empty, as `//` is illegal in JS' do
+      expect(described_class.new(//).to_s).to eq '/(?:)/'
     end
   end
 
   describe '#warnings' do
-    let(:return_value) { described_class.new(//).warnings }
-
     it 'returns an Array' do
-      expect(return_value).to be_instance_of(Array)
+      expect(described_class.new(//).warnings).to be_instance_of(Array)
     end
   end
 end

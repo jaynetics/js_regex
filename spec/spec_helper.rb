@@ -23,6 +23,7 @@ end
 
 def expect_js_regex_to_be(expected)
   expect(js_regex_source).to eq(expected.source)
+  expect_to_s_to_eq_json
 end
 
 def expect_no_warnings
@@ -54,12 +55,10 @@ def expect_ruby_and_js_to_match(args = { string: '', with_results: [] })
     # In that case, don't specify expected results and just check that
     # a valid string does produce a match.
     expect(matches_in_ruby_on(data)).not_to be_empty
-    expect(matches_in_javascript_using_to_s_result_on(data)).not_to be_empty
-    expect(matches_in_javascript_using_to_json_result_on(data)).not_to be_empty
+    expect(matches_in_js_on(data)).not_to be_empty
   else
     expect(matches_in_ruby_on(data)).to eq(expected)
-    expect(matches_in_javascript_using_to_s_result_on(data)).to eq(expected)
-    expect(matches_in_javascript_using_to_json_result_on(data)).to eq(expected)
+    expect(matches_in_js_on(data)).to eq(expected)
   end
 end
 
@@ -71,7 +70,7 @@ def matches_in_ruby_on(string)
   string.scan(@ruby_regex).flatten
 end
 
-def matches_in_javascript_using_to_s_result_on(string)
+def matches_in_js_on(string)
   test_string = escape_for_js_string_evaluation(string)
   js = <<-JS
     var matches = '#{test_string}'.match(#{@js_regex});
@@ -81,17 +80,15 @@ def matches_in_javascript_using_to_s_result_on(string)
   JS_CONTEXT.eval(js).to_a
 end
 
-def matches_in_javascript_using_to_json_result_on(string)
+def expect_to_s_to_eq_json
   json_string = escape_for_js_string_evaluation(@js_regex.to_json)
-  test_string = escape_for_js_string_evaluation(string)
   js = <<-JS
     var jsonObj = JSON.parse('#{json_string}');
-    var regExp = new RegExp(jsonObj.source, jsonObj.options);
-    var matches = '#{test_string}'.match(regExp);
-    if (matches === null) matches = [];
-    matches;
+    var jsonRE = new RegExp(jsonObj.source, jsonObj.options);
+    var stringRE = #{@js_regex};
+    jsonRE.source == stringRE.source && jsonRE.flags == stringRE.flags;
   JS
-  JS_CONTEXT.eval(js).to_a
+  expect(JS_CONTEXT.eval(js)).to eq true
 end
 
 def escape_for_js_string_evaluation(test_string)

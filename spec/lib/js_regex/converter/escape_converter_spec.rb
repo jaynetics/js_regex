@@ -202,9 +202,7 @@ describe JsRegex::Converter::EscapeConverter do
 
     expect(matches_in_ruby_on("ya\xD8y".dup.force_encoding('ascii-8bit')))
       .to eq(["a\xD8".dup.force_encoding('ascii-8bit')])
-    expect(matches_in_javascript_using_to_s_result_on("ya\u00D8y"))
-      .to eq(["a\u00D8"])
-    expect(matches_in_javascript_using_to_json_result_on("ya\u00D8y"))
+    expect(matches_in_js_on("ya\u00D8y"))
       .to eq(["a\u00D8"])
   end
 

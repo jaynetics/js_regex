@@ -28,6 +28,6 @@ class JsRegex
   end
 
   def to_s
-    "/#{source}/#{options}"
+    "/#{source.empty? ? '(?:)' : source}/#{options}"
   end
 end
