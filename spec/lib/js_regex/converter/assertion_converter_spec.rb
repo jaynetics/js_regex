@@ -4,29 +4,21 @@ require 'spec_helper'
 
 describe JsRegex::Converter::AssertionConverter do
   it 'preserves positive lookaheads' do
-    given_the_ruby_regexp(/a(?=b)/i)
-    expect_js_regex_to_be(/a(?=b)/i)
-    expect_no_warnings
-    expect_ruby_and_js_to_match(string: 'aAb', with_results: %w[A])
+    expect(/a(?=b)/i).to stay_the_same.and keep_matching('aAb', with_results: %w[A])
   end
 
   it 'preserves negative lookaheads' do
-    given_the_ruby_regexp(/a(?!b)/i)
-    expect_js_regex_to_be(/a(?!b)/i)
-    expect_no_warnings
-    expect_ruby_and_js_to_match(string: 'aAb', with_results: %w[a])
+    expect(/a(?!b)/i).to stay_the_same.and keep_matching('aAb', with_results: %w[a])
   end
 
   it 'makes positive lookbehinds non-lookbehind with warning' do
-    given_the_ruby_regexp(/(?<=A)b/)
-    expect_js_regex_to_be(/(?:A)b/)
-    expect_warning
+    expect(/(?<=A)b/).to\
+    become(/(?:A)b/).with_warning
   end
 
   it 'drops negative lookbehinds with warning' do
-    given_the_ruby_regexp(/(?<!A)b/)
-    expect_js_regex_to_be(/b/)
-    expect_warning('negative lookbehind assertion')
+    expect(/(?<!A)b/).to\
+    become(/b/).with_warning('negative lookbehind assertion')
   end
 
   it 'does not count towards captured groups' do

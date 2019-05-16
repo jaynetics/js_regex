@@ -4,95 +4,76 @@ require 'spec_helper'
 
 describe JsRegex::Converter::MetaConverter do
   it 'preserves the dot meta char a.k.a. universal matcher "."' do
-    given_the_ruby_regexp(/./)
-    expect_js_regex_to_be(/./)
-    expect_no_warnings
-    expect_ruby_and_js_to_match(string: ' b%', with_results: [' ', 'b', '%'])
+    expect(/./).to stay_the_same.and keep_matching(' b%', with_results: [' ', 'b', '%'])
   end
 
   it 'ensures dots match newlines if the multiline option is set' do
-    given_the_ruby_regexp(/a.+a/m)
-    expect_js_regex_to_be(/a(?:.|\n)+a/)
-    expect_no_warnings
-    expect_ruby_and_js_to_match(string: 'abba', with_results: %w[abba])
-    expect_ruby_and_js_to_match(string: "ab\nba", with_results: %W[ab\nba])
+    expect(/a.+a/m).to\
+    become(/a(?:.|\n)+a/).and keep_matching('abba', with_results: %w[abba])
   end
 
   it 'does not make dots match newlines if other options are set' do
-    given_the_ruby_regexp(/a.+a/i)
-    expect_js_regex_to_be(/a.+a/i)
-    expect_no_warnings
-    expect_ruby_and_js_to_match(string: 'abba', with_results: ['abba'])
-    expect_ruby_and_js_not_to_match(string: "ab\nba")
+    expect(/a.+a/i)
+      .to stay_the_same
+      .and keep_matching('abba', with_results: ['abba'])
+      .and keep_not_matching("ab\nba")
   end
 
   it 'does not make escaped dots match newlines in multiline mode' do
-    given_the_ruby_regexp(/a\.+a/m)
-    expect_js_regex_to_be(/a\.+a/)
-    expect_no_warnings
-    expect_ruby_and_js_to_match(string: 'aba a.a', with_results: %w[a.a])
-    expect_ruby_and_js_to_match(string: "a\na a.a", with_results: %w[a.a])
+    expect(/a\.+a/m).to\
+    become(/a\.+a/).and keep_matching('aba a.a', with_results: %w[a.a])
   end
 
   it 'ensures dots match newlines if the multiline option is set via groups' do
-    given_the_ruby_regexp(/a(?m:.(?-m:.)).(?m).a/)
-    expect_js_regex_to_be(/a(?:(?:.|\n)(?:.)).(?:.|\n)a/)
-    expect_no_warnings
-    expect_ruby_and_js_to_match(string: "abbb\na", with_results: %W[abbb\na])
-    expect_ruby_and_js_not_to_match(string: "abb\nba")
+    expect(/a(?m:.(?-m:.)).(?m).a/).to\
+    become(/a(?:(?:.|\n)(?:.)).(?:.|\n)a/)
+      .and keep_matching("abbb\na", with_results: %W[abbb\na])
+      .and keep_not_matching("abb\nba")
   end
 
   it 'does not make dots match newlines if the multiline option is disabled' do
-    given_the_ruby_regexp(/a(?-m).(?m).a/m)
-    expect_js_regex_to_be(/a.(?:.|\n)a/)
-    expect_no_warnings
-    expect_ruby_and_js_to_match(string: "ab\na", with_results: %W[ab\na])
-    expect_ruby_and_js_not_to_match(string: "a\nba")
+    expect(/a(?-m).(?m).a/m).to\
+    become(/a.(?:.|\n)a/)
+      .and keep_matching("ab\na", with_results: %W[ab\na])
+      .and keep_not_matching("a\nba")
   end
 
   it 'preserves the alternation meta char "|"' do
-    given_the_ruby_regexp(/a|b/)
-    expect_js_regex_to_be(/a|b/)
-    expect_no_warnings
-    expect_ruby_and_js_to_match(string: 'a b', with_results: %w[a b])
+    expect(/a|b/).to stay_the_same.and keep_matching('a b', with_results: %w[a b])
   end
 
   it 'preserves recursive alternations' do
-    given_the_ruby_regexp(/a|(b|c)/)
-    expect_js_regex_to_be(/a|(b|c)/)
-    expect_no_warnings
-    expect_ruby_and_js_to_match(string: 'c', with_results: %w[c])
+    expect(/a|(b|c)/).to stay_the_same.and keep_matching('c', with_results: %w[c])
   end
 
   it 'applies further conversions to alternation branches' do
-    given_the_ruby_regexp(/(b\G|c)/)
-    expect_js_regex_to_be(/(b|c)/)
-    expect_warning
+    expect(/(b\G|c)/).to\
+    become(/(b|c)/).with_warning
   end
 
   it 'drops depleted alternation branches' do
-    given_the_ruby_regexp(/(\G|\G|ccc|jjj|\G|xxx|\G)/)
-    expect_js_regex_to_be(/(ccc|jjj|xxx)/)
-    expect_warnings(4)
+    expect(/(a|\X|b)/).to\
+    become(/(a|b)/).with_warning
+  end
+
+  it 'drops everything if all branches are depleted' do
+    expect(/\X|/).to become(//).with_warning
   end
 
   it 'does not drop alternation branches that started out empty' do
-    given_the_ruby_regexp(/(|ccc)/)
-    expect_js_regex_to_be(/(|ccc)/)
-    expect_no_warnings
+    expect(/(|ccc)/).to stay_the_same
   end
 
   it 'does not drop alternation branches containing supported calls' do
-    given_the_ruby_regexp(/(a)(\g<1>|ccc)/)
-    expect_js_regex_to_be(/(a)((a)|ccc)/)
+    expect(/(a)(\g<1>|ccc)/).to\
+    become(/(a)((a)|ccc)/)
   end
 
   it 'does not drop alternation branches containing empty groups' do
-    given_the_ruby_regexp(/((()|())|()+|ccc)/)
-    expect_js_regex_to_be(/((()|())|()+|ccc)/)
+    expect(/((()|())|()+|ccc)/).to stay_the_same
   end
 
   it 'drops unknown meta elements with warning' do
-    expect_to_drop_token_with_warning(:meta, :an_unknown_meta)
+    expect([:meta, :an_unknown_meta]).to be_dropped_with_warning
   end
 end

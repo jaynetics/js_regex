@@ -1,114 +1,129 @@
 # frozen_string_literal: true
 
-# whitelist some mutations
-defined?(Mutant) && Mutant::Mutator::Node::Send.prepend(Module.new do
-  def emit_selector_replacement
-    super unless %i[first =~].include?(selector)
-  end
-end)
+require 'js_regex'
+require 'v8' # gem 'therubyracer'
 
 RSpec.configure do |config|
   config.mock_with(:rspec) { |mocks| mocks.verify_partial_doubles = true }
 end
 
-require 'js_regex'
+RSpec::Matchers.define(:become) do |expected|
+  chain(:with_warning) { |warning = true| @expected_warning = warning }
 
-require 'v8' # gem 'therubyracer'
-JS_CONTEXT = V8::Context.new
+  match do |rb_regex|
+    js_regex = js_regex_for(rb_regex)
+    @msg = error_for_source(js_regex, expected.source) ||
+           error_for_warnings(js_regex, @expected_warning)
+    @msg.nil?
+  end
 
-def given_the_ruby_regexp(ruby_regex)
-  @ruby_regex = ruby_regex
-  @js_regex = JsRegex.new(ruby_regex, options: 'g')
+  failure_message { @msg }
 end
 
-def expect_js_regex_to_be(expected)
-  expect(js_regex_source).to eq(expected.source)
-  expect_to_s_to_eq_json
+# some conversions are tested very often, this speeds up the specs a bit
+def js_regex_for(rb_regex)
+  $js_regex_cache ||= {}
+  $js_regex_cache[rb_regex] ||= JsRegex.new(rb_regex, options: 'g')
 end
 
-def expect_no_warnings
-  expect(@js_regex.warnings).to be_empty
-end
-
-def expect_warning(specific_text = nil)
-  expect_warnings(1)
-  expect(@js_regex.warnings.first).to include(specific_text) if specific_text
-end
-
-def expect_warnings(count)
-  expect(@js_regex.warnings.count).to eq(count)
-end
-
-def js_regex_source
-  @js_regex.source
-end
-
-def expect_ruby_and_js_to_match(args = { string: '', with_results: [] })
-  # this is a kind of quick, inline integration test, checking whether the
-  # produced js really has the same matching results as the Ruby source.
-  data = args[:string]
-  expected = args[:with_results]
-
-  if expected.nil?
-    # Due to JS' different splitting of group match data, some return values
-    # are not completely identical between Ruby and JS matching calls.
-    # In that case, don't specify expected results and just check that
-    # a valid string does produce a match.
-    expect(matches_in_ruby_on(data)).not_to be_empty
-    expect(matches_in_js_on(data)).not_to be_empty
-  else
-    expect(matches_in_ruby_on(data)).to eq(expected)
-    expect(matches_in_js_on(data)).to eq(expected)
+def error_for_source(js_regex, expected)
+  if js_regex.source != expected
+    "expected #{expected}, got #{js_regex.source}"
+  elsif !to_s_like_json(js_regex)
+    '#to_s/#to_json sanity check failed'
   end
 end
 
-def expect_ruby_and_js_not_to_match(args = { string: '' })
-  expect_ruby_and_js_to_match(string: args[:string], with_results: [])
+def error_for_warnings(js_regex, expected)
+  warnings = js_regex.warnings
+  if !expected
+    "expected no warnings, got #{warnings}" if warnings.any?
+  elsif warnings.count != 1
+    "expected one warning, got #{warnings.count}"
+  elsif expected.is_a?(String) && !(msg = warnings.first).include?(expected)
+    "expected warning `#{msg}` to include `#{expected}`"
+  end
 end
 
-def matches_in_ruby_on(string)
-  string.scan(@ruby_regex).flatten
+RSpec::Matchers.define(:stay_the_same) do
+  chain(:with_warning) { |warning = true| @expected_warning = warning }
+
+  match do |rb_regex|
+    js_regex = js_regex_for(rb_regex)
+    @msg = error_for_source(js_regex, rb_regex.source) ||
+           error_for_warnings(js_regex, @expected_warning)
+    @msg.nil?
+  end
+
+  failure_message { @msg }
 end
 
-def matches_in_js_on(string)
-  test_string = escape_for_js_string_evaluation(string)
-  js = <<-JS
-    var matches = '#{test_string}'.match(#{@js_regex});
-    if (matches === null) matches = [];
-    matches;
-  JS
-  JS_CONTEXT.eval(js).to_a
+RSpec::Matchers.define(:generate_warning) do |expected = true|
+  match do |rb_regex|
+    js_regex = js_regex_for(rb_regex)
+    @msg = error_for_warnings(js_regex, expected)
+    @msg.nil?
+  end
+
+  failure_message { @msg }
 end
 
-def expect_to_s_to_eq_json
-  json_string = escape_for_js_string_evaluation(@js_regex.to_json)
-  js = <<-JS
-    var jsonObj = JSON.parse('#{json_string}');
-    var jsonRE = new RegExp(jsonObj.source, jsonObj.options);
-    var stringRE = #{@js_regex};
-    jsonRE.source == stringRE.source && jsonRE.flags == stringRE.flags;
-  JS
-  expect(JS_CONTEXT.eval(js)).to eq true
+RSpec::Matchers.define(:keep_matching) do |*test_strings, with_results: nil|
+  match do |rb_regex|
+    js_regex = js_regex_for(rb_regex)
+
+    test_strings.each do |string|
+      if with_results
+        rb_matches = string.scan(rb_regex).flatten
+        js_matches = matches_in_js(js_regex, string)
+        rb_matches == with_results || @msg = "rb matched #{rb_matches}"
+        js_matches == with_results || @msg = "js matched #{js_matches}"
+      else
+        # Due to JS' different splitting of group match data, some return values
+        # are not completely identical between Ruby and JS matching calls.
+        # In that case, don't specify expected results and just check that
+        # a valid string does produce a match.
+        rb_regex =~ string           || @msg = "rb did not match `#{string}`"
+        test_in_js(js_regex, string) || @msg = "js did not match `#{string}`"
+      end
+    end
+
+    @msg.nil?
+  end
+
+  failure_message { @msg }
 end
 
-def escape_for_js_string_evaluation(test_string)
-  test_string
-    .gsub('\\') { '\\\\' } # this actually replaces one backslash with two
-    .gsub("'") { "\\'" } # http://stackoverflow.com/revisions/12701027/2
-    .gsub("\n", '\\n')
-    .gsub("\r", '\\r')
+RSpec::Matchers.define(:keep_not_matching) do |*test_strings|
+  match do |rb_regex|
+    js_regex = js_regex_for(rb_regex)
+
+    test_strings.each do |string|
+      rb_regex =~ string           && @msg = "rb did match `#{string}`"
+      test_in_js(js_regex, string) && @msg = "js did match `#{string}`"
+    end
+
+    @msg.nil?
+  end
+
+  failure_message { @msg }
 end
 
-def expect_to_drop_token_with_warning(token_class, subtype)
-  given_the_token(token_class, subtype)
-  expect_js_regex_to_be(//)
-  expect_warning
-end
+# match on [regexp_parser_token_class, regexp_parser_token_token]
+RSpec::Matchers.define(:be_dropped_with_warning) do |substitute: ''|
+  match do |(token_class, subtype)|
+    exp = expression_double(type: token_class, token: subtype)
+    allow(Regexp::Parser).to receive(:parse).and_return(exp)
+    result = JsRegex.new(//)
 
-def given_the_token(token_class, subtype)
-  exp = expression_double(type: token_class, token: subtype)
-  allow(Regexp::Parser).to receive(:parse).and_return(exp)
-  @js_regex = JsRegex.new(//)
+    source = result.source
+    source == substitute || @msg = "expected `#{substitute}`, got `#{source}`"
+    result.warnings.count > 0 || @msg = 'did not warn'
+
+    @msg.nil?
+  end
+
+  failure_message { @msg }
 end
 
 def expression_double(attributes)
@@ -116,3 +131,39 @@ def expression_double(attributes)
                quantifier: nil, to_s: 'X', ts: 0, i?: false }
   instance_double(Regexp::Expression::Root, defaults.merge(attributes))
 end
+
+JS_CONTEXT = V8::Context.new
+
+def matches_in_js(js_regex, string)
+  JS_CONTEXT.eval("'#{js_escape(string)}'.match(#{js_regex});").to_a
+end
+
+def test_in_js(js_regex, string)
+  JS_CONTEXT.eval("#{js_regex}.test('#{js_escape(string)}');")
+end
+
+def to_s_like_json(js_regex)
+  json_string = js_escape(js_regex.to_json)
+  js = <<-JS
+    var jsonObj = JSON.parse('#{json_string}');
+    var jsonRE = new RegExp(jsonObj.source, jsonObj.options);
+    var stringRE = #{js_regex};
+    jsonRE.source == stringRE.source && jsonRE.flags == stringRE.flags;
+  JS
+  JS_CONTEXT.eval(js)
+end
+
+def js_escape(string)
+  string
+    .gsub('\\') { '\\\\' } # this actually replaces one backslash with two
+    .gsub("'") { "\\'" } # http://stackoverflow.com/revisions/12701027/2
+    .gsub("\n", '\\n')
+    .gsub("\r", '\\r')
+end
+
+# whitelist some mutations
+defined?(Mutant) && Mutant::Mutator::Node::Send.prepend(Module.new do
+  def emit_selector_replacement
+    super unless %i[first =~].include?(selector)
+  end
+end)

@@ -4,124 +4,72 @@ require 'spec_helper'
 
 describe JsRegex::Converter::PropertyConverter do
   it 'translates the \p{...} property style' do
-    given_the_ruby_regexp(/\p{ascii}/)
-    expect_js_regex_to_be(/[\x00-\x7F]/)
-    expect_no_warnings
-    expect_ruby_and_js_to_match(string: 'añB', with_results: %w[a B])
+    expect(/\p{ascii}/).to\
+    become(/[\x00-\x7F]/).and keep_matching('añB', with_results: %w[a B])
   end
 
   it 'translates the negated \p{^...} property style' do
-    given_the_ruby_regexp(/\p{^ascii}/)
-    expect_js_regex_to_be(/[^\x00-\x7F]/)
-    expect_no_warnings
-    expect_ruby_and_js_to_match(string: 'añB', with_results: %w[ñ])
+    expect(/\p{^ascii}/).to\
+    become(/[^\x00-\x7F]/).and keep_matching('añB', with_results: %w[ñ])
   end
 
   it 'translates the double-negated \P{^...} property style' do
-    given_the_ruby_regexp(/\P{^ascii}/)
-    expect_js_regex_to_be(/[\x00-\x7F]/)
-    expect_no_warnings
-    expect_ruby_and_js_to_match(string: 'añB', with_results: %w[a B])
+    expect(/\P{^ascii}/).to\
+    become(/[\x00-\x7F]/).and keep_matching('añB', with_results: %w[a B])
   end
 
   it 'drops astral plane properties negated with \p{^ with warning' do
-    given_the_ruby_regexp(/\p{^Deseret}/)
-    expect_js_regex_to_be(//)
-    expect_warning('astral plane negation by property')
+    expect(/\p{^Deseret}/).to\
+    become(//).with_warning('astral plane negation by property')
   end
 
   it 'drops astral plane properties negated with \P with warning' do
-    given_the_ruby_regexp(/\P{Deseret}/)
-    expect_js_regex_to_be(//)
-    expect_warning('astral plane negation by property')
+    expect(/\P{Deseret}/).to\
+    become(//).with_warning('astral plane negation by property')
   end
 
-  it 'translates posix types' do
-    given_the_ruby_regexp(/\p{xdigit}+/)
-    expect_js_regex_to_be(/[0-9A-Fa-f]+/)
-    expect_no_warnings
-    expect_ruby_and_js_to_match(string: '3GF', with_results: %w[3 F])
-  end
-
-  it 'translates unicode categories' do
-    given_the_ruby_regexp(/\p{Control}/)
-    expect(js_regex_source).to start_with('[\x00-\x1F\x7F-')
-    expect_no_warnings
-    expect_ruby_and_js_to_match(string: "\1 \2", with_results: %W[\1 \2])
-  end
-
-  it 'translates unicode derived core properties aka simple properties' do
-    given_the_ruby_regexp(/\p{Dash}/)
-    expect(js_regex_source).to start_with('[\x2D\u058A')
-    expect_no_warnings
-    expect_ruby_and_js_to_match(string: '-/-', with_results: %w[- -])
-  end
-
-  it 'translates unicode properties' do
-    given_the_ruby_regexp(/\p{Currency_Symbol}/)
-    expect(js_regex_source).to start_with('(?:[$\xA2')
-    expect_no_warnings
-    expect_ruby_and_js_to_match(string: 'A$ü€', with_results: %w[$ €])
-  end
-
-  it 'translates unicode scripts' do
-    given_the_ruby_regexp(/\p{Cherokee}/)
-    expect(js_regex_source).to start_with('[\u13A0-\u13F')
-    expect_no_warnings
-    expect_ruby_and_js_to_match(string: 'AᏑBᏠC', with_results: %w[Ꮡ Ꮰ])
-  end
-
-  it 'translates abbreviated unicode refrences' do
-    given_the_ruby_regexp(/\p{sc}/) # == currency_symbol
-    expect(js_regex_source).to start_with('(?:[$\xA2-')
-    expect_no_warnings
-    expect_ruby_and_js_to_match(string: 'A$ü€', with_results: %w[$ €])
-  end
-
-  it 'translates unicode blocks' do
-    given_the_ruby_regexp(/\p{In_CJK_Unified_Ideographs}/)
-    expect_js_regex_to_be(/[\u4E00-\u9FFF]/)
-    expect_no_warnings
-    expect_ruby_and_js_to_match(string: 'a帀B', with_results: %w[帀])
+  it 'translates abbreviated properties' do
+    expect(/\p{cc}/).to\
+    become(double(source: '[\x00-\x1F\x7F-\x9F]'))
+      .and keep_matching('A B', with_results: %w[ ])
   end
 
   it 'uses case-insensitive substitutions if needed' do
-    given_the_ruby_regexp(/1(?i:\p{lower})2/)
-    expect(js_regex_source).to include('a-z')
-    expect(js_regex_source).to include('A-Z')
+    result = JsRegex.new(/1(?i:\p{lower})2/)
+    expect(result.source).to include 'A-Z'
   end
 
   it 'does not use case-insensitive substitutions if everything is i anyway' do
-    given_the_ruby_regexp(/1\p{lower}2/i)
-    expect(js_regex_source).to include('a-z')
-    expect(js_regex_source).not_to include('A-Z')
+    result = JsRegex.new(/1\p{lower}2/i)
+    expect(result.source).not_to include 'A-Z'
   end
 
   it 'cuts of large astral plane shares of properties with warning' do
-    given_the_ruby_regexp(/\p{Any}/)
-    expect_js_regex_to_be(/[\x00-\uFFFF]/)
-    expect_warning('large astral plane match of property')
+    expect(JsRegex::Converter).to(receive(:in_surrogate_pair_limit?) do |&block|
+      expect(block.call).to eq 1048576
+    end).and_return(false)
+    expect(/\p{Any}/).to\
+    become(/[\x00-\uFFFF]/).with_warning('large astral plane match of property')
   end
 
-  it 'drops too large astral plane properties with warning' do
+  it 'drops too large astral plane properties with warning',
+    if: (Gem::Version.new(RUBY_VERSION.dup) >= Gem::Version.new('2.4.1')) do
     # this should concern little more than the few astral plane scripts
     # supported by Ruby, but it is also a good precaution if spacy new
     # properties are added in the future.
     expect(JsRegex::Converter)
-      .to receive(:in_surrogate_pair_limit?) do |&block|
-      expect(block.call).to eq 672
-    end.and_return(false)
-    given_the_ruby_regexp(/\p{SignWriting}/)
-    expect_js_regex_to_be(//)
-    expect_warning('large astral plane match of property')
+      .to receive(:in_surrogate_pair_limit?)
+      .and_call_original
+    expect(Regexp.new('\p{SignWriting}'))
+      .to become(//)
+      .with_warning('large astral plane match of property')
   end
 
-  it 'allows large astral plane properties if the limit allows it' do
+  it 'allows large astral plane properties if the limit allows it',
+    if: (Gem::Version.new(RUBY_VERSION.dup) >= Gem::Version.new('2.4.1')) do
     expect(JsRegex::Converter)
       .to receive(:in_surrogate_pair_limit?)
       .and_return(true)
-    given_the_ruby_regexp(/\p{SignWriting}/)
-    expect(js_regex_source).to start_with('(?:\ud836\udc00|')
-    expect_no_warnings
+    expect(Regexp.new('a\p{SignWriting}b')).to keep_matching('a𝠔b')
   end
 end

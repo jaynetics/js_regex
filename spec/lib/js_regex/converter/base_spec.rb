@@ -45,206 +45,160 @@ describe JsRegex::Converter::Base do
   describe '#convert' do
     context 'when quantifiers are greedy (default)' do
       it 'preserves zero-or-ones (?)' do
-        given_the_ruby_regexp(/a?/)
-        expect_js_regex_to_be(/a?/)
-        expect_no_warnings
+        expect(/a?/).to stay_the_same
       end
 
       it 'preserves zero-or-mores (*)' do
-        given_the_ruby_regexp(/a*/)
-        expect_js_regex_to_be(/a*/)
-        expect_no_warnings
+        expect(/a*/).to stay_the_same
       end
 
       it 'preserves one-or-mores (+)' do
-        given_the_ruby_regexp(/a+/)
-        expect_js_regex_to_be(/a+/)
-        expect_no_warnings
+        expect(/a+/).to stay_the_same
       end
 
       it 'preserves fixes ({x})' do
-        given_the_ruby_regexp(/a{4}/)
-        expect_js_regex_to_be(/a{4}/)
-        expect_no_warnings
+        expect(/a{4}/).to stay_the_same
       end
 
       it 'preserves ranges ({x,y})' do
-        given_the_ruby_regexp(/a{6,8}/)
-        expect_js_regex_to_be(/a{6,8}/)
-        expect_no_warnings
+        expect(/a{6,8}/).to stay_the_same
       end
 
       it 'preserves set quantifiers' do
-        given_the_ruby_regexp(/[a-z]{6,8}/)
-        expect_js_regex_to_be(/[a-z]{6,8}/)
-        expect_no_warnings
+        expect(/[a-z]{6,8}/).to stay_the_same
       end
 
       it 'preserves group quantifiers' do
-        given_the_ruby_regexp(/(?:a|b){6,8}/)
-        expect_js_regex_to_be(/(?:a|b){6,8}/)
-        expect_no_warnings
+        expect(/(?:a|b){6,8}/).to stay_the_same
       end
     end
 
     context 'when quantifiers are reluctant' do
       it 'preserves zero-or-ones (??)' do
-        given_the_ruby_regexp(/a??/)
-        expect_js_regex_to_be(/a??/)
-        expect_no_warnings
+        expect(/a??/).to stay_the_same
       end
 
       it 'preserves zero-or-mores (*?)' do
-        given_the_ruby_regexp(/a*?/)
-        expect_js_regex_to_be(/a*?/)
-        expect_no_warnings
+        expect(/a*?/).to stay_the_same
       end
 
       it 'preserves one-or-mores (+?)' do
-        given_the_ruby_regexp(/a+?/)
-        expect_js_regex_to_be(/a+?/)
-        expect_no_warnings
+        expect(/a+?/).to stay_the_same
       end
 
       it 'preserves fixes ({x}?)' do
-        given_the_ruby_regexp(/a{4}?/)
-        expect_js_regex_to_be(/a{4}?/)
-        expect_no_warnings
+        expect(/a{4}?/).to stay_the_same
       end
 
       it 'preserves ranges ({x,y}?)' do
-        given_the_ruby_regexp(/a{6,8}?/)
-        expect_js_regex_to_be(/a{6,8}?/)
-        expect_no_warnings
+        expect(/a{6,8}?/).to stay_the_same
       end
 
       it 'preserves set quantifiers' do
-        given_the_ruby_regexp(/[a-z]{6,8}?/)
-        expect_js_regex_to_be(/[a-z]{6,8}?/)
-        expect_no_warnings
+        expect(/[a-z]{6,8}?/).to stay_the_same
       end
 
       it 'preserves group quantifiers' do
-        given_the_ruby_regexp(/(?:a|b){6,8}?/)
-        expect_js_regex_to_be(/(?:a|b){6,8}?/)
-        expect_no_warnings
+        expect(/(?:a|b){6,8}?/).to stay_the_same
       end
     end
 
     context 'when quantifiers are possessive' do
       it 'emulates possessiveness for zero-or-ones (?+)' do
-        given_the_ruby_regexp(/a?+/)
-        expect_js_regex_to_be(/(?=(a?))\1(?:)/)
-        expect_no_warnings
+        expect(/a?+/).to\
+        become(/(?=(a?))\1(?:)/)
       end
 
       it 'emulates possessiveness for zero-or-mores (*+)' do
-        given_the_ruby_regexp(/a*+/)
-        expect_js_regex_to_be(/(?=(a*))\1(?:)/)
-        expect_no_warnings
+        expect(/a*+/).to\
+        become(/(?=(a*))\1(?:)/)
       end
 
       it 'emulates possessiveness for one-or-mores (++)' do
-        given_the_ruby_regexp(/a++/)
-        expect_js_regex_to_be(/(?=(a+))\1(?:)/)
-        expect_no_warnings
+        expect(/a++/).to\
+        become(/(?=(a+))\1(?:)/)
       end
 
       it 'emulates possessiveness for fixes ({x}+)' do
-        given_the_ruby_regexp(/a{4}+/)
-        expect_js_regex_to_be(/(?=(a{4}))\1(?:)/)
-        expect_no_warnings
+        expect(/a{4}+/).to\
+        become(/(?=(a{4}))\1(?:)/)
       end
 
       it 'emulates possessiveness for ranges ({x,y}+)' do
-        given_the_ruby_regexp(/a{6,8}+/)
-        expect_js_regex_to_be(/(?=(a{6,8}))\1(?:)/)
-        expect_no_warnings
+        expect(/a{6,8}+/).to\
+        become(/(?=(a{6,8}))\1(?:)/)
       end
 
       it 'emulates possessiveness for set quantifiers' do
-        given_the_ruby_regexp(/[a-z]{6,8}+/)
-        expect_js_regex_to_be(/(?=([a-z]{6,8}))\1(?:)/)
-        expect_no_warnings
+        expect(/[a-z]{6,8}+/).to\
+        become(/(?=([a-z]{6,8}))\1(?:)/)
       end
 
       it 'emulates possessiveness for group quantifiers' do
-        given_the_ruby_regexp(/(?:a|b){6,8}+/)
-        expect_js_regex_to_be(/(?=((?:a|b){6,8}))\1(?:)/)
-        expect_no_warnings
+        expect(/(?:a|b){6,8}+/).to\
+        become(/(?=((?:a|b){6,8}))\1(?:)/)
       end
 
       it 'takes into account preceding active groups for the backreference' do
-        given_the_ruby_regexp(/(a)(b)(c)_d++/)
-        expect_js_regex_to_be(/(a)(b)(c)_(?=(d+))\4(?:)/)
-        expect_no_warnings
+        expect(/(a)(b)(c)_d++/).to\
+        become(/(a)(b)(c)_(?=(d+))\4(?:)/)
       end
 
       it 'isnt confused by preceding passive groups' do
-        given_the_ruby_regexp(/(?:c)_a++/)
-        expect_js_regex_to_be(/(?:c)_(?=(a+))\1(?:)/)
-        expect_no_warnings
+        expect(/(?:c)_a++/).to\
+        become(/(?:c)_(?=(a+))\1(?:)/)
       end
 
       it 'isnt confused by preceding lookahead groups' do
-        given_the_ruby_regexp(/(?=c)_a++/)
-        expect_js_regex_to_be(/(?=c)_(?=(a+))\1(?:)/)
-        expect_no_warnings
+        expect(/(?=c)_a++/).to\
+        become(/(?=c)_(?=(a+))\1(?:)/)
       end
 
       it 'isnt confused by preceding negative lookahead groups' do
-        given_the_ruby_regexp(/(?!=x)_a++/)
-        expect_js_regex_to_be(/(?!=x)_(?=(a+))\1(?:)/)
-        expect_no_warnings
+        expect(/(?!=x)_a++/).to\
+        become(/(?!=x)_(?=(a+))\1(?:)/)
       end
     end
 
     context 'when there are multiple quantifiers' do
       it 'drops adjacent/multiplicative fixes ({x}) without warning' do
-        given_the_ruby_regexp(/a{4}{6}/)
-        expect_js_regex_to_be(/a{6}/)
-        expect_no_warnings
+        expect(/a{4}{6}/).to\
+        become(/a{6}/)
       end
 
       it 'drops adjacent/multiplicative ranges ({x,y}) without warning' do
-        given_the_ruby_regexp(/a{2,4}{3,6}/)
-        expect_js_regex_to_be(/a{3,6}/)
-        expect_no_warnings
+        expect(/a{2,4}{3,6}/).to\
+        become(/a{3,6}/)
       end
 
       it 'drops mixed adjacent quantifiers without warning' do
-        given_the_ruby_regexp(/ab{2,3}*/)
-        expect_js_regex_to_be(/ab*/)
-        expect_no_warnings
+        expect(/ab{2,3}*/).to\
+        become(/ab*/)
       end
 
       it 'drops multiple adjacent quantifiers without warning' do
-        given_the_ruby_regexp(/ab{2}{3}{4}{5}/)
-        expect_js_regex_to_be(/ab{5}/)
-        expect_no_warnings
+        expect(/ab{2}{3}{4}{5}/).to\
+        become(/ab{5}/)
       end
 
       it 'preserves distinct quantifiers' do
-        given_the_ruby_regexp(/a{2}b{2}c{2,3}d{2,3}e+f+g?h?i*j*/)
-        expect_js_regex_to_be(/a{2}b{2}c{2,3}d{2,3}e+f+g?h?i*j*/)
-        expect_no_warnings
-        expect_ruby_and_js_to_match(string:         'aabbccdddefghi',
-                                    with_results: %w[aabbccdddefghi])
+        expect(/a{2}b{2}c{2,3}d{2,3}e+f+g?h?i*j*/)
+          .to stay_the_same
+          .and keep_matching('aabbccdddefghi', with_results: %w[aabbccdddefghi])
       end
     end
 
     context 'when quantifiers follow dropped elements' do
       it 'drops the quantifiers as well' do
-        given_the_ruby_regexp(/a\G{2,3}b\G++c/)
-        expect_js_regex_to_be(/abc/)
+        expect(/a\G++b/).to\
+        become(/ab/).with_warning
       end
     end
   end
 
   describe '#convert_subexpressions' do
     it 'concatenates the conversion result of multiple subexpressions' do
-      given_the_ruby_regexp(/(a|b)/)
-      expect_js_regex_to_be(/(a|b)/)
+      expect(/(a|b)/).to stay_the_same
     end
   end
 

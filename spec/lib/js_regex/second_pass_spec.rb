@@ -5,75 +5,65 @@ require 'spec_helper'
 describe JsRegex::SecondPass do
   describe '::alternate_conditional_permutations' do
     it 'replaces one-branch conditionals with equivalent alternations' do
-      given_the_ruby_regexp(/-(<)?a(?(1)>)-/)
-      expect_js_regex_to_be(/(?:-(<){0}a(?:(?:>){0})-)|(?:-(<)a(?:(?:>))-)/)
-      expect_ruby_and_js_to_match(string: '-a-')
-      expect_ruby_and_js_to_match(string: '-<a>-')
-      expect_ruby_and_js_not_to_match(string: '-<a-')
-      expect_ruby_and_js_not_to_match(string: '-a>-')
+      expect(/-(<)?a(?(1)>)-/).to\
+      become(/(?:-(<){0}a(?:(?:>){0})-)|(?:-(<)a(?:(?:>))-)/)
+        .and keep_matching('-a-', '-<a>-')
+        .and keep_not_matching('-<a-', '-a>-')
     end
 
     it 'replaces two-branch conditionals with equivalent alternations' do
-      given_the_ruby_regexp(/-(<)?a(?(1)>|b)-/)
-      expect_js_regex_to_be(/(?:-(<){0}a(?:(?:>){0}(?:b))-)|(?:-(<)a(?:(?:>)(?:b){0})-)/)
-      expect_ruby_and_js_to_match(string: '-ab-')
-      expect_ruby_and_js_to_match(string: '-<a>-')
-      expect_ruby_and_js_not_to_match(string: '-a>-')
-      expect_ruby_and_js_not_to_match(string: '-<ab-')
-      expect_ruby_and_js_not_to_match(string: '-<ab>-')
+      expect(/-(<)?a(?(1)>|b)-/).to\
+      become(/(?:-(<){0}a(?:(?:>){0}(?:b))-)|(?:-(<)a(?:(?:>)(?:b){0})-)/)
+        .and keep_matching('-ab-', '-<a>-')
+        .and keep_not_matching('-a>-', '-<ab-', '-<ab>-')
     end
 
     it 'replaces named conditionals with equivalent alternations' do
-      given_the_ruby_regexp(/-(?<bar><)?a(?(<bar>)>)-/)
-      expect_js_regex_to_be(/(?:-(<){0}a(?:(?:>){0})-)|(?:-(<)a(?:(?:>))-)/)
-      expect_ruby_and_js_to_match(string: '-a-')
-      expect_ruby_and_js_to_match(string: '-<a>-')
-      expect_ruby_and_js_not_to_match(string: '-<a-')
-      expect_ruby_and_js_not_to_match(string: '-a>-')
+      expect(/-(?<bar><)?a(?(<bar>)>)-/).to\
+      become(/(?:-(<){0}a(?:(?:>){0})-)|(?:-(<)a(?:(?:>))-)/)
+        .and keep_matching('-a-', '-<a>-')
+        .and keep_not_matching('-<a-', '-a>-')
     end
 
     it 'replaces quantified conditionals with equivalent alternations' do
-      given_the_ruby_regexp(/-(<)?a(?(1)>){3}-/)
-      expect_js_regex_to_be(/(?:-(<){0}a(?:(?:>){0}){3}-)|(?:-(<)a(?:(?:>)){3}-)/)
-      expect_ruby_and_js_to_match(string: '-a-')
-      expect_ruby_and_js_to_match(string: '-<a>>>-')
-      expect_ruby_and_js_not_to_match(string: '-<a>-')
+      expect(/-(<)?a(?(1)>){3}-/).to\
+      become(/(?:-(<){0}a(?:(?:>){0}){3}-)|(?:-(<)a(?:(?:>)){3}-)/)
+        .and keep_matching('-a-', '-<a>>>-')
+        .and keep_not_matching('-<a>-')
     end
 
     it 'replaces successive conditionals with equivalent alternations' do
-      given_the_ruby_regexp(/(<)?a(?(1)>)(<)?b(?(2)>)/)
-      # expect_js_regex_to_be(/quite long/)
-      expect_ruby_and_js_to_match(string: 'ab')
-      expect_ruby_and_js_to_match(string: 'a<b>')
-      expect_ruby_and_js_to_match(string: '<a>b')
-      expect_ruby_and_js_to_match(string: '<a><b>')
-      expect_ruby_and_js_not_to_match(string: 'a>b')
-      expect_ruby_and_js_not_to_match(string: '<a><b')
+      # resulting source is not speced because it is very long
+      expect(/(<)?a(?(1)>)(<)?b(?(2)>)/)
+        .to keep_matching('ab', 'a<b>', '<a>b', '<a><b>')
+        .and keep_not_matching('a>b', '<a><b')
     end
 
     it 'replaces nested conditionals with equivalent alternations' do
-      given_the_ruby_regexp(/-(<)?(a)?b(?(2)(?(1)->|>>))-/)
-      # expect_js_regex_to_be(/quite long/)
-      expect_ruby_and_js_to_match(string: '-<ab->-')     # 1: true,  2: true
-      expect_ruby_and_js_to_match(string: '-<b-')        # 1: true,  2: false
-      expect_ruby_and_js_to_match(string: '-ab>>-')      # 1: false, 2: true
-      expect_ruby_and_js_to_match(string: '--b-')        # 1: false, 2: false
-      expect_ruby_and_js_not_to_match(string: '-<ab-')   # 1: true,  2: true
-      expect_ruby_and_js_not_to_match(string: '-<ab>>-') # 1: true,  2: true
-      expect_ruby_and_js_not_to_match(string: '-<ab>>-') # 1: true,  2: false
-      expect_ruby_and_js_not_to_match(string: '--b>>-')  # 1: false, 2: false
+      # resulting source is not speced because it is very long
+      expect(/-(<)?(a)?(b)(?(2)(?(1)->|>>))-/)
+      .to keep_matching(
+        '-<ab->-', # 1: true,  2: true
+        '-<b-',    # 1: true,  2: false
+        '-ab>>-',  # 1: false, 2: true
+        '--b-',    # 1: false, 2: false
+      ).and keep_not_matching(
+        '-<ab-',   # 1: true,  2: true
+        '-<ab>>-', # 1: true,  2: true
+        '-<ab>>-', # 1: true,  2: false
+        '--b>>-',  # 1: false, 2: false
+      )
     end
 
     it 'adapts backref numbers in the created alternations branches' do
-      given_the_ruby_regexp(/()(?(1))\1/)
-      expect_js_regex_to_be(/(?:(){0}(?:(?:){0})\1)|(?:()(?:(?:))\2)/)
-      given_the_ruby_regexp(/(a)(b)(?(1)c)(d)\2/)
-      expect_js_regex_to_be(/(?:(a){0}(b)(?:(?:c){0})(d)\2)|(?:(a)(b)(?:(?:c))(d)\5)/)
+      expect(/()(?(1))\1/).to\
+      become(/(?:(){0}(?:(?:){0})\1)|(?:()(?:(?:))\2)/)
+      expect(/(a)(b)(?(1)c)(d)\2/).to\
+      become(/(?:(a){0}(b)(?:(?:c){0})(d)\2)|(?:(a)(b)(?:(?:c))(d)\5)/)
     end
 
     it 'does nothing if passed a tree that does not need further processing' do
-      given_the_ruby_regexp(/foo/)
-      expect_js_regex_to_be(/foo/)
+      expect(/foo/).to stay_the_same
     end
   end
 end

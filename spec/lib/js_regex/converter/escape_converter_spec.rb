@@ -13,224 +13,148 @@ require 'spec_helper'
 
 describe JsRegex::Converter::EscapeConverter do
   it 'lets backslashes pass through' do
-    given_the_ruby_regexp(/\\/)
-    expect_js_regex_to_be(/\\/)
-    expect_no_warnings
-    expect_ruby_and_js_to_match(string: '\\', with_results: %w[\\])
+    expect(/\\/).to stay_the_same.and keep_matching('\\', with_results: %w[\\])
   end
 
   it 'preserves escaped groups' do
-    given_the_ruby_regexp(/\(1\)/)
-    expect_js_regex_to_be(/\(1\)/)
-    expect_no_warnings
-    expect_ruby_and_js_to_match(string: '(1)', with_results: %w[(1)])
+    expect(/\(1\)/).to stay_the_same
   end
 
   it 'preserves escaped literals' do
-    given_the_ruby_regexp(/\j/)
-    expect_js_regex_to_be(/\j/)
-    expect_no_warnings
-    expect_ruby_and_js_to_match(string: 'ijk', with_results: %w[j])
+    expect(/\j/).to stay_the_same.and keep_matching('ijk', with_results: %w[j])
   end
 
   it 'preserves escaped dots' do
-    given_the_ruby_regexp(/\./)
-    expect_js_regex_to_be(/\./)
-    expect_no_warnings
-    expect_ruby_and_js_to_match(string: 'a.b', with_results: %w[.])
+    expect(/\./).to stay_the_same.and keep_matching('a.b', with_results: %w[.])
   end
 
   it 'preserves escaped quantifiers' do
-    given_the_ruby_regexp(/\?\*\+/)
-    expect_js_regex_to_be(/\?\*\+/)
-    expect_no_warnings
-    expect_ruby_and_js_to_match(string: 'a?*+b', with_results: %w[?*+])
+    expect(/\?\*\+/).to stay_the_same.and keep_matching('a?*+b', with_results: %w[?*+])
   end
 
   it 'preserves newline escapes' do
-    given_the_ruby_regexp(/\n/)
-    expect_js_regex_to_be(/\n/)
-    expect_no_warnings
-    expect_ruby_and_js_to_match(string: "a\nb", with_results: %W[\n])
+    expect(/\n/).to stay_the_same.and keep_matching("a\nb", with_results: %W[\n])
   end
 
   it 'preservers carriage return escapes' do
-    given_the_ruby_regexp(/\r/)
-    expect_js_regex_to_be(/\r/)
-    expect_no_warnings
-    expect_ruby_and_js_to_match(string: "abc\r123", with_results: %W[\r])
+    expect(/\r/).to stay_the_same.and keep_matching("abc\r123", with_results: %W[\r])
   end
 
   it 'preserves vertical tab escapes' do
-    given_the_ruby_regexp(/\t/)
-    expect_js_regex_to_be(/\t/)
-    expect_no_warnings
-    expect_ruby_and_js_to_match(string: "a\tb", with_results: %W[\t])
+    expect(/\t/).to stay_the_same.and keep_matching("a\tb", with_results: %W[\t])
   end
 
   it 'preserves horizontal tab escapes' do
-    given_the_ruby_regexp(/\v/)
-    expect_js_regex_to_be(/\v/)
-    expect_no_warnings
-    expect_ruby_and_js_to_match(string: "a\vb", with_results: %W[\v])
+    expect(/\v/).to stay_the_same.and keep_matching("a\vb", with_results: %W[\v])
   end
 
   it 'preserves form feed escapes' do
-    given_the_ruby_regexp(/\f/)
-    expect_js_regex_to_be(/\f/)
-    expect_no_warnings
-    expect_ruby_and_js_to_match(string: "a\fb", with_results: %W[\f])
+    expect(/\f/).to stay_the_same.and keep_matching("a\fb", with_results: %W[\f])
   end
 
   it 'preserves escaped interval brackets' do
-    given_the_ruby_regexp(/\{\}/)
-    expect_js_regex_to_be(/\{\}/)
-    expect_no_warnings
-    expect_ruby_and_js_to_match(string: 'a{}b', with_results: %w[{}])
+    expect(/\{\}/).to stay_the_same.and keep_matching('a{}b', with_results: %w[{}])
   end
 
   it 'preserves escaped set brackets' do
-    given_the_ruby_regexp(/\[\]/)
-    expect_js_regex_to_be(/\[\]/)
-    expect_no_warnings
-    expect_ruby_and_js_to_match(string: 'a[]b', with_results: %w([]))
+    expect(/\[\]/).to stay_the_same
   end
 
   it 'preserves escaped alternation chars' do
-    given_the_ruby_regexp(/\|/)
-    expect_js_regex_to_be(/\|/)
-    expect_no_warnings
-    expect_ruby_and_js_to_match(string: 'a|b', with_results: %w[|])
+    expect(/\|/).to stay_the_same
+      .and keep_matching('a|b', with_results: %w[|])
   end
 
   it 'preserves escaped meta chars / types' do
-    given_the_ruby_regexp(/\\h\\H\\s\\S\\d\\D\\w\\W/)
-    expect_js_regex_to_be(/\\h\\H\\s\\S\\d\\D\\w\\W/)
-    expect_no_warnings
-    expect_ruby_and_js_to_match(string:       'h\\h\\H\\s\\S\\d\\D\\w\\W',
-                                with_results: %w[\\h\\H\\s\\S\\d\\D\\w\\W])
+    expect(/\\h\\H\\s\\S\\d\\D\\w\\W/).to stay_the_same
+      .and keep_matching('h\\h\\H\\s\\S\\d\\D\\w\\W',
+                         with_results: %w[\\h\\H\\s\\S\\d\\D\\w\\W])
   end
 
   it 'preserves escaped bol/eol anchors' do
-    given_the_ruby_regexp(/\^\$/)
-    expect_js_regex_to_be(/\^\$/)
-    expect_no_warnings
-    expect_ruby_and_js_to_match(string: '^$', with_results: %w[^$])
+    expect(/\^\$/).to stay_the_same
+      .and keep_matching('^$', with_results: %w[^$])
   end
 
   it 'preserves escaped bos/eos anchors' do
-    given_the_ruby_regexp(/\\A\\z\\Z/)
-    expect_js_regex_to_be(/\\A\\z\\Z/)
-    expect_no_warnings
-    expect_ruby_and_js_to_match(string:       'A\\A\\z\\Z',
-                                with_results: %w[\\A\\z\\Z])
+    expect(/\\A\\z\\Z/).to stay_the_same
+      .and keep_matching('A\\A\\z\\Z', with_results: %w[\\A\\z\\Z])
   end
 
   it 'lets ascii escapes pass through' do
-    given_the_ruby_regexp(/\x42/)
-    expect_js_regex_to_be(/\x42/)
-    expect_no_warnings
-    expect_ruby_and_js_to_match(string: 'ABC', with_results: %w[B])
+    expect(/\x42/).to stay_the_same.and keep_matching('ABC', with_results: %w[B])
   end
 
   it 'lets unicode / codepoint escapes pass through' do
-    given_the_ruby_regexp(/\u263A/)
-    expect_js_regex_to_be(/\u263A/)
-    expect_no_warnings
-    expect_ruby_and_js_to_match(string: 'A☺C', with_results: %w[☺])
+    expect(/\u263A/).to stay_the_same.and keep_matching('A☺C', with_results: %w[☺])
   end
 
   it 'lets octal escapes pass through' do
-    given_the_ruby_regexp(/\177/)
-    expect_js_regex_to_be(/\177/)
-    expect_no_warnings
-    expect_ruby_and_js_to_match(string: "a\177b", with_results: %W[\177])
+    expect(/\177/).to stay_the_same.and keep_matching("a\177b", with_results: %W[\177])
   end
 
   it 'replaces escaped literal tabs with \t' do
-    given_the_ruby_regexp(/\	/)
-    expect_js_regex_to_be(/\t/)
-    expect_no_warnings
-    expect_ruby_and_js_to_match(string: '	', with_results: ['	'])
+    expect(/\	/).to\
+    become(/\t/).and keep_matching('	', with_results: ['	'])
   end
 
   it 'replaces the bell char "\a" with a hex escape' do
-    given_the_ruby_regexp(/.\a/)
-    expect_js_regex_to_be(/.\x07/)
-    expect_no_warnings
-    expect_ruby_and_js_to_match(string: "ab\ac", with_results: ["b\a"])
+    expect(/.\a/).to\
+    become(/.\x07/).and keep_matching("ab\ac", with_results: ["b\a"])
   end
 
   it 'replaces the escape char "\e" with a hex escape' do
-    given_the_ruby_regexp(/.\e/)
-    expect_js_regex_to_be(/.\x1B/)
-    expect_no_warnings
-    expect_ruby_and_js_to_match(string: "ab\ec", with_results: ["b\e"])
+    expect(/.\e/).to\
+    become(/.\x1B/).and keep_matching("ab\ec", with_results: ["b\e"])
   end
 
   it 'converts codepoint lists, escaping meta chars and using surrogates' do
-    given_the_ruby_regexp(/\u{61 a 28 1F601}/)
-    expect(js_regex_source).to eq('a\n\((?:\ud83d\ude01)')
-    expect_ruby_and_js_to_match(string: "_a\n(😁_", with_results: %W[a\n(😁])
+    expect(/\u{61 a 28 1F601}/).to\
+    become(double(source: 'a\n\((?:\ud83d\ude01)'))
+      .and keep_matching("_a\n(😁_", with_results: %W[a\n(😁])
   end
 
   it 'places quantifiers at the end of codepoint list conversions' do
-    given_the_ruby_regexp(/\u{61 62 63}+/)
-    expect_js_regex_to_be(/abc+/)
-    expect_ruby_and_js_to_match(string: '_abca_', with_results: %w[abc])
-    expect_ruby_and_js_to_match(string: '_abcc_', with_results: %w[abcc])
+    expect(/\u{61 62 63}+/).to\
+    become(/abc+/).and keep_matching('_abca_', with_results: %w[abc])
   end
 
   it 'converts the control sequences style "\C-X" to unicode escapes' do
-    given_the_ruby_regexp(/.\C-*/)
-    expect_js_regex_to_be(/.\u000A/)
-    expect_no_warnings
-    expect_ruby_and_js_to_match(string: "ya\ny", with_results: %W[a\n])
+    expect(/.\C-*/).to\
+    become(/.\u000A/).and keep_matching("ya\ny", with_results: %W[a\n])
   end
 
   it 'converts the control sequences style "\cX" to unicode escapes' do
-    given_the_ruby_regexp(/.\c*/)
-    expect_js_regex_to_be(/.\u000A/)
-    expect_no_warnings
-    expect_ruby_and_js_to_match(string: "ya\ny", with_results: %W[a\n])
+    expect(/.\c*/).to\
+    become(/.\u000A/).and keep_matching("ya\ny", with_results: %W[a\n])
   end
 
   it 'converts the meta sequences style "\M-X" to unicode escapes' do
-    given_the_ruby_regexp(/.\M-X/n)
-    expect_js_regex_to_be(/.\u00D8/)
-    expect_no_warnings
-
-    expect(matches_in_ruby_on("ya\xD8y".dup.force_encoding('ascii-8bit')))
-      .to eq(["a\xD8".dup.force_encoding('ascii-8bit')])
-    expect(matches_in_js_on("ya\u00D8y"))
-      .to eq(["a\u00D8"])
+    expect(/.\M-X/n).to\
+    become(/.\u00D8/)
   end
 
   it 'converts the meta control sequences style "\M-\C-X" to unicode escapes' do
-    given_the_ruby_regexp(/.\M-\C-X/n)
-    expect_js_regex_to_be(/.\u0098/)
-    expect_no_warnings
+    expect(/.\M-\C-X/n).to\
+    become(/.\u0098/)
   end
 
   it 'converts the meta control sequences style "\M-\cX" to unicode escapes' do
-    given_the_ruby_regexp(/.\M-\cX/n)
-    expect_js_regex_to_be(/.\u0098/)
-    expect_no_warnings
+    expect(/.\M-\cX/n).to\
+    become(/.\u0098/)
   end
 
   it 'converts the meta control sequences style "\C-\M-X" to unicode escapes' do
-    given_the_ruby_regexp(/.\C-\M-X/n)
-    expect_js_regex_to_be(/.\u0098/)
-    expect_no_warnings
+    expect(/.\C-\M-X/n).to\
+    become(/.\u0098/)
   end
 
   it 'converts the meta control sequences style "\c\M-X" to unicode escapes' do
-    given_the_ruby_regexp(/.\c\M-X/n)
-    expect_js_regex_to_be(/.\u0098/)
-    expect_no_warnings
+    expect(/.\c\M-X/n).to\
+    become(/.\u0098/)
   end
 
   it 'drops unknown escapes with warning' do
-    expect_to_drop_token_with_warning(:escape, :unknown)
+    expect([:escape, :unknown]).to be_dropped_with_warning
   end
 end

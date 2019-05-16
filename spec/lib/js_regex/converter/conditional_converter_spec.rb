@@ -19,12 +19,11 @@ describe JsRegex::Converter::ConditionalConverter do
   end
 
   it 'drops the condition part without warning' do
-    given_the_ruby_regexp(/(a)(?(1)b|c)/)
-    expect(js_regex_source).not_to include '1'
-    expect_no_warnings
+    expect(/(a)(?(1)b|c)/).to\
+    become(/(?:(a){0}(?:(?:b){0}(?:c)))|(?:(a)(?:(?:b)(?:c){0}))/)
   end
 
   it 'drops unknown conditional expressions with warning' do
-    expect_to_drop_token_with_warning(:conditional, :unknown)
+    expect([:conditional, :unknown]).to be_dropped_with_warning
   end
 end
