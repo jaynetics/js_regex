@@ -18,7 +18,7 @@ Gem::Specification.new do |s|
 
   s.authors       = ['Janosch Müller']
   s.email         = ['janosch84@gmail.com']
-  s.homepage      = 'https://github.com/janosch-x/js_regex'
+  s.homepage      = 'https://github.com/jaynetics/js_regex'
 
   s.files         = Dir[File.join('lib', '**', '*.rb')]
 

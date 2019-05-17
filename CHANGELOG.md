@@ -30,7 +30,7 @@ and this project adheres to [Semantic Versioning](http://semver.org/spec/v2.0.0.
 - fixed a rare bug where backreferences, atomic groups and subexpression calls weren't handled correctly if preceded by either the linebreak type ("\R") or an option group with children ("(?i:...)")
 
 ## [3.0.0] - 2018-09-04
-Major refactoring adding [character_set](https://github.com/janosch-x/character_set) and [regexp_property_values](https://github.com/janosch-x/regexp_property_values) as dependencies.
+Major refactoring adding [character_set](https://github.com/jaynetics/character_set) and [regexp_property_values](https://github.com/jaynetics/regexp_property_values) as dependencies.
 
 ### Changed
 - changed default options: the `g` flag is no longer automatically set, use `JsRegex.new(//, options: 'g')` to force it (#5)

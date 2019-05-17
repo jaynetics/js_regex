@@ -1,8 +1,8 @@
 # JsRegex
 
 [![Gem Version](https://badge.fury.io/rb/js_regex.svg)](http://badge.fury.io/rb/js_regex)
-[![Build Status](https://travis-ci.org/janosch-x/js_regex.svg?branch=master)](https://travis-ci.org/janosch-x/js_regex)
-[![Code Climate](https://codeclimate.com/github/janosch-x/js_regex/badges/gpa.svg)](https://codeclimate.com/github/janosch-x/js_regex)
+[![Build Status](https://travis-ci.org/jaynetics/js_regex.svg?branch=master)](https://travis-ci.org/jaynetics/js_regex)
+[![Code Climate](https://codeclimate.com/github/jaynetics/js_regex/badges/gpa.svg)](https://codeclimate.com/github/jaynetics/js_regex)
 
 This is a Ruby gem that translates Ruby's regular expressions to the JavaScript flavor.
 
@@ -183,9 +183,9 @@ Many Regexp tokens work in JavaScript just as they do in Ruby, or allow for a st
 
 **Astral plane characters** convert to [surrogate pairs](https://dmitripavlutin.com/what-every-javascript-developer-should-know-about-unicode/#24surrogatepairs), so they don't require ES6. JsRegex drops large astral plane ranges or properties, though, to limit the size of the resulting regex. You can opt out of this by setting `JsRegex::Converter.surrogate_pair_limit = nil`.
 
-**Properties and posix classes** expand to equivalent character sets, or surrogate pair alternations if necessary. The gem [regexp_property_values](https://github.com/janosch-x/regexp_property_values) helps by reading out their codepoints from Onigmo.
+**Properties and posix classes** expand to equivalent character sets, or surrogate pair alternations if necessary. The gem [regexp_property_values](https://github.com/jaynetics/regexp_property_values) helps by reading out their codepoints from Onigmo.
 
-**Character sets a.k.a. bracket expressions** offer many more features in Ruby compared to JavaScript. To work around this, JsRegex calls on the gem  [character_set](https://github.com/janosch-x/character_set) to calculate the matched codepoints of the whole set and build a completely new set string for all except the most simple cases.
+**Character sets a.k.a. bracket expressions** offer many more features in Ruby compared to JavaScript. To work around this, JsRegex calls on the gem  [character_set](https://github.com/jaynetics/character_set) to calculate the matched codepoints of the whole set and build a completely new set string for all except the most simple cases.
 
 **Conditionals** expand to equivalent expressions in the second pass, e.g. `(<)?foo(?(1)>)` expands to `(?:<foo>|foo)` (simplified example).
 
