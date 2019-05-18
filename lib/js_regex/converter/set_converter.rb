@@ -19,10 +19,7 @@ class JsRegex
       private
 
       def convert_data
-        if directly_compatible?
-          return expression.to_s(:base)
-                           .gsub(%r{\\?([\f\n\r\t])}) { Regexp.escape($1) }
-        end
+        return pass_through_with_escaping if directly_compatible?
 
         content = CharacterSet.of_expression(expression)
         if expression.case_insensitive? && !context.case_insensitive_root
@@ -34,35 +31,48 @@ class JsRegex
         if Converter.in_surrogate_pair_limit? { content.astral_part.size }
           content.to_s_with_surrogate_alternation
         else
-          warn_of_unsupported_feature('large astral plane match of set')
-          bmp_part = content.bmp_part
-          bmp_part.empty? ? drop : bmp_part.to_s(in_brackets: true)
+          limit_to_bmp_part_with_warning(content)
         end
       end
 
       def directly_compatible?
-        if expression.case_insensitive? ^ context.case_insensitive_root
-          # casefolding needed
-          return
-        end
+        all_children_directly_compatible? && !casefolding_needed?
+      end
 
-        # check for children needing conversion (#each_expression is recursive)
+      def all_children_directly_compatible?
+        # note that #each_expression is recursive
         expression.each_expression do |exp|
-          case exp.type
-          when :literal
-            # surrogate pair substitution needed if astral
-            next if exp.text.ord <= 0xFFFF
-          when :set
-            # conversion needed for nested sets, intersections
-            next if exp.token.equal?(:range)
-          when :type
-            next if TypeConverter::TYPES_SHARED_BY_RUBY_AND_JS.include?(exp.token)
-          when :escape
-            next if EscapeConverter::ESCAPES_SHARED_BY_RUBY_AND_JS.include?(exp.token)
-          end
-          return
+          return unless child_directly_compatible?(exp)
         end
-        true
+      end
+
+      def child_directly_compatible?(exp)
+        case exp.type
+        when :literal
+          # surrogate pair substitution needed if astral
+          exp.text.ord <= 0xFFFF
+        when :set
+          # conversion needed for nested sets, intersections
+          exp.token.equal?(:range)
+        when :type
+          TypeConverter::TYPES_SHARED_BY_RUBY_AND_JS.include?(exp.token)
+        when :escape
+          EscapeConverter::ESCAPES_SHARED_BY_RUBY_AND_JS.include?(exp.token)
+        end
+      end
+
+      def casefolding_needed?
+        expression.case_insensitive? ^ context.case_insensitive_root
+      end
+
+      def pass_through_with_escaping
+        expression.to_s(:base).gsub(%r{\\?([\f\n\r\t])}) { Regexp.escape($1) }
+      end
+
+      def limit_to_bmp_part_with_warning(content)
+        warn_of_unsupported_feature('large astral plane match of set')
+        bmp_part = content.bmp_part
+        bmp_part.empty? ? drop : bmp_part.to_s(in_brackets: true)
       end
     end
   end

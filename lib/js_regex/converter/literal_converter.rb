@@ -13,15 +13,19 @@ class JsRegex
 
         def convert_data(data)
           if data =~ ASTRAL_PLANE_CODEPOINT_PATTERN
-            data.each_char.each_with_object(Node.new) do |chr, node|
-              if chr =~ ASTRAL_PLANE_CODEPOINT_PATTERN
-                node << surrogate_pair_for(chr)
-              else
-                node << convert_bmp_data(chr)
-              end
-            end
+            convert_astral_data(data)
           else
             convert_bmp_data(data)
+          end
+        end
+
+        def convert_astral_data(data)
+          data.each_char.each_with_object(Node.new) do |chr, node|
+            if chr =~ ASTRAL_PLANE_CODEPOINT_PATTERN
+              node << surrogate_pair_for(chr)
+            else
+              node << convert_bmp_data(chr)
+            end
           end
         end
 

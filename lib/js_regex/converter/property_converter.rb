@@ -15,10 +15,7 @@ class JsRegex
       private
 
       def convert_data
-        content = CharacterSet.of_property(subtype)
-        if expression.case_insensitive? && !context.case_insensitive_root
-          content = content.case_insensitive
-        end
+        content = character_set_of_property
 
         if expression.negative?
           if content.astral_part?
@@ -30,6 +27,19 @@ class JsRegex
           warn_of_unsupported_feature('large astral plane match of property')
         end
 
+        limit_to_bmp_part(content)
+      end
+
+      def character_set_of_property
+        character_set = CharacterSet.of_property(subtype)
+        if expression.case_insensitive? && !context.case_insensitive_root
+          character_set.case_insensitive
+        else
+          character_set
+        end
+      end
+
+      def limit_to_bmp_part(content)
         bmp_part = content.bmp_part
         return drop if bmp_part.empty?
 

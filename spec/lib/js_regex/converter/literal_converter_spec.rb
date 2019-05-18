@@ -41,30 +41,38 @@ describe JsRegex::Converter::LiteralConverter do
   end
 
   it 'converts literal forward slashes to forward slash escapes' do
-    expect(%r{//}).to\
-    become(double(source: '\\/\\/')).and keep_matching('a//b', with_results: %w[//])
+    expect(%r{//})
+      .to become(double(source: '\\/\\/'))
+      .and keep_matching('a//b', with_results: %w[//])
   end
 
   it 'does not double escape single-escaped forward slashes' do
-    expect(%r{\/}).to\
-    become(double(source: '\\/')).and keep_matching('a/b', with_results: %w[/])
+    expect(%r{\/})
+      .to become(double(source: '\\/'))
+      .and keep_matching('a/b', with_results: %w[/])
   end
 
   it 'converts astral plane literals to surrogate pairs' do
-    expect(/😁/).to\
-    become(double(source: '(?:\\ud83d\\ude01)'))
+    expect(/😁/)
+      .to become(double(source: '(?:\ud83d\ude01)'))
       .and keep_matching('😁', with_results: %w[😁])
   end
 
   it 'converts multiple astral plane literals to distinct surrogate pairs' do
-    expect(/😁😁/).to\
-    become(double(source: '(?:\\ud83d\\ude01)(?:\\ud83d\\ude01)'))
+    expect(/😁😁/)
+      .to become(double(source: '(?:\ud83d\ude01)(?:\ud83d\ude01)'))
       .and keep_matching('😁😁', with_results: %w[😁😁])
   end
 
+  it 'converts astral plane chars inside a bmp literal run' do
+    expect(/a😁b/)
+      .to become(double(source: 'a(?:\ud83d\ude01)b'))
+      .and keep_matching('a😁b', with_results: %w[a😁b])
+  end
+
   it 'wraps substitutional surrogate pairs to ensure correct quantification' do
-    expect(/😁{2}/).to\
-    become(double(source: '(?:\\ud83d\\ude01){2}'))
+    expect(/😁{2}/)
+      .to become(double(source: '(?:\ud83d\ude01){2}'))
       .and keep_matching('😁😁😁😁', with_results: %w[😁😁 😁😁])
   end
 

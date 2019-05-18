@@ -3,6 +3,10 @@
 require 'spec_helper'
 
 describe JsRegex do
+  it 'has a semantic version number' do
+    expect(JsRegex::VERSION).to match /\A\d+\.\d+\.\d+\z/
+  end
+
   describe '#to_h' do
     let(:return_value) { described_class.new(//).to_h }
 
@@ -34,13 +38,13 @@ describe JsRegex do
     end
 
     it 'passes on the options parameter, defaulting to {}' do
-      Hash.send(:define_method, :to_json) { |options| options }
-      expect(described_class.new(//).to_json(foo: :bar)).to eq(foo: :bar)
+      expect_any_instance_of(Hash).to receive(:to_json).with(foo: :bar)
+      described_class.new(//).to_json(foo: :bar)
     end
 
     it 'passes on an empty hash as options parameter by default' do
-      Hash.send(:define_method, :to_json) { |options| options }
-      expect(described_class.new(//).to_json).to eq({})
+      expect_any_instance_of(Hash).to receive(:to_json).with({})
+      described_class.new(//).to_json
     end
   end
 

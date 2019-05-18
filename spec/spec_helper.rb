@@ -1,5 +1,16 @@
 # frozen_string_literal: true
 
+require File.join(__dir__, '..', 'build')
+
+if JsRegex::PERFORM_FULL_BUILD
+  require 'simplecov'
+  SimpleCov.start
+
+  ENV['CODECOV_TOKEN'] = '2276a5a2-709c-4a19-9096-824135a5c0b7'
+  require 'codecov'
+  SimpleCov.formatter = SimpleCov::Formatter::Codecov
+end
+
 require 'js_regex'
 require 'v8' # gem 'therubyracer'
 

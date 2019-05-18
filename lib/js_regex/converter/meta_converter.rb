@@ -22,14 +22,19 @@ class JsRegex
       end
 
       def convert_alternatives
-        kept_any = nil
+        kept_any_previous_branch = nil
 
         convert_subexpressions.transform do |node|
-          dropped = !node.children.empty? && node.children.all?(&:dropped?)
-          node.children.unshift('|') if kept_any && !dropped
-          kept_any = true unless dropped
+          unless dropped_branch?(node)
+            node.children.unshift('|') if kept_any_previous_branch
+            kept_any_previous_branch = true
+          end
           node
         end
+      end
+
+      def dropped_branch?(branch_node)
+        branch_node.children.any? && branch_node.children.all?(&:dropped?)
       end
     end
   end

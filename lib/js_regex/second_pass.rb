@@ -25,32 +25,16 @@ class JsRegex
       end
 
       def conditional_tree_permutations(tree)
-        all_conditions = conditions(tree)
-        return [] if all_conditions.empty?
+        all_conds = conditions(tree)
+        return [] if all_conds.empty?
 
-        captured_groups_per_branch = captured_group_count(tree)
+        caps_per_branch = captured_group_count(tree)
 
-        condition_permutations(all_conditions).map.with_index do |truthy_conds, i|
+        condition_permutations(all_conds).map.with_index do |truthy_conds, i|
           tree_permutation = tree.clone
           # find referenced groups and conditionals and make one-sided
           crawl(tree_permutation) do |node|
-            truthy = truthy_conds.include?(node.reference)
-
-            if node.type.equal?(:captured_group) &&
-              all_conditions.include?(node.reference)
-              truthy ? min_quantify(node) : null_quantify(node)
-            elsif node.type.equal?(:conditional)
-              branches = node.children[1...-1]
-              if branches.count == 1
-                truthy || null_quantify(branches.first)
-              else
-                null_quantify(truthy ? branches.last : branches.first)
-              end
-              node.update(type: :plain)
-            elsif node.type.equal?(:backref_num)
-              new_num = node.children[0].to_i + captured_groups_per_branch * i
-              node.update(children: [new_num.to_s])
-            end
+            build_permutation(node, all_conds, truthy_conds, caps_per_branch, i)
           end
         end
       end
@@ -81,14 +65,50 @@ class JsRegex
         end
       end
 
+      def build_permutation(node, all_conds, truthy_conds, caps_per_branch, i)
+        truthy = truthy_conds.include?(node.reference)
+
+        if node.type.equal?(:captured_group) &&
+          all_conds.include?(node.reference)
+          adapt_referenced_group_to_permutation(node, truthy)
+        elsif node.type.equal?(:conditional)
+          adapt_conditional_to_permutation(node, truthy)
+        elsif node.type.equal?(:backref_num)
+          adapt_backref_to_permutation(node, caps_per_branch, i)
+        end
+      end
+
+      def adapt_referenced_group_to_permutation(group_node, truthy)
+        truthy ? min_quantify(group_node) : null_quantify(group_node)
+      end
+
+      def adapt_conditional_to_permutation(conditional_node, truthy)
+        branches = conditional_node.children[1...-1]
+        if branches.count == 1
+          truthy || null_quantify(branches.first)
+        else
+          null_quantify(truthy ? branches.last : branches.first)
+        end
+        conditional_node.update(type: :plain)
+      end
+
+      def adapt_backref_to_permutation(backref_node, caps_per_branch, i)
+        new_num = backref_node.children[0].to_i + caps_per_branch * i
+        backref_node.update(children: [new_num.to_s])
+      end
+
       def min_quantify(node)
-        return if (qtf = node.quantifier).nil? || qtf.min > 0
+        return if guarantees_at_least_one_match?(qtf = node.quantifier)
 
         if qtf.max.equal?(1) # any zero_or_one quantifier (?, ??, ?+)
           node.update(quantifier: nil)
         else
           node.update(quantifier: "{1,#{qtf.max}}#{'?' if qtf.reluctant?}")
         end
+      end
+
+      def guarantees_at_least_one_match?(quantifier)
+        quantifier.nil? || quantifier.min > 0
       end
 
       def null_quantify(node)
