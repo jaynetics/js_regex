@@ -19,7 +19,7 @@ class JsRegex
 
       HEX_EXPANSION       = '[0-9A-Fa-f]'
       NONHEX_EXPANSION    = '[^0-9A-Fa-f]'
-      LINEBREAK_EXPANSION = '(?:\r\n|\r|\n)'
+      LINEBREAK_EXPANSION = '(?:\r\n|[\n\v\f\r\u0085\u2028\u2029])'
 
       private
 

@@ -19,7 +19,7 @@ describe JsRegex::Converter::TypeConverter do
 
   it 'translates the generic linebreak type "\R"' do
     expect(/\R/).to\
-    become(/(?:\r\n|\r|\n)/)
+    become(/(?:\r\n|[\n\v\f\r\u0085\u2028\u2029])/)
       .and keep_matching("_\n_\r\n_", with_results: %W[\n \r\n])
   end
 

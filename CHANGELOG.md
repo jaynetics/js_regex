@@ -11,6 +11,7 @@ and this project adheres to [Semantic Versioning](http://semver.org/spec/v2.0.0.
 
 ### Fixed
 - fixed `#to_s` output being syntactically invalid in JS when converting an empty Regexp
+- fixed missing codepoints in "\R" replacement (vertical tab, form feed, nextline)
 
 ## [3.1.1] - 2018-09-24
 
