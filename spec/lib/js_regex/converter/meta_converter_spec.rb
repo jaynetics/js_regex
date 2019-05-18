@@ -4,24 +4,24 @@ require 'spec_helper'
 
 describe JsRegex::Converter::MetaConverter do
   it 'preserves the dot meta char a.k.a. universal matcher "."' do
-    expect(/./).to stay_the_same.and keep_matching(' b%', with_results: [' ', 'b', '%'])
+    expect(/./).to stay_the_same.and keep_matching('a', '%', ' ')
   end
 
   it 'ensures dots match newlines if the multiline option is set' do
     expect(/a.+a/m).to\
-    become(/a(?:.|\n)+a/).and keep_matching('abba', with_results: %w[abba])
+    become(/a(?:.|\n)+a/).and keep_matching('abba', "a\na")
   end
 
   it 'does not make dots match newlines if other options are set' do
     expect(/a.+a/i)
       .to stay_the_same
-      .and keep_matching('abba', with_results: ['abba'])
+      .and keep_matching('abba')
       .and keep_not_matching("ab\nba")
   end
 
   it 'does not make escaped dots match newlines in multiline mode' do
-    expect(/a\.+a/m).to\
-    become(/a\.+a/).and keep_matching('aba a.a', with_results: %w[a.a])
+    expect(/a\.a/m).to\
+    become(/a\.a/).and keep_matching("a.a").and keep_not_matching('aba', "a\na")
   end
 
   it 'ensures dots match newlines if the multiline option is set via groups' do

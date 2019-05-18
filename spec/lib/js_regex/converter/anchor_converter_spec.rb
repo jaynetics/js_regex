@@ -14,8 +14,10 @@ describe JsRegex::Converter::AnchorConverter do
   end
 
   it 'translates the end-of-string-with-optional-newline anchor "\Z"' do
-    expect(/\w\Z/).to\
-    become(/\w(?=\n?$)/).and keep_matching('abc', with_results: %w[c])
+    expect(/abc\Z/).to\
+    become(/abc(?=\n?$)/)
+      .and keep_matching('abc', "abc\n")
+      .and keep_not_matching('abcdef', "abc\n\n")
   end
 
   it 'preserves the beginning-of-line anchor "^"' do

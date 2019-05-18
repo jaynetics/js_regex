@@ -56,7 +56,7 @@ describe JsRegex::Converter::LiteralConverter do
       .and keep_matching('😁', with_results: %w[😁])
   end
 
-  it 'converts multiple astral plane literals to surrogate pairs' do
+  it 'converts multiple astral plane literals to distinct surrogate pairs' do
     expect(/😁😁/).to\
     become(double(source: '(?:\\ud83d\\ude01)(?:\\ud83d\\ude01)'))
       .and keep_matching('😁😁', with_results: %w[😁😁])

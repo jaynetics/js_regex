@@ -124,14 +124,14 @@ describe JsRegex::Converter::GroupConverter do
     it 'converts simple cases to complimentary alternations' do
       expect(Regexp.new('1(?~23)4')).to\
       become(/1(?:(?:.|\n){,1}|(?:(?!23)(?:.|\n))*)4/)
-        .and keep_matching('14')
-        .and keep_not_matching('1234')
+        .and keep_matching('14', '124', '134', '12224', '13334')
+        .and keep_not_matching('1234', '12234')
     end
 
     it 'can handle fixed quantifications' do
       expect(Regexp.new('A(?~\d{4})Z')).to\
       become(/A(?:(?:.|\n){,3}|(?:(?!\d{4})(?:.|\n))*)Z/)
-        .and keep_matching('AZ')
+        .and keep_matching('AZ', 'A123Z', 'A12X34Z')
         .and keep_not_matching('A1234Z')
     end
 
@@ -147,7 +147,7 @@ describe JsRegex::Converter::GroupConverter do
 
     it 'converts unmatchable cases to an unmatchable group' do
       expect(Regexp.new('1(?~)2')).to\
-      become(/1(?!)2/).and keep_not_matching('12')
+      become(/1(?!)2/).and keep_not_matching('12', '1x2')
     end
   end
 end

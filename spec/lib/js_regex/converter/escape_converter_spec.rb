@@ -116,7 +116,7 @@ describe JsRegex::Converter::EscapeConverter do
 
   it 'places quantifiers at the end of codepoint list conversions' do
     expect(/\u{61 62 63}+/).to\
-    become(/abc+/).and keep_matching('_abca_', with_results: %w[abc])
+    become(/abc+/).and keep_matching('_abca_abcc_', with_results: %w[abc abcc])
   end
 
   it 'converts the control sequences style "\C-X" to unicode escapes' do
