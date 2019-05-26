@@ -55,7 +55,7 @@ class JsRegex
           # conversion needed for nested sets, intersections
           exp.token.equal?(:range)
         when :type
-          TypeConverter::TYPES_SHARED_BY_RUBY_AND_JS.include?(exp.token)
+          TypeConverter.directly_compatible?(exp)
         when :escape
           EscapeConverter::ESCAPES_SHARED_BY_RUBY_AND_JS.include?(exp.token)
         end

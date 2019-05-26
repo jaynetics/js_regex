@@ -34,9 +34,6 @@ class JsRegex
       end
 
       def build_options_group
-        unless (encoding_options = data.scan(/[adu]/)).empty?
-          warn_of_unsupported_feature("encoding options #{encoding_options}")
-        end
         if subtype.equal?(:options_switch)
           # can be ignored since #options on subsequent Expressions are correct
           drop_without_warning

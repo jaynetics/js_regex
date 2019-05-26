@@ -41,9 +41,9 @@ describe JsRegex::Converter::GroupConverter do
     become(/aa/).and keep_matching('aa', with_results: %w[aa])
   end
 
-  it 'drops all encoding options with warning' do
-    expect(Regexp.new('a(?adu:a)a')).to\
-    become(/a(?:a)a/).with_warning('encoding options ["a", "d", "u"]')
+  it 'drops encoding options without warning' do
+    expect(/1(?u:2)3(?a)4(?d:)/).to\
+    become(/1(?:2)34(?:)/)
   end
 
   it 'works following positive lookbehind assertions' do

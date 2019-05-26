@@ -129,6 +129,11 @@ describe JsRegex::Converter::SetConverter do
       .and keep_matching('xañbäõ_ß', with_results: %w[x ñ äõ ß])
   end
 
+  it 'handles ascii-encoded posix classes in sets' do
+    expect(/(?a)[[:word:]]+/)
+      .to keep_matching('xañbäõ_ß', with_results: %w[xa b _])
+  end
+
   it 'handles \p-style properties in sets' do
     expect(/[äöüß\p{ascii}]+/)
       .to keep_matching('ñbäõ_ß', with_results: %w[bä _ß])

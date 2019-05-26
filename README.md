@@ -97,6 +97,7 @@ In addition to the conversions supported by the default approach, this gem will 
 | atomic groups [2]             | a(?>bc\|b)c           |
 | conditionals                  | (?(1)b), (?('a')b\|c) |
 | option groups/switches        | (?i-m:..), (?x)..     |
+| local encoding options        | (?u:\w)               |
 | absence groups                | /\\\*(?~\\\*/)\\\*/   |
 | possessive quantifiers [2]    | ++, *+, ?+, {4,}+     |
 | hex types \h and \H           | \H\h{6}               |
@@ -143,7 +144,6 @@ In most of these cases that will lead to a warning, but changes that are not con
 | Description                    | Example               | Warning |
 |--------------------------------|-----------------------|---------|
 | lookbehind                     | (?&lt;=, (?&lt;!, \K  | yes     |
-| local encoding options         | (?u:\w)               | yes     |
 | whole pattern recursion        | \g<0>                 | yes     |
 | previous match anchor          | \G                    | yes     |
 | extended grapheme type         | \X                    | yes     |
