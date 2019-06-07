@@ -8,6 +8,7 @@ and this project adheres to [Semantic Versioning](http://semver.org/spec/v2.0.0.
 
 ### Added
 - added full support and more concise representations for astral plane sets and properties via `character_set`; thanks to https://github.com/singpolyma for the suggestion
+- `JsRegex::new` can now also be called with a source `String` instead of a `Regexp`, e.g. `JsRegex.new('\h')`
 
 ### Fixed
 - '/' is now correctly escaped if it occurs within sets (this only caused issues with `JsRegex#to_s` output); thanks to https://github.com/singpolyma for the report

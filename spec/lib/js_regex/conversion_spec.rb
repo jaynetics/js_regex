@@ -21,6 +21,10 @@ describe JsRegex::Conversion do
     it 'includes a warnings Array at index 2' do
       expect(return_value[2]).to be_an(Array)
     end
+
+    it 'also works if called with a source String instead of a Regexp' do
+      expect(described_class.of('foo')).to be_an(Array)
+    end
   end
 
   describe '#convert_source' do
@@ -87,6 +91,11 @@ describe JsRegex::Conversion do
     it 'does not carry over the extended option' do
       # c.f. freespace_converter_spec.rb for option-based token handling.
       expect(JsRegex.new(/a/x).options).to eq('')
+    end
+
+    it 'includes only forced options if passed a source String' do
+      expect(JsRegex.new('a').options).to               eq('')
+      expect(JsRegex.new('a', options: 'g').options).to eq('g')
     end
   end
 end
