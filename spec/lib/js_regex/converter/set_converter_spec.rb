@@ -113,6 +113,11 @@ describe JsRegex::Converter::SetConverter do
     expect(/[^x\b]/).to stay_the_same.and keep_matching("a\bz", with_results: %w[a z])
   end
 
+  it 'converts forward slashes to forward slash escapes' do
+    expect(%r{[/]}).to\
+    become(%r{[\/]}).and keep_matching('/')
+  end
+
   it 'converts literal newline members into newline escapes' do
     expect(/[
 a
@@ -156,11 +161,6 @@ b
       expect(/[^a-c[0-9]]+/).to\
       become('(?:[\x00-\x2F:-`d-\uD7FF\uE000-\uFFFF]|[\uD800-\uDBFF][\uDC00-\uDFFF])+')
         .and keep_matching('abcxyz123😁', with_results: %w[xyz 😁])
-    end
-
-    it 'isnt distracted by escaped brackets' do
-      expect(/[a-z\][0-9\[]ä-ü]+/)
-        .to keep_matching(']a_1[', with_results: %w(]a 1[))
     end
 
     it 'handles negative sets nested in negative sets' do
