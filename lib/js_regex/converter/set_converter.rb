@@ -28,11 +28,7 @@ class JsRegex
           warn_of_unsupported_feature('nested case-sensitive set')
         end
 
-        if Converter.in_surrogate_pair_limit? { content.astral_part.size }
-          content.to_s_with_surrogate_alternation
-        else
-          limit_to_bmp_part_with_warning(content)
-        end
+        content.to_s_with_surrogate_ranges
       end
 
       def directly_compatible?
@@ -68,11 +64,6 @@ class JsRegex
       def pass_through_with_escaping
         expression.to_s(:base).gsub(%r{\\?([\f\n\r\t])}) { Regexp.escape($1) }
       end
-
-      def limit_to_bmp_part_with_warning(content)
-        warn_of_unsupported_feature('large astral plane match of set')
-        bmp_part = content.bmp_part
-        bmp_part.empty? ? drop : bmp_part.to_s(in_brackets: true)
       end
     end
   end

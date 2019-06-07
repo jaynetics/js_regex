@@ -4,6 +4,11 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](http://keepachangelog.com/en/1.0.0/)
 and this project adheres to [Semantic Versioning](http://semver.org/spec/v2.0.0.html).
 
+## UNRELEASED
+
+### Added
+- added full support and more concise representations for astral plane sets and properties via `character_set`; thanks to https://github.com/singpolyma for the suggestion
+
 ## [3.3.0] - 2019-05-26
 
 ### Added

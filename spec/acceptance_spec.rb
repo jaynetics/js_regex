@@ -20,8 +20,7 @@ describe JsRegex do
   it 'can handle a complex user name validation regex' do
     # https://github.com/DavyJonesLocker/client_side_validations/issues/615
     expect(/\A[\p{L}0-9\-_\s]+\z/)
-      .to generate_warning('astral plane')
-      .and keep_matching('äöü-23 x_X master', with_results: ['äöü-23 x_X master'])
+      .to  keep_matching('äöü-23 x_X master', with_results: ['äöü-23 x_X master'])
       .and keep_not_matching('a:', '. 9')
   end
 
@@ -49,10 +48,10 @@ describe JsRegex do
   end
 
   it 'can handle ambidextrous apostrophes' do
-    expect(/'/).to stay_the_same.and keep_matching("'", with_results: %w['])
+    expect(/'/).to stay_the_same.and keep_matching("'")
   end
 
   it 'can handle ambidextrous quotation marks' do
-    expect(/"/).to stay_the_same.and keep_matching('"', with_results: %w["])
+    expect(/"/).to stay_the_same.and keep_matching('"')
   end
 end

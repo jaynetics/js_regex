@@ -23,7 +23,8 @@ RSpec::Matchers.define(:become) do |expected|
 
   match do |rb_regex|
     js_regex = js_regex_for(rb_regex)
-    @msg = error_for_source(js_regex, expected.source) ||
+    expected_source = expected.is_a?(Regexp) ? expected.source : expected
+    @msg = error_for_source(js_regex, expected_source) ||
            error_for_warnings(js_regex, @expected_warning)
     @msg.nil?
   end

@@ -114,7 +114,7 @@ describe JsRegex::Converter::EscapeConverter do
 
   it 'converts codepoint lists, escaping meta chars and using surrogates' do
     expect(/\u{61 a 28 1F601}/).to\
-    become(double(source: 'a\n\((?:\ud83d\ude01)'))
+    become('a\n\((?:\ud83d\ude01)')
       .and keep_matching("_a\n(😁_", with_results: %W[a\n(😁])
   end
 

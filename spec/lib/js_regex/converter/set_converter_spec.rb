@@ -15,92 +15,14 @@ describe JsRegex::Converter::SetConverter do
     expect(/[\a-z]/).to become(/[\x07-z]/).and keep_matching("\a")
   end
 
-  context 'when sets are nested' do
-    it 'flattens simple nested sets' do
-      expect(/[a-z[0-9]]+/).to\
-      become(/[0-9a-z]+/).and keep_matching('ab_12', with_results: %w[ab 12])
-    end
-
-    it 'handles nested sets in negative sets' do
-      expect(/[^a-c[0-9]]+/).to\
-      become(/[\x00-\/:-`d-\uD7FF\uE000-\uFFFF]+/)
-        .with_warning('large astral plane match of set')
-        .and keep_matching('abc123xyz', with_results: %w[xyz])
-    end
-
-    it 'isnt distracted by escaped brackets' do
-      expect(/[a-z\][0-9\[]ä-ü]+/)
-        .to keep_matching(']a_1[', with_results: %w(]a 1[))
-    end
-
-    it 'handles negative sets nested in negative sets' do
-      expect(/[^a[^b]]+/).to\
-      become(/[b]+/).and keep_matching('abc', with_results: %w[b])
-    end
-
-    it 'can flatten multiple nested sets' do
-      expect(/[[a-c][x-z][0-2]]+/).to\
-      become(/[0-2a-cx-z]+/)
-        .and keep_matching('bmx_123', with_results: %w[b x 12])
-    end
-
-    it 'can flatten multiple sets nested in negative sets' do
-      expect(/[^a-c[x-z][0-2]]+/).to\
-      become(/[\x00-\/3-`d-w{-\uD7FF\uE000-\uFFFF]+/)
-        .with_warning('large astral plane match of set')
-        .and keep_matching('bmx_123', with_results: %w[m _ 3])
-    end
-
-    it 'can flatten deeply nested sets' do
-      expect(/[a-c[x-z[0-2]]]+/).to\
-      become(/[0-2a-cx-z]+/)
-        .and keep_matching('bmx_123', with_results: %w[b x 12])
-    end
-
-    it 'can flatten deeply nested sets in negative sets' do
-      expect(/[^a-c[x-z[0-2]]]+/).to\
-      become(/[\x00-\/3-`d-w{-\uD7FF\uE000-\uFFFF]+/)
-        .with_warning('large astral plane match of set')
-        .and keep_matching('bmx_123', with_results: %w[m _ 3])
-    end
-
-    it 'can handle deeply nested negative sets' do
-      expect(/[a-c[x-z[^0-2]]]+/).to\
-      become(/[\x00-\/3-\uD7FF\uE000-\uFFFF]+/)
-        .with_warning('large astral plane match of set')
-        .and keep_matching('bmx_123', with_results: %w[bmx_ 3])
-    end
-
-    it 'can handle deeply nested negative sets in negated sets' do
-      expect(/[^a-c[x-z[^0-2]]]+/).to\
-      become(/[0-2]+/).and keep_matching('bmx_123', with_results: %w[12])
-    end
-
-    it 'can handle deeply nested negative sets with properties' do
-      expect(/[^a-c[x-z[^\p{ascii}]]]+/).to\
-      become(/[\x00-`d-w{-\x7F]+/)
-        .and keep_matching('bmx_123', with_results: %w[m _123])
-    end
-
-    it 'can handle non-astral literals in negative sets' do
-      expect(/[^\uFFFF]/).to stay_the_same.and keep_matching("a\uFFFFb", with_results: %w[a b])
-    end
-
-    it 'warns for astral literals in negative sets' do
-      expect(/[^\u{10000}]/).to\
-      become(/[\x00-\uD7FF\uE000-\uFFFF]/)
-        .with_warning('large astral plane match of set')
-    end
-  end
-
   it 'expands the hex type in positive sets' do
     expect(/[w-y\h]+/).to\
     become(/[0-9A-Fa-fw-y]+/).and keep_matching('zxa3n', with_results: %w[xa3])
   end
 
   it 'handles the hex type in negative sets' do
-    expect(/[^x-y\h]+/)
-      .to generate_warning('large astral plane match of set')
+    expect(/[^x-y\h]+/).to\
+    become('(?:[\x00-\x2F:-@G-`g-wz-\uD7FF\uE000-\uFFFF]|[\uD800-\uDBFF][\uDC00-\uDFFF])+')
       .and keep_matching('zxa3n', with_results: %w[z n])
   end
 
@@ -124,9 +46,9 @@ describe JsRegex::Converter::SetConverter do
   end
 
   it 'handles negative posix classes in sets' do
-    expect(/[x-z[:^ascii:]]+/)
-      .to generate_warning('large astral plane match of set')
-      .and keep_matching('xañbäõ_ß', with_results: %w[x ñ äõ ß])
+    expect(/[x-z[:^ascii:]]+/).to\
+    become('(?:[x-z\x80-\uD7FF\uE000-\uFFFF]|[\uD800-\uDBFF][\uDC00-\uDFFF])+')
+      .and keep_matching('xañbäõ_ßa😁', with_results: %w[x ñ äõ ß 😁])
   end
 
   it 'handles ascii-encoded posix classes in sets' do
@@ -145,9 +67,9 @@ describe JsRegex::Converter::SetConverter do
   end
 
   it 'handles properties in negative sets' do
-    expect(/[^a\p{ascii}]+/)
-      .to generate_warning('large astral plane match of set')
-      .and keep_matching('a1ü!', with_results: %w[ü])
+    expect(/[^a\p{ascii}]+/).to\
+    become('(?:[\x80-\uD7FF\uE000-\uFFFF]|[\uD800-\uDBFF][\uDC00-\uDFFF])+')
+      .and keep_matching('a1ü!😁', with_results: %w[ü 😁])
   end
 
   it 'handles set intersections' do
@@ -155,14 +77,14 @@ describe JsRegex::Converter::SetConverter do
     become(/[c-x]/).and keep_matching('aftz', with_results: %w[f t])
   end
 
-  it 'extracts single astral plane set members' do
-    expect(/[a-z😁0-9]/)
-      .to become(double(source: '(?:[0-9a-z]|\ud83d\ude01)'))
+  it 'extracts astral plane set members' do
+    expect(/[a-z😁0-9]/).to\
+    become('(?:[0-9a-z]|\uD83D\uDE01)')
       .and keep_matching('a😐😁A', with_results: %w[a 😁])
   end
 
   it 'extracts 0x10000 and higher' do
-    expect(/[𐀀]/).to become(double(source: '(?:\ud800\udc00)'))
+    expect(/[𐀀]/).to become('(?:\uD800\uDC00)')
   end
 
   it 'does not extract 0xFFFF and lower' do
@@ -170,22 +92,13 @@ describe JsRegex::Converter::SetConverter do
     expect(/[￾]/).to stay_the_same # \uFFFE
   end
 
-  it 'handles small astral plane ranges without warning' do
+  it 'handles astral plane ranges without warning' do
     expect(/[😁-😲]/).to keep_matching('a😐c', with_results: %w[😐])
   end
 
-  it 'drops large astral plane ranges with warning' do
-    expect(JsRegex::Converter)
-      .to receive(:in_surrogate_pair_limit?) do |&block|
-      expect(block.call).to eq(0x110000 - 0x10000)
-    end.and_return(false)
+  it 'converts astral plane ranges to surrogate ranges' do
     expect(/[a\u{10000}-\u{10FFFF}]/).to\
-    become(/[a]/).with_warning('large astral plane match of set')
-  end
-
-  it 'does not create empty sets when dropping contents' do
-    expect(/[\u{10000}-\u{10FFFF}]/).to\
-    become(//).with_warning('large astral plane match of set')
+    become('(?:[a]|[\uD800-\uDBFF][\uDC00-\uDFFF])')
   end
 
   it 'preserves bmp unicode ranges' do
@@ -213,10 +126,8 @@ b
   end
 
   it 'adds case-swapped literal member dupes if subject to a local i-option' do
-    expect(/[a](?i)[a[b]](?-i:[a](?i:[^a-fG-Y]))/).to\
-    become(/[a][ABab](?:[a](?:[\x00-\uD7FF\uE000-\uFFFF]))/)
-      .with_warning('large astral plane match of set')
-      .and keep_matching('aAaZ', with_results: %w[aAaZ])
+    expect(/[a](?i)[a[b]](?-i:[a](?i:[^a-fG-Y]))/)
+      .to  keep_matching('aAaZ', with_results: %w[aAaZ])
       .and keep_not_matching('AAaZ')
   end
 
@@ -233,5 +144,79 @@ b
   it 'does not add duplicates for literal members that cant be swapped' do
     expect(/(?i:[A1_B])/).to\
     become(/(?:[1AB_ab])/).and keep_matching('1', with_results: %w[1])
+  end
+
+  context 'when sets are nested' do
+    it 'flattens simple nested sets' do
+      expect(/[a-z[0-9]]+/).to\
+      become(/[0-9a-z]+/).and keep_matching('ab_12', with_results: %w[ab 12])
+    end
+
+    it 'handles nested sets in negative sets' do
+      expect(/[^a-c[0-9]]+/).to\
+      become('(?:[\x00-\x2F:-`d-\uD7FF\uE000-\uFFFF]|[\uD800-\uDBFF][\uDC00-\uDFFF])+')
+        .and keep_matching('abcxyz123😁', with_results: %w[xyz 😁])
+    end
+
+    it 'isnt distracted by escaped brackets' do
+      expect(/[a-z\][0-9\[]ä-ü]+/)
+        .to keep_matching(']a_1[', with_results: %w(]a 1[))
+    end
+
+    it 'handles negative sets nested in negative sets' do
+      expect(/[^a[^b]]+/).to\
+      become(/[b]+/).and keep_matching('abc', with_results: %w[b])
+    end
+
+    it 'can flatten multiple nested sets' do
+      expect(/[[a-c][x-z][0-2]]+/).to\
+      become(/[0-2a-cx-z]+/)
+        .and keep_matching('bmx_123', with_results: %w[b x 12])
+    end
+
+    it 'can flatten multiple sets nested in negative sets' do
+      expect(/[^a-c[x-z][0-2]]+/).to\
+      become('(?:[\x00-\x2F3-`d-w{-\uD7FF\uE000-\uFFFF]|[\uD800-\uDBFF][\uDC00-\uDFFF])+')
+        .and keep_matching('bmx_1230😁', with_results: %w[m _ 3 😁])
+    end
+
+    it 'can flatten deeply nested sets' do
+      expect(/[a-c[x-z[0-2]]]+/).to\
+      become(/[0-2a-cx-z]+/)
+        .and keep_matching('bmx_123', with_results: %w[b x 12])
+    end
+
+    it 'can flatten deeply nested sets in negative sets' do
+      expect(/[^a-c[x-z[0-2]]]+/).to\
+      become('(?:[\x00-\x2F3-`d-w{-\uD7FF\uE000-\uFFFF]|[\uD800-\uDBFF][\uDC00-\uDFFF])+')
+        .and keep_matching('bmx_1230😁', with_results: %w[m _ 3 😁])
+    end
+
+    it 'can handle deeply nested negative sets' do
+      expect(/[a-c[x-z[^0-2]]]+/).to\
+      become('(?:[\x00-\x2F3-\uD7FF\uE000-\uFFFF]|[\uD800-\uDBFF][\uDC00-\uDFFF])+')
+        .and keep_matching('bmx_1230😁', with_results: %w[bmx_ 3 😁])
+    end
+
+    it 'can handle deeply nested negative sets in negated sets' do
+      expect(/[^a-c[x-z[^0-2]]]+/).to\
+      become(/[0-2]+/).and keep_matching('bmx_123', with_results: %w[12])
+    end
+
+    it 'can handle deeply nested negative sets with properties' do
+      expect(/[^a-c[x-z[^\p{ascii}]]]+/).to\
+      become(/[\x00-`d-w{-\x7F]+/)
+        .and keep_matching('bmx_123', with_results: %w[m _123])
+    end
+
+    it 'can handle non-astral members in negative sets' do
+      expect(/[^\uFFFF]/).to stay_the_same.and keep_matching("a\uFFFFb", with_results: %w[a b])
+    end
+
+    it 'can handle astral members in negative sets' do
+      expect(/[^\u{10000}]/).to\
+      become('(?:[\x00-\uD7FF\uE000-\uFFFF]|\uD800[\uDC01-\uDFFF]|[\uD801-\uDBFF][\uDC00-\uDFFF])')
+        .and keep_matching("a\u{10000}\u{10001}", with_results: ['a', "\u{10001}"])
+    end
   end
 end

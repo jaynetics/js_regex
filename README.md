@@ -95,7 +95,7 @@ In addition to the conversions supported by the default approach, this gem will 
 | Ruby's multiline mode [1]     | /.+/m                 |
 | Ruby's free-spacing mode      | / http (s?) /x        |
 | atomic groups [2]             | a(?>bc\|b)c           |
-| conditionals                  | (?(1)b), (?('a')b\|c) |
+| conditionals [2]              | (?(1)b), (?('a')b\|c) |
 | option groups/switches        | (?i-m:..), (?x)..     |
 | local encoding options        | (?u:\w)               |
 | absence groups                | /\\\*(?~\\\*/)\\\*/   |
@@ -120,10 +120,10 @@ In addition to the conversions supported by the default approach, this gem will 
 | posix types                   | [[:alpha:]]           |
 | posix negations               | [[:^alpha:]]          |
 | codepoint lists               | \u{61 63 1F601}       |
-| unicode properties [3]        | \p{Arabic}, \p{Dash}  |
-| unicode abbreviations [3]     | \p{Mong}, \p{Sc}      |
-| unicode negations [3]         | \p{^Number}           |
-| astral plane properties [2][3]| \p{emoji}             |
+| unicode properties            | \p{Arabic}, \p{Dash}  |
+| unicode abbreviations         | \p{Mong}, \p{Sc}      |
+| unicode negations             | \p{^Number}           |
+| astral plane properties [2]   | \p{emoji}             |
 | astral plane literals [2]     | &#x1f601;             |
 | astral plane ranges [2]       | [&#x1f601;-&#x1f632;] |
 
@@ -131,8 +131,6 @@ In addition to the conversions supported by the default approach, this gem will 
 [1] Keep in mind that [Ruby's multiline mode](http://ruby-doc.org/core-2.1.1/Regexp.html#class-Regexp-label-Options) is more of a "dot-all mode" and totally different from [JavaScript's multiline mode](http://javascript.info/regexp-multiline-mode).
 
 [2] See [here](#EX) for information about how this is achieved.
-
-[3] Some properties from these groups will result in large JavaScript regexes.
 
 <a name='UF'></a>
 ### Unsupported Features
@@ -147,7 +145,6 @@ In most of these cases that will lead to a warning, but changes that are not con
 | whole pattern recursion        | \g<0>                 | yes     |
 | previous match anchor          | \G                    | yes     |
 | extended grapheme type         | \X                    | yes     |
-| large astral plane ranges      | [a-\u{10FFFF}]        | yes     |
 | variable length absence groups | (?~(a+\|bar))         | yes     |
 | capturing group names          | (?&lt;a&gt;, (?'a'    | no      |
 | comment groups                 | (?#comment)           | no      |
@@ -182,7 +179,7 @@ Many Regexp tokens work in JavaScript just as they do in Ruby, or allow for a st
 
 **Atomic groups and possessive quantifiers** are missing in JavaScript, so the only way to emulate their behavior is by substituting them with [backreferenced lookahead groups](http://instanceof.me/post/52245507631/regex-emulate-atomic-grouping-with-lookahead).
 
-**Astral plane characters** convert to [surrogate pairs](https://dmitripavlutin.com/what-every-javascript-developer-should-know-about-unicode/#24surrogatepairs), so they don't require ES6. JsRegex drops large astral plane ranges or properties, though, to limit the size of the resulting regex. You can opt out of this by setting `JsRegex::Converter.surrogate_pair_limit = nil`.
+**Astral plane characters** convert to ranges of [surrogate pairs](https://dmitripavlutin.com/what-every-javascript-developer-should-know-about-unicode/#24surrogatepairs), so they don't require ES6.
 
 **Properties and posix classes** expand to equivalent character sets, or surrogate pair alternations if necessary. The gem [regexp_property_values](https://github.com/jaynetics/regexp_property_values) helps by reading out their codepoints from Onigmo.
 

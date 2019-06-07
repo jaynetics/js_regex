@@ -32,18 +32,10 @@ class JsRegex
         MAP[expression.type].new
       end
 
-      # Limit the number of generated surrogate pairs, else the output might
-      # get to large for certain applications. The chosen number is somewhat
-      # arbitrary. 100 pairs make for about 1 KB, uncompressed. The median char
-      # count of all properties supported by Ruby is 92. 75% are below 300 chars.
-      #
-      # Set this to nil if you need full unicode matches and size doesn't matter.
-      attr_writer :surrogate_pair_limit
-
-      def in_surrogate_pair_limit?(&pair_count)
-        @surrogate_pair_limit.nil? || @surrogate_pair_limit >= pair_count.call
+      # Legacy method. Remove in v4.0.0.
+      def surrogate_pair_limit=(_arg)
+        warn '#surrogate_pair_limit= is deprecated and has no effect anymore.'
       end
     end
-    self.surrogate_pair_limit = 300
   end
 end
