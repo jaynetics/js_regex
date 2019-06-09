@@ -82,8 +82,6 @@ js_regex.warnings # => ["Dropped unsupported negative lookbehind assertion '(?<!
 js_regex.source # => 'buzz'
 ```
 
-Many warnings are related to JavaScript regexes not matching stuff in the astral plane. Ignoring these might be fine depending on your use case.
-
 <a name='SF'></a>
 ### Supported Features
 
@@ -92,6 +90,7 @@ In addition to the conversions supported by the default approach, this gem will 
 | Description                   | Example               |
 |-------------------------------|-----------------------|
 | escaped meta chars            | \\\A                  |
+| dot matching astral chars     | /./ =~ '😋'           |
 | Ruby's multiline mode [1]     | /.+/m                 |
 | Ruby's free-spacing mode      | / http (s?) /x        |
 | atomic groups [2]             | a(?>bc\|b)c           |
@@ -197,6 +196,6 @@ Feel free to send suggestions, point out issues, or submit pull requests.
 
 ### Outlook
 
-Possible future improvements might include an "ES6 mode" using the [u flag](https://javascript.info/regexp-unicode), which would allow for much more concise representations of astral plane properties and sets.
+Possible future improvements might include an "ES6 mode" using the [u flag](https://javascript.info/regexp-unicode), which would allow for more concise representations of astral plane properties and sets.
 
-As far as supported conversions are concerned, this gem is almost feature-complete. Most of the unsupported features listed above are impossible to replicate in JavaScript, and [litte seems to be happening](https://mail.mozilla.org/pipermail/es-discuss/2013-September/033867.html) that could change that.
+As far as supported conversions are concerned, this gem is pretty much feature-complete. Most of the unsupported features listed above are either impossible or impractical to replicate in JavaScript.

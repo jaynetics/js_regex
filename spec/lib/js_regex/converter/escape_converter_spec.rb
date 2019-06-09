@@ -103,13 +103,13 @@ describe JsRegex::Converter::EscapeConverter do
   end
 
   it 'replaces the bell char "\a" with a hex escape' do
-    expect(/.\a/).to\
-    become(/.\x07/).and keep_matching("ab\ac", with_results: ["b\a"])
+    expect(/\a/).to\
+    become(/\x07/).and keep_matching("ab\ac", with_results: ["\a"])
   end
 
   it 'replaces the escape char "\e" with a hex escape' do
-    expect(/.\e/).to\
-    become(/.\x1B/).and keep_matching("ab\ec", with_results: ["b\e"])
+    expect(/\e/).to\
+    become(/\x1B/).and keep_matching("ab\ec", with_results: ["\e"])
   end
 
   it 'converts codepoint lists, escaping meta chars and using surrogates' do
@@ -123,39 +123,19 @@ describe JsRegex::Converter::EscapeConverter do
     become(/abc+/).and keep_matching('_abca_abcc_', with_results: %w[abc abcc])
   end
 
-  it 'converts the control sequences style "\C-X" to unicode escapes' do
-    expect(/.\C-*/).to\
-    become(/.\u000A/).and keep_matching("ya\ny", with_results: %W[a\n])
+  it 'converts control sequences to unicode escapes' do
+    expect(/\C-*/).to\
+    become(/\u000A/).and keep_matching("ya\ny", with_results: %W[\n])
   end
 
-  it 'converts the control sequences style "\cX" to unicode escapes' do
-    expect(/.\c*/).to\
-    become(/.\u000A/).and keep_matching("ya\ny", with_results: %W[a\n])
+  it 'converts meta sequences to unicode escapes' do
+    expect(/\M-X/n).to\
+    become(/\u00D8/)
   end
 
-  it 'converts the meta sequences style "\M-X" to unicode escapes' do
-    expect(/.\M-X/n).to\
-    become(/.\u00D8/)
-  end
-
-  it 'converts the meta control sequences style "\M-\C-X" to unicode escapes' do
-    expect(/.\M-\C-X/n).to\
-    become(/.\u0098/)
-  end
-
-  it 'converts the meta control sequences style "\M-\cX" to unicode escapes' do
-    expect(/.\M-\cX/n).to\
-    become(/.\u0098/)
-  end
-
-  it 'converts the meta control sequences style "\C-\M-X" to unicode escapes' do
-    expect(/.\C-\M-X/n).to\
-    become(/.\u0098/)
-  end
-
-  it 'converts the meta control sequences style "\c\M-X" to unicode escapes' do
-    expect(/.\c\M-X/n).to\
-    become(/.\u0098/)
+  it 'converts meta control sequences to unicode escapes' do
+    expect(/\M-\C-X/n).to\
+    become(/\u0098/)
   end
 
   it 'drops unknown escapes with warning' do

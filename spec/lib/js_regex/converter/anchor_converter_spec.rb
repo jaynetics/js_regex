@@ -45,8 +45,8 @@ describe JsRegex::Converter::AnchorConverter do
   end
 
   it 'drops the previous match anchor "\G" with warning' do
-    expect(/(.)\G/).to\
-    become(/(.)/).with_warning
+    expect(/(foo)\G/).to\
+    become(/(foo)/).with_warning
   end
 
   it 'drops unknown anchors with warning' do

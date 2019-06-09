@@ -8,6 +8,9 @@ class JsRegex
     # Template class implementation.
     #
     class MetaConverter < JsRegex::Converter::Base
+      DOT_EXPANSION    = '(?:[\uD800-\uDBFF][\uDC00-\uDFFF]|[^\n\uD800-\uDFFF])'
+      ML_DOT_EXPANSION = '(?:[\uD800-\uDBFF][\uDC00-\uDFFF]|[^\uD800-\uDFFF])'
+
       private
 
       def convert_data
@@ -15,7 +18,7 @@ class JsRegex
         when :alternation
           convert_alternatives
         when :dot
-          expression.multiline? ? '(?:.|\n)' : '.'
+          expression.multiline? ? ML_DOT_EXPANSION : DOT_EXPANSION
         else
           warn_of_unsupported_feature
         end

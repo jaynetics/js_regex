@@ -3,39 +3,17 @@
 require 'spec_helper'
 
 describe JsRegex::Converter::MetaConverter do
-  it 'preserves the dot meta char a.k.a. universal matcher "."' do
-    expect(/./).to stay_the_same.and keep_matching('a', '%', ' ')
+  it 'replaces the dot meta char so that it keeps matching astral stuff, too' do
+    expect(/a.a/).to\
+    become('a(?:[\uD800-\uDBFF][\uDC00-\uDFFF]|[^\n\uD800-\uDFFF])a')
+      .and keep_matching('aba', 'aüa', 'a😋a', "a\ra")
+      .and keep_not_matching("a\na")
   end
 
   it 'ensures dots match newlines if the multiline option is set' do
-    expect(/a.+a/m).to\
-    become(/a(?:.|\n)+a/).and keep_matching('abba', "a\na")
-  end
-
-  it 'does not make dots match newlines if other options are set' do
-    expect(/a.+a/i)
-      .to stay_the_same
-      .and keep_matching('abba')
-      .and keep_not_matching("ab\nba")
-  end
-
-  it 'does not make escaped dots match newlines in multiline mode' do
-    expect(/a\.a/m).to\
-    become(/a\.a/).and keep_matching("a.a").and keep_not_matching('aba', "a\na")
-  end
-
-  it 'ensures dots match newlines if the multiline option is set via groups' do
-    expect(/a(?m:.(?-m:.)).(?m).a/).to\
-    become(/a(?:(?:.|\n)(?:.)).(?:.|\n)a/)
-      .and keep_matching("abbb\na", with_results: %W[abbb\na])
-      .and keep_not_matching("abb\nba")
-  end
-
-  it 'does not make dots match newlines if the multiline option is disabled' do
-    expect(/a(?-m).(?m).a/m).to\
-    become(/a.(?:.|\n)a/)
-      .and keep_matching("ab\na", with_results: %W[ab\na])
-      .and keep_not_matching("a\nba")
+    expect(/a.a/m).to\
+    become('a(?:[\uD800-\uDBFF][\uDC00-\uDFFF]|[^\uD800-\uDFFF])a')
+      .and keep_matching('aba', 'aüa', 'a😋a', "a\ra", "a\na")
   end
 
   it 'preserves the alternation meta char "|"' do
