@@ -9,6 +9,10 @@ and this project adheres to [Semantic Versioning](http://semver.org/spec/v2.0.0.
 ### Added
 - improved '.' substitution so that it matches "\r" and astral plane chars like in Ruby
 
+### Fixed
+- fixed loss of backslashes in some edge cases when passed a `String` source (as possible since v3.4.0)
+- escaping of operational literal whitespace in x-mode is no longer carried over (cosmetic improvement)
+
 ## [3.4.0] - 2019-06-07
 
 ### Added

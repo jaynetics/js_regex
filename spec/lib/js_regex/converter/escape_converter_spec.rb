@@ -16,12 +16,13 @@ describe JsRegex::Converter::EscapeConverter do
     expect(/\\/).to stay_the_same.and keep_matching('\\', with_results: %w[\\])
   end
 
-  it 'preserves escaped groups' do
-    expect(/\(1\)/).to stay_the_same
+  it 'unescapes escaped literals' do
+    expect(/\j/).to\
+    become(/j/).and keep_matching('ijk', with_results: %w[j])
   end
 
-  it 'preserves escaped literals' do
-    expect(/\j/).to stay_the_same.and keep_matching('ijk', with_results: %w[j])
+  it 'preserves escaped groups' do
+    expect(/\(1\)/).to stay_the_same
   end
 
   it 'preserves escaped dots' do
@@ -114,7 +115,7 @@ describe JsRegex::Converter::EscapeConverter do
 
   it 'converts codepoint lists, escaping meta chars and using surrogates' do
     expect(/\u{61 a 28 1F601}/).to\
-    become('a\n\((?:\ud83d\ude01)')
+    become('a\n\((?:\uD83D\uDE01)')
       .and keep_matching("_a\n(😁_", with_results: %W[a\n(😁])
   end
 

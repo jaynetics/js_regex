@@ -44,7 +44,7 @@ class JsRegex
         when :control, :meta_sequence
           unicode_escape_codepoint
         when :literal
-          LiteralConverter.convert_data(data)
+          LiteralConverter.convert_data(expression.char)
         when *ESCAPES_SHARED_BY_RUBY_AND_JS
           pass_through
         when :bell, :escape

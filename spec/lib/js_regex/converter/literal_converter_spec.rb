@@ -50,24 +50,24 @@ describe JsRegex::Converter::LiteralConverter do
 
   it 'converts astral plane literals to surrogate pairs' do
     expect(/😁/).to\
-    become('(?:\ud83d\ude01)').and keep_matching('😁', with_results: %w[😁])
+    become('(?:\uD83D\uDE01)').and keep_matching('😁', with_results: %w[😁])
   end
 
   it 'converts multiple astral plane literals to distinct surrogate pairs' do
     expect(/😁😁/).to\
-    become('(?:\ud83d\ude01)(?:\ud83d\ude01)')
+    become('(?:\uD83D\uDE01)(?:\uD83D\uDE01)')
       .and keep_matching('😁😁', with_results: %w[😁😁])
   end
 
   it 'converts astral plane chars inside a bmp literal run' do
     expect(/a😁b/).to\
-    become('a(?:\ud83d\ude01)b')
+    become('a(?:\uD83D\uDE01)b')
       .and keep_matching('a😁b', with_results: %w[a😁b])
   end
 
   it 'wraps substitutional surrogate pairs to ensure correct quantification' do
     expect(/😁{2}/).to\
-    become('(?:\ud83d\ude01){2}')
+    become('(?:\uD83D\uDE01){2}')
       .and keep_matching('😁😁😁😁', with_results: %w[😁😁 😁😁])
   end
 

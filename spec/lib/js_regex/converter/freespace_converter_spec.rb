@@ -43,7 +43,7 @@ describe JsRegex::Converter::FreespaceConverter do
 
     it 'does not drop escaped whitespace literals' do
       expect(/Escaped\	Whitespace\ !/x).to\
-      become(/Escaped\tWhitespace\ !/)
+      become(/Escaped\tWhitespace !/)
         .and keep_matching('Escaped	Whitespace !',
                            with_results: ['Escaped	Whitespace !'])
     end
@@ -79,7 +79,7 @@ Comments! # comment 2
 
     it 'does not drop escaped whitespace literals' do
       expect(/Escaped\	Whitespace\ !/).to\
-      become(/Escaped\tWhitespace\ !/)
+      become(/Escaped\tWhitespace !/)
         .and keep_matching('Escaped	Whitespace !',
                            with_results: ['Escaped	Whitespace !'])
     end

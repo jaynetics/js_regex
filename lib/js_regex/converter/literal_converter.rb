@@ -15,42 +15,28 @@ class JsRegex
           if data =~ ASTRAL_PLANE_CODEPOINT_PATTERN
             convert_astral_data(data)
           else
-            convert_bmp_data(data)
+            escape_incompatible_bmp_literals(data)
           end
         end
 
         def convert_astral_data(data)
-          data.each_char.each_with_object(Node.new) do |chr, node|
-            if chr =~ ASTRAL_PLANE_CODEPOINT_PATTERN
-              node << surrogate_pair_for(chr)
+          data.each_char.each_with_object(Node.new) do |char, node|
+            if char =~ ASTRAL_PLANE_CODEPOINT_PATTERN
+              node << surrogate_substitution_for(char)
             else
-              node << convert_bmp_data(chr)
+              node << escape_incompatible_bmp_literals(char)
             end
           end
         end
 
-        def convert_bmp_data(data)
-          ensure_json_compatibility(
-            ensure_forward_slashes_are_escaped(data)
-          )
+        def escape_incompatible_bmp_literals(data)
+          data.gsub('/', '\\/').gsub(/[\f\n\r\t]/) { |lit| Regexp.escape(lit) }
         end
 
         private
 
-        def surrogate_pair_for(astral_char)
-          base = astral_char.codepoints.first - 65_536
-          high = ((base / 1024).floor + 55_296).to_s(16)
-          low  = (base % 1024 + 56_320).to_s(16)
-          "(?:\\u#{high}\\u#{low})"
-        end
-
-        def ensure_forward_slashes_are_escaped(data)
-          # literal slashes would signify the pattern end in JsRegex#to_s
-          data.gsub(%r{\\?/}, '\\/')
-        end
-
-        def ensure_json_compatibility(data)
-          data.gsub(%r{\\?([\f\n\r\t])}) { Regexp.escape($1) }
+        def surrogate_substitution_for(char)
+          CharacterSet::Writer.write_surrogate_ranges([], [char.codepoints])
         end
       end
 

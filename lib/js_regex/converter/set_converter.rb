@@ -62,9 +62,8 @@ class JsRegex
       end
 
       def pass_through_with_escaping
-        expression.to_s(:base).gsub(%r{([\f\n\r\t])|(/)}) do
-          $1 ? Regexp.escape($1) : "\\#{$2}"
-        end
+        string = expression.to_s(:base)
+        LiteralConverter.escape_incompatible_bmp_literals(string)
       end
     end
   end
