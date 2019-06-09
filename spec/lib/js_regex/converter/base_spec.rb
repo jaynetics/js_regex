@@ -9,9 +9,9 @@ describe JsRegex::Converter::Base do
       expr = expression_double(type: 'bar', token: 'big_bad', ts: 7)
       allow(expr).to receive(:to_s).and_return('foo')
       allow(conv).to receive(:expression).and_return(expr)
-      allow(conv).to receive(:warn)
+      allow(conv).to receive(:warn_of)
       conv.send(:warn_of_unsupported_feature)
-      expect(conv).to have_received(:warn).with(
+      expect(conv).to have_received(:warn_of).with(
         "Dropped unsupported big bad bar 'foo' at index 7"
       )
     end
@@ -21,9 +21,9 @@ describe JsRegex::Converter::Base do
       expr = expression_double(type: 'bar', token: 'big', ts: 7)
       allow(expr).to receive(:to_s).and_return('foo')
       allow(conv).to receive(:expression).and_return(expr)
-      allow(conv).to receive(:warn)
+      allow(conv).to receive(:warn_of)
       conv.send(:warn_of_unsupported_feature, 'fizz')
-      expect(conv).to have_received(:warn).with(
+      expect(conv).to have_received(:warn_of).with(
         "Dropped unsupported fizz 'foo' at index 7"
       )
     end
@@ -33,7 +33,7 @@ describe JsRegex::Converter::Base do
       expr = expression_double(type: 'bar', token: 'big', ts: 7)
       allow(expr).to receive(:to_s).and_return('foo')
       allow(conv).to receive(:expression).and_return(expr)
-      allow(conv).to receive(:warn)
+      allow(conv).to receive(:warn_of)
 
       node = conv.send(:warn_of_unsupported_feature, 'fizz')
 
@@ -216,12 +216,12 @@ describe JsRegex::Converter::Base do
     end
   end
 
-  describe '#warn' do
+  describe '#warn_of' do
     it 'adds a warning to the context' do
       converter = described_class.new
       context = JsRegex::Converter::Context.new
       allow(converter).to receive(:context).and_return(context)
-      expect { converter.send(:warn, 'foo') }
+      expect { converter.send(:warn_of, 'foo') }
         .to(change { context.warnings }.from([]).to(['foo']))
     end
   end

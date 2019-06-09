@@ -12,7 +12,7 @@ describe JsRegex do
       (?:[A-Z]{2}|com|org|net|edu|gov|mil|
       biz|info|mobi|name|aero|asia|jobs|museum)\b/xi
     )
-    .to generate_warning("boundary '\\b' at index 210 is not unicode-aware")
+    .to generate_warning("'\\b' at index 210 only works at ASCII word boundaries")
     .and keep_matching('a@b me@s-w.com x.y@place.edu #ö+.',
                        with_results: %w[me@s-w.com x.y@place.edu])
   end

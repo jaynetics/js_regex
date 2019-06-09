@@ -101,6 +101,7 @@ In addition to the conversions supported by the default approach, this gem will 
 | possessive quantifiers [2]    | ++, *+, ?+, {4,}+     |
 | hex types \h and \H           | \H\h{6}               |
 | bell and escape shortcuts     | \a, \e                |
+| all literals, including \n    | eval("/\n/")          |
 | newline-ready anchor \Z       | last word\Z           |
 | generic linebreak \R          | data.split(/\R/)      |
 | meta and control escapes      | /\M-\C-X/             |
@@ -110,7 +111,6 @@ In addition to the conversions supported by the default approach, this gem will 
 | numeric subexpression calls   | \g&lt;1&gt;           |
 | relative subexpression calls  | \g&lt;-1&gt;          |
 | named subexpression calls     | \g&lt;foo&gt;         |
-| literal whitespace            | [a-z ]                |
 | nested sets                   | [a-z[A-Z]]            |
 | types in sets                 | [a-z\h]               |
 | properties in sets            | [a-z\p{sc}]           |
@@ -121,7 +121,7 @@ In addition to the conversions supported by the default approach, this gem will 
 | codepoint lists               | \u{61 63 1F601}       |
 | unicode properties            | \p{Arabic}, \p{Dash}  |
 | unicode abbreviations         | \p{Mong}, \p{Sc}      |
-| unicode negations             | \p{^Number}           |
+| unicode negations             | \p{^L}, \P{L}, \P{^L} |
 | astral plane properties [2]   | \p{emoji}             |
 | astral plane literals [2]     | &#x1f601;             |
 | astral plane ranges [2]       | [&#x1f601;-&#x1f632;] |
@@ -142,31 +142,23 @@ In most of these cases that will lead to a warning, but changes that are not con
 |--------------------------------|-----------------------|---------|
 | lookbehind                     | (?&lt;=, (?&lt;!, \K  | yes     |
 | whole pattern recursion        | \g<0>                 | yes     |
+| backref by recursion level     | \k<1+1>               | yes     |
 | previous match anchor          | \G                    | yes     |
 | extended grapheme type         | \X                    | yes     |
 | variable length absence groups | (?~(a+\|bar))         | yes     |
+| working word boundary anchors  | \b, \B                | yes [3] |
 | capturing group names          | (?&lt;a&gt;, (?'a'    | no      |
 | comment groups                 | (?#comment)           | no      |
 | inline comments (in x-mode)    | /[a-z] # comment/x    | no      |
 | multiplicative quantifiers     | /A{4}{6}/ =~ 'A' * 24 | no      |
 
-In addition, the word boundaries `\b` and `\B` cause warnings since they are not unicode-ready in JavaScript. Unfortunately this [holds true even for the latest versions of JavaScript](http://www.ecma-international.org/ecma-262/6.0/#sec-runtime-semantics-iswordchar-abstract-operation).
 
-Ruby:
-```ruby
-'Erkki-Sven Tüür'.split(/\b/) # => ["Erkki", "-", "Sven", " ", "Tüür"]
-```
-
-JavaScript:
-```javascript
-'Erkki-Sven Tüür'.split(/\b/)  // => ["Erkki", "-", "Sven", " ", "T", "üü", "r"]
-'Erkki-Sven Tüür'.split(/\b/u) // => ["Erkki", "-", "Sven", " ", "T", "üü", "r"]
-```
+[3] \b and \B *are* carried over, but generate a warning because they only recognize ASCII word chars in JavaScript. This holds true for all JavaScript versions and RegExp modes.
 
 <a name='EX'></a>
 ### How it Works
 
-JsRegex uses the gem  [regexp_parser](https://github.com/ammar/regexp_parser) to parse a Ruby Regexp.
+JsRegex uses the gem [regexp_parser](https://github.com/ammar/regexp_parser) to parse a Ruby Regexp.
 
 It traverses the AST returned by `regexp_parser` depth-first, and converts it to its own tree of equivalent JavaScript RegExp tokens, marking some nodes for treatment in a second pass.
 
@@ -182,7 +174,7 @@ Many Regexp tokens work in JavaScript just as they do in Ruby, or allow for a st
 
 **Properties and posix classes** expand to equivalent character sets, or surrogate pair alternations if necessary. The gem [regexp_property_values](https://github.com/jaynetics/regexp_property_values) helps by reading out their codepoints from Onigmo.
 
-**Character sets a.k.a. bracket expressions** offer many more features in Ruby compared to JavaScript. To work around this, JsRegex calls on the gem  [character_set](https://github.com/jaynetics/character_set) to calculate the matched codepoints of the whole set and build a completely new set string for all except the most simple cases.
+**Character sets a.k.a. bracket expressions** offer many more features in Ruby compared to JavaScript. To work around this, JsRegex calls on the gem [character_set](https://github.com/jaynetics/character_set) to calculate the matched codepoints of the whole set and build a completely new set string for all except the most simple cases.
 
 **Conditionals** expand to equivalent expressions in the second pass, e.g. `(<)?foo(?(1)>)` expands to `(?:<foo>|foo)` (simplified example).
 

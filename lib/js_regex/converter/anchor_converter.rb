@@ -23,9 +23,8 @@ class JsRegex
       end
 
       def pass_boundary_with_warning(boundary)
-        warn("The boundary '#{boundary}' at index #{expression.ts} "\
-             'is not unicode-aware in JavaScript, '\
-             'so it might act differently than in Ruby.')
+        warn_of("The anchor '#{boundary}' at index #{expression.ts} "\
+                'only works at ASCII word boundaries in JavaScript.')
         boundary
       end
     end

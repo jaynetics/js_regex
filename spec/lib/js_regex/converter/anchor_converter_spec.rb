@@ -28,19 +28,19 @@ describe JsRegex::Converter::AnchorConverter do
     expect(/\w$/).to stay_the_same.and keep_matching('abc', with_results: %w[c])
   end
 
-  it 'preserves the word-boundary "\b" with a warning' do
+  it 'preserves the word-boundary anchor "\b" with a warning' do
     expect(/\w\b/)
       .to stay_the_same
-      .with_warning("The boundary '\\b' at index 2 is not unicode-aware in "\
-                    'JavaScript, so it might act differently than in Ruby.')
+      .with_warning("The anchor '\\b' at index 2 only works at ASCII word "\
+                    'boundaries in JavaScript.')
       .and keep_matching('abc', with_results: %w[c])
   end
 
-  it 'preserves the non-word-boundary "\B" with a warning' do
+  it 'preserves the non-word-boundary anchor "\B" with a warning' do
     expect(/\w\B/)
       .to stay_the_same
-      .with_warning("The boundary '\\B' at index 2 is not unicode-aware in "\
-                    'JavaScript, so it might act differently than in Ruby.')
+      .with_warning("The anchor '\\B' at index 2 only works at ASCII word "\
+                    'boundaries in JavaScript.')
       .and keep_matching('abc', with_results: %w[a b])
   end
 

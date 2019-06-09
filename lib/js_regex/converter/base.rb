@@ -54,11 +54,11 @@ class JsRegex
       def warn_of_unsupported_feature(description = nil)
         description ||= "#{subtype} #{expression.type}".tr('_', ' ')
         full_desc = "#{description} '#{expression}'"
-        warn("Dropped unsupported #{full_desc} at index #{expression.ts}")
+        warn_of("Dropped unsupported #{full_desc} at index #{expression.ts}")
         drop
       end
 
-      def warn(text)
+      def warn_of(text)
         context.warnings << text
       end
 
