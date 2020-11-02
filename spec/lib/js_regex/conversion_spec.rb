@@ -43,16 +43,14 @@ describe JsRegex::Conversion do
     end
 
     it 'sets Context#case_insensitive_root to true if the regex has the i-flag' do
-      expect(JsRegex::Converter::Context)
-        .to receive(:new).with(case_insensitive_root: true)
-        .and_call_original
+      expect_any_instance_of(JsRegex::Converter::Context)
+        .to receive(:case_insensitive_root=).with(true)
       described_class.of(//i)
     end
 
     it 'sets Context#case_insensitive_root to false if the regex has no i-flag' do
-      expect(JsRegex::Converter::Context)
-        .to receive(:new).with(case_insensitive_root: false)
-        .and_call_original
+      expect_any_instance_of(JsRegex::Converter::Context)
+        .to receive(:case_insensitive_root=).with(false)
       described_class.of(//m)
     end
 

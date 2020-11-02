@@ -28,11 +28,9 @@ Gem::Specification.new do |s|
   s.add_dependency 'regexp_parser', '~> 1.6'
   s.add_dependency 'regexp_property_values', '~> 1.0'
 
-  s.add_development_dependency 'rake', '~> 12.3'
-  s.add_development_dependency 'rspec-core', '~> 3.8'
-  s.add_development_dependency 'rspec-expectations', '~> 3.8'
-  s.add_development_dependency 'rspec-mocks', '~> 3.8'
-  s.add_development_dependency 'therubyracer', '~> 0.12'
+  s.add_development_dependency 'rake', '~> 13.0'
+  s.add_development_dependency 'rspec', '~> 3.10'
+  s.add_development_dependency 'mini_racer'
 
   if JsRegex::PERFORM_FULL_BUILD
     s.add_development_dependency 'codecov', '~> 0.1'

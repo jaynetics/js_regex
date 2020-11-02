@@ -12,7 +12,7 @@ if JsRegex::PERFORM_FULL_BUILD
 end
 
 require 'js_regex'
-require 'v8' # gem 'therubyracer'
+require 'mini_racer'
 
 RSpec.configure do |config|
   config.mock_with(:rspec) { |mocks| mocks.verify_partial_doubles = true }
@@ -144,7 +144,7 @@ def expression_double(attributes)
   instance_double(Regexp::Expression::Root, defaults.merge(attributes))
 end
 
-JS_CONTEXT = V8::Context.new
+JS_CONTEXT = MiniRacer::Context.new
 
 def matches_in_js(js_regex, string)
   JS_CONTEXT.eval("'#{js_escape(string)}'.match(#{js_regex});").to_a
