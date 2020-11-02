@@ -1,8 +1,6 @@
 # frozen_string_literal: true
 
-require File.join(__dir__, '..', 'build')
-
-if JsRegex::PERFORM_FULL_BUILD
+if RUBY_VERSION.start_with?('2.7')
   require 'simplecov'
   SimpleCov.start
 

@@ -3,7 +3,6 @@
 
 dir = File.expand_path(__dir__)
 require File.join(dir, 'lib', 'js_regex', 'version')
-require File.join(dir, 'build')
 
 Gem::Specification.new do |s|
   s.platform      = Gem::Platform::RUBY
@@ -31,9 +30,4 @@ Gem::Specification.new do |s|
   s.add_development_dependency 'rake', '~> 13.0'
   s.add_development_dependency 'rspec', '~> 3.10'
   s.add_development_dependency 'mini_racer'
-
-  if JsRegex::PERFORM_FULL_BUILD
-    s.add_development_dependency 'codecov', '~> 0.1'
-    s.add_development_dependency 'mutant-rspec', '~> 0.8'
-  end
 end
