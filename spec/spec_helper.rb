@@ -1,6 +1,6 @@
 # frozen_string_literal: true
 
-if RUBY_VERSION.start_with?('2.7')
+if ENV['CI'] && RUBY_VERSION.start_with?('2.7')
   require 'simplecov'
   SimpleCov.start
 
