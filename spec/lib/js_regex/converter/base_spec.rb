@@ -161,24 +161,24 @@ describe JsRegex::Converter::Base do
     end
 
     context 'when there are multiple quantifiers' do
-      it 'drops adjacent/multiplicative fixes ({x}) without warning' do
+      it 'wraps adjacent/multiplicative fixes ({x}) in passive groups' do
         expect(/a{4}{6}/).to\
-        become(/a{6}/)
+        become(/(?:a{4}){6}/)
       end
 
-      it 'drops adjacent/multiplicative ranges ({x,y}) without warning' do
+      it 'wraps adjacent/multiplicative ranges ({x,y}) in passive groups' do
         expect(/a{2,4}{3,6}/).to\
-        become(/a{3,6}/)
+        become(/(?:a{2,4}){3,6}/)
       end
 
-      it 'drops mixed adjacent quantifiers without warning' do
+      it 'wraps mixed adjacent quantifiers in passive groups' do
         expect(/ab{2,3}*/).to\
-        become(/ab*/)
+        become(/a(?:b{2,3})*/)
       end
 
-      it 'drops multiple adjacent quantifiers without warning' do
+      it 'wraps multiple adjacent quantifiers in passive groups' do
         expect(/ab{2}{3}{4}{5}/).to\
-        become(/ab{5}/)
+        become(/a(?:(?:(?:b{2}){3}){4}){5}/)
       end
 
       it 'preserves distinct quantifiers' do

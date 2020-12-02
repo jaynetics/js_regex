@@ -99,6 +99,7 @@ In addition to the conversions supported by the default approach, this gem will 
 | local encoding options        | (?u:\w)               |
 | absence groups                | /\\\*(?~\\\*/)\\\*/   |
 | possessive quantifiers [2]    | ++, *+, ?+, {4,}+     |
+| chained quantifiers           | /A{4}{6}/ =~ 'A' * 24 |
 | hex types \h and \H           | \H\h{6}               |
 | bell and escape shortcuts     | \a, \e                |
 | all literals, including \n    | eval("/\n/")          |
@@ -150,7 +151,6 @@ In most of these cases that will lead to a warning, but changes that are not con
 | capturing group names          | (?&lt;a&gt;, (?'a'    | no      |
 | comment groups                 | (?#comment)           | no      |
 | inline comments (in x-mode)    | /[a-z] # comment/x    | no      |
-| multiplicative quantifiers     | /A{4}{6}/ =~ 'A' * 24 | no      |
 
 
 [3] \b and \B *are* carried over, but generate a warning because they only recognize ASCII word chars in JavaScript. This holds true for all JavaScript versions and RegExp modes.
