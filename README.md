@@ -1,7 +1,7 @@
 # JsRegex
 
 [![Gem Version](https://badge.fury.io/rb/js_regex.svg)](http://badge.fury.io/rb/js_regex)
-[![Build Status](https://travis-ci.org/jaynetics/js_regex.svg?branch=master)](https://travis-ci.org/jaynetics/js_regex)
+[![Build Status](https://github.com/jaynetics/js_regex/workflows/tests/badge.svg)](https://github.com/jaynetics/js_regex/actions)
 [![codecov](https://codecov.io/gh/jaynetics/js_regex/branch/master/graph/badge.svg)](https://codecov.io/gh/jaynetics/js_regex)
 [![Code Climate](https://codeclimate.com/github/jaynetics/js_regex/badges/gpa.svg)](https://codeclimate.com/github/jaynetics/js_regex)
 
