@@ -4,7 +4,7 @@ require 'spec_helper'
 
 describe JsRegex do
   it 'has a semantic version number' do
-    expect(JsRegex::VERSION).to match /\A\d+\.\d+\.\d+\z/
+    expect(JsRegex::VERSION).to match(/\A\d+\.\d+\.\d+\z/)
   end
 
   describe '#to_h' do

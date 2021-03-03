@@ -2,7 +2,7 @@
 
 class JsRegex
   module Converter
-    Dir[File.join(File.dirname(__FILE__), 'converter', '*.rb')].each do |file|
+    Dir[File.join(__dir__, 'converter', '*.rb')].sort.each do |file|
       require file
     end
 

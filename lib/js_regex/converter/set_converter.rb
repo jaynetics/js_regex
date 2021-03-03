@@ -37,9 +37,7 @@ class JsRegex
 
       def all_children_directly_compatible?
         # note that #each_expression is recursive
-        expression.each_expression do |exp|
-          return unless child_directly_compatible?(exp)
-        end
+        expression.each_expression.all? { |ch| child_directly_compatible?(ch) }
       end
 
       def child_directly_compatible?(exp)

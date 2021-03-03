@@ -61,7 +61,7 @@ class JsRegex
 
       def condition_permutations(conditions)
         (0..(conditions.length)).inject([]) do |arr, n|
-          arr += conditions.combination(n).to_a
+          arr + conditions.combination(n).to_a
         end
       end
 
