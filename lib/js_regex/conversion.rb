@@ -1,5 +1,3 @@
-# frozen_string_literal: true
-
 class JsRegex
   #
   # This class acts as a facade, passing a regex to the converters.

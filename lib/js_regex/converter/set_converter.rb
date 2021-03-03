@@ -1,5 +1,3 @@
-# frozen_string_literal: true
-
 require_relative 'base'
 require_relative 'escape_converter'
 require_relative 'type_converter'

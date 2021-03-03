@@ -1,5 +1,3 @@
-# frozen_string_literal: true
-
 class JsRegex
   module Converter
     Dir[File.join(__dir__, 'converter', '*.rb')].sort.each do |file|
