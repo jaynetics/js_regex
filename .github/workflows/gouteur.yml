@@ -13,9 +13,6 @@ jobs:
         with:
           ruby-version: 2.7
       - name: Prepare
-        run: |
-          bundle install --jobs 4
-          sudo apt-get install -yqq ragel
-          bundle exec rake ragel:rb
+        run: bundle install --jobs 4
       - name: Test
         run: bundle exec gouteur
