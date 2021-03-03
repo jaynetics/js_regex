@@ -83,6 +83,17 @@ js_regex.warnings # => ["Dropped unsupported negative lookbehind assertion '(?<!
 js_regex.source # => 'buzz'
 ```
 
+There is also a strict initializer, `JsRegex::new!`, which raises a `JsRegex::Error` if there are incompatibilites. This is particularly useful if you use JsRegex to convert regex-like strings, e.g. strings entered by users, as a `JsRegex::Error` might also occur if the given regex is invalid:
+
+```ruby
+begin
+  user_input = '('
+  JsRegex.new(user_input)
+rescue JsRegex::Error => e
+  e.message # => "Premature end of pattern (missing group closing parenthesis)"
+end
+```
+
 <a name='SF'></a>
 ### Supported Features
 

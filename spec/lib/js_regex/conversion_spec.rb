@@ -52,9 +52,13 @@ describe JsRegex::Conversion do
       described_class.of(//m)
     end
 
-    it 'raises TypeError for Node#to_s on nodes with SecondPass processing' do
+    it 'raises if the Parser fails' do
+      expect { described_class.of('(') }.to raise_error(JsRegex::Error, /group/)
+    end
+
+    it 'raises for Node#to_s on nodes without SecondPass processing' do
       expect { JsRegex::Node.new(type: :conditional).to_s }.to raise_error(
-        TypeError, 'conditional must be substituted before stringification'
+        JsRegex::Error, 'conditional must be substituted before stringification'
       )
     end
   end

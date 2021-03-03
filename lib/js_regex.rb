@@ -8,6 +8,7 @@
 #
 class JsRegex
   require_relative File.join('js_regex', 'conversion')
+  require_relative File.join('js_regex', 'error')
   require_relative File.join('js_regex', 'version')
   require 'json'
 
@@ -27,5 +28,16 @@ class JsRegex
 
   def to_s
     "/#{source.empty? ? '(?:)' : source}/#{options}"
+  end
+
+  def self.new!(ruby_regex, options: nil)
+    js_regex = new(ruby_regex, options: options)
+    if js_regex.warnings.any?
+      raise StandardError.new(
+        "Could not fully convert the given regex #{ruby_regex.inspect}:\n" +
+        js_regex.warnings.join("\n")
+      ).extend(JsRegex::Error)
+    end
+    js_regex
   end
 end

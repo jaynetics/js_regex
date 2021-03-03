@@ -4,6 +4,8 @@ class JsRegex
   # quantifier as well as type and reference annotations for SecondPass.
   #
   class Node
+    require_relative 'error'
+
     attr_reader :children, :quantifier, :reference, :type
 
     TYPES = %i[
@@ -47,7 +49,9 @@ class JsRegex
       when :backref_num, :captured_group, :plain
         children.join << quantifier.to_s
       else
-        raise TypeError, "#{type} must be substituted before stringification"
+        raise TypeError.new(
+          "#{type} must be substituted before stringification"
+        ).extend(JsRegex::Error)
       end
     end
 

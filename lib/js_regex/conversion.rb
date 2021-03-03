@@ -7,6 +7,7 @@ class JsRegex
   class Conversion
     require 'regexp_parser'
     require_relative 'converter'
+    require_relative 'error'
     require_relative 'node'
     require_relative 'second_pass'
 
@@ -25,6 +26,8 @@ class JsRegex
         converted_tree = Converter.convert(tree, context)
         final_tree = SecondPass.call(converted_tree)
         [final_tree.to_s, context.warnings]
+      rescue Regexp::Parser::Error => e
+        raise e.extend(JsRegex::Error)
       end
 
       def convert_options(input, custom_options)

@@ -65,4 +65,14 @@ describe JsRegex do
       expect(JsRegex.new(//).warnings).to be_instance_of(Array)
     end
   end
+
+  describe '::new!' do
+    it 'returns a JsRegex' do
+      expect(JsRegex.new!(//)).to be_a(JsRegex)
+    end
+
+    it 'raises if there are incompatibility warnings' do
+      expect { JsRegex.new!(/\G/) }.to raise_error(JsRegex::Error, /supported/)
+    end
+  end
 end
