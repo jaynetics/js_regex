@@ -91,7 +91,7 @@ RSpec::Matchers.define(:keep_matching) do |*test_strings, with_results: nil|
         # are not completely identical between Ruby and JS matching calls.
         # In that case, don't specify expected results and just check that
         # a valid string does produce a match.
-        rb_regex =~ string           || @msg = "rb did not match `#{string}`"
+        rb_regex.match?(string)      || @msg = "rb did not match `#{string}`"
         test_in_js(js_regex, string) || @msg = "js did not match `#{string}`"
       end
     end
@@ -107,7 +107,7 @@ RSpec::Matchers.define(:keep_not_matching) do |*test_strings|
     js_regex = js_regex_for(rb_regex)
 
     test_strings.each do |string|
-      rb_regex =~ string           && @msg = "rb did match `#{string}`"
+      rb_regex.match?(string)      && @msg = "rb did match `#{string}`"
       test_in_js(js_regex, string) && @msg = "js did match `#{string}`"
     end
 

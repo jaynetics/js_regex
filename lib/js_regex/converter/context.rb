@@ -62,7 +62,7 @@ class JsRegex
                   :warnings
 
       def total_added_capturing_groups
-        added_capturing_groups_after_group.values.inject(0, &:+)
+        added_capturing_groups_after_group.values.sum
       end
     end
   end

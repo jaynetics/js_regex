@@ -10,7 +10,7 @@ class JsRegex
         ASTRAL_PLANE_CODEPOINT_PATTERN = /[\u{10000}-\u{FFFFF}]/
 
         def convert_data(data)
-          if data =~ ASTRAL_PLANE_CODEPOINT_PATTERN
+          if data.match?(ASTRAL_PLANE_CODEPOINT_PATTERN)
             convert_astral_data(data)
           else
             escape_incompatible_bmp_literals(data)
@@ -19,7 +19,7 @@ class JsRegex
 
         def convert_astral_data(data)
           data.each_char.each_with_object(Node.new) do |char, node|
-            if char =~ ASTRAL_PLANE_CODEPOINT_PATTERN
+            if char.match?(ASTRAL_PLANE_CODEPOINT_PATTERN)
               node << surrogate_substitution_for(char)
             else
               node << escape_incompatible_bmp_literals(char)
@@ -53,12 +53,12 @@ class JsRegex
       HAS_CASE_PATTERN = /[\p{lower}\p{upper}]/
 
       def handle_locally_case_insensitive_literal(literal)
-        literal =~ HAS_CASE_PATTERN ? case_insensitivize(literal) : literal
+        literal.match?(HAS_CASE_PATTERN) ? case_insensitivize(literal) : literal
       end
 
       def case_insensitivize(literal)
-        literal.each_char.each_with_object(Node.new) do |chr, node|
-          node << (chr =~ HAS_CASE_PATTERN ? "[#{chr}#{chr.swapcase}]" : chr)
+        literal.each_char.each_with_object(Node.new) do |ch, node|
+          node << (ch.match?(HAS_CASE_PATTERN) ? "[#{ch}#{ch.swapcase}]" : ch)
         end
       end
     end
