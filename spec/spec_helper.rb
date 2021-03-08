@@ -168,10 +168,3 @@ def js_escape(string)
     .gsub("\n", '\\n')
     .gsub("\r", '\\r')
 end
-
-# whitelist some mutations
-defined?(Mutant) && Mutant::Mutator::Node::Send.prepend(Module.new do
-  def emit_selector_replacement
-    super unless %i[first =~].include?(selector)
-  end
-end)
