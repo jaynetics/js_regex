@@ -15,6 +15,7 @@
 .ruby-version
 .tags
 .tags1
+.tool-versions
 bbin/
 binstubs/*
 bundler_stubs/*
