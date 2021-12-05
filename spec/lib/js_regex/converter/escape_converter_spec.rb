@@ -123,17 +123,17 @@ describe JsRegex::Converter::EscapeConverter do
   end
 
   it 'converts control sequences to unicode escapes' do
-    expect(/\C-*/).to\
+    expect(Regexp.new('\C-*'.force_encoding('ascii-8bit'))).to\
     become(/\u000A/).and keep_matching("ya\ny", with_results: %W[\n])
   end
 
   it 'converts meta sequences to unicode escapes' do
-    expect(/\M-X/n).to\
+    expect(Regexp.new('\M-X'.force_encoding('ascii-8bit'))).to\
     become(/\u00D8/)
   end
 
   it 'converts meta control sequences to unicode escapes' do
-    expect(/\M-\C-X/n).to\
+    expect(Regexp.new('\M-\C-X'.force_encoding('ascii-8bit'))).to\
     become(/\u0098/)
   end
 
