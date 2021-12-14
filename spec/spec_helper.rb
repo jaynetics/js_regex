@@ -8,7 +8,6 @@ if ENV['CI'] && RUBY_VERSION.start_with?('2.7')
 end
 
 require 'js_regex'
-require 'mini_racer'
 
 RSpec.configure do |config|
   config.mock_with(:rspec) { |mocks| mocks.verify_partial_doubles = true }
@@ -140,25 +139,28 @@ def expression_double(attributes)
   instance_double(Regexp::Expression::Root, defaults.merge(attributes))
 end
 
-JS_CONTEXT = MiniRacer::Context.new
+require 'duktape'
+JS_CONTEXT = Duktape::Context.new
 
 def matches_in_js(js_regex, string)
-  JS_CONTEXT.eval("'#{js_escape(string)}'.match(#{js_regex});").to_a
+  JS_CONTEXT.eval_string("'#{js_escape(string)}'.match(#{js_regex});").to_a
 end
 
 def test_in_js(js_regex, string)
-  JS_CONTEXT.eval("#{js_regex}.test('#{js_escape(string)}');")
+  JS_CONTEXT.eval_string("#{js_regex}.test('#{js_escape(string)}');")
 end
 
 def to_s_like_json(js_regex)
   json_string = js_escape(js_regex.to_json)
   js = <<-JS
+    "use strict";
+
     var jsonObj = JSON.parse('#{json_string}');
     var jsonRE = new RegExp(jsonObj.source, jsonObj.options);
     var stringRE = #{js_regex};
     jsonRE.source == stringRE.source && jsonRE.flags == stringRE.flags;
   JS
-  JS_CONTEXT.eval(js)
+  JS_CONTEXT.eval_string(js)
 end
 
 def js_escape(string)
