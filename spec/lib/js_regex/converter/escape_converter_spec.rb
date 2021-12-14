@@ -31,10 +31,6 @@ describe JsRegex::Converter::EscapeConverter do
     expect(/\?\*\+/).to stay_the_same.and keep_matching('a?*+b', with_results: %w[?*+])
   end
 
-  it 'preserves null escapes' do
-    expect(/\0/).to stay_the_same.and keep_matching("\x00", with_results: %W[\x00])
-  end
-
   it 'preserves newline escapes' do
     expect(/\n/).to stay_the_same.and keep_matching("a\nb", with_results: %W[\n])
   end
@@ -92,8 +88,14 @@ describe JsRegex::Converter::EscapeConverter do
     expect(/\u263A/).to stay_the_same.and keep_matching('A☺C', with_results: %w[☺])
   end
 
-  it 'lets octal escapes pass through' do
-    expect(/\177/).to stay_the_same.and keep_matching("a\177b", with_results: %W[\177])
+  it 'replaces octal escapes with hex escapes' do
+    expect(/\177/).to\
+    become(/\x7F/).and keep_matching("a\177b", with_results: %W[\177])
+  end
+
+  it 'replaces the null-like octal escape \0 with a hex escape' do
+    expect(/\0/).to\
+    become(/\x00/).and keep_matching("\x00", with_results: %W[\x00])
   end
 
   it 'replaces escaped literal tabs with \t' do

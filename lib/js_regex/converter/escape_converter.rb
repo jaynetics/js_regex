@@ -23,7 +23,6 @@ class JsRegex
         interval_close
         interval_open
         newline
-        octal
         one_or_more
         set_close
         set_open
@@ -45,7 +44,7 @@ class JsRegex
           LiteralConverter.convert_data(expression.char)
         when *ESCAPES_SHARED_BY_RUBY_AND_JS
           pass_through
-        when :bell, :escape
+        when :bell, :escape, :octal
           hex_escape_codepoint
         else
           warn_of_unsupported_feature
