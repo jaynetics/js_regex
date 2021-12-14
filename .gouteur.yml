@@ -1,7 +1,7 @@
 repos:
   - uri: https://github.com/DavyJonesLocker/client_side_validations
     before:
-      - npm install
+      - yarn
     tasks:
       - rake test:ruby
       - rake test:js
