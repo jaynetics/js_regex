@@ -24,13 +24,4 @@ Gem::Specification.new do |s|
   s.add_dependency 'character_set', '~> 1.4'
   s.add_dependency 'regexp_parser', '~> 2.1'
   s.add_dependency 'regexp_property_values', '~> 1.0'
-
-  s.add_development_dependency 'duktape', '~> 2.6'
-  s.add_development_dependency 'rake', '~> 13.0'
-  s.add_development_dependency 'rspec', '~> 3.10'
-  if RUBY_VERSION.to_f >= 2.7
-    s.add_development_dependency 'codecov', '~> 0.2.12'
-    s.add_development_dependency 'gouteur', '~> 1.0'
-    s.add_development_dependency 'rubocop', '~> 1.8'
-  end
 end
