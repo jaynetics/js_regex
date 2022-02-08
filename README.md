@@ -4,7 +4,6 @@
 [![Build Status](https://github.com/jaynetics/js_regex/workflows/tests/badge.svg)](https://github.com/jaynetics/js_regex/actions)
 [![Build Status](https://github.com/jaynetics/js_regex/workflows/gouteur/badge.svg)](https://github.com/jaynetics/js_regex/actions)
 [![codecov](https://codecov.io/gh/jaynetics/js_regex/branch/master/graph/badge.svg)](https://codecov.io/gh/jaynetics/js_regex)
-[![Code Climate](https://codeclimate.com/github/jaynetics/js_regex/badges/gpa.svg)](https://codeclimate.com/github/jaynetics/js_regex)
 
 This is a Ruby gem that translates Ruby's regular expressions to the JavaScript flavor.
 
