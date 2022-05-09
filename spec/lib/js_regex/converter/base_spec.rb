@@ -84,20 +84,12 @@ describe JsRegex::Converter::Base do
         expect(/a+?/).to stay_the_same
       end
 
-      it 'preserves fixes ({x}?)' do
-        expect(/a{4}?/).to stay_the_same
-      end
-
-      it 'preserves ranges ({x,y}?)' do
-        expect(/a{6,8}?/).to stay_the_same
-      end
-
       it 'preserves set quantifiers' do
-        expect(/[a-z]{6,8}?/).to stay_the_same
+        expect(/[a-z]+?/).to stay_the_same
       end
 
       it 'preserves group quantifiers' do
-        expect(/(?:a|b){6,8}?/).to stay_the_same
+        expect(/(?:a|b)+?/).to stay_the_same
       end
     end
 
@@ -117,24 +109,14 @@ describe JsRegex::Converter::Base do
         become(/(?=(a+))\1(?:)/)
       end
 
-      it 'emulates possessiveness for fixes ({x}+)' do
-        expect(/a{4}+/).to\
-        become(/(?=(a{4}))\1(?:)/)
-      end
-
-      it 'emulates possessiveness for ranges ({x,y}+)' do
-        expect(/a{6,8}+/).to\
-        become(/(?=(a{6,8}))\1(?:)/)
-      end
-
       it 'emulates possessiveness for set quantifiers' do
-        expect(/[a-z]{6,8}+/).to\
-        become(/(?=([a-z]{6,8}))\1(?:)/)
+        expect(/[a-z]++/).to\
+        become(/(?=([a-z]+))\1(?:)/)
       end
 
       it 'emulates possessiveness for group quantifiers' do
-        expect(/(?:a|b){6,8}+/).to\
-        become(/(?=((?:a|b){6,8}))\1(?:)/)
+        expect(/(?:a|b)++/).to\
+        become(/(?=((?:a|b)+))\1(?:)/)
       end
 
       it 'takes into account preceding active groups for the backreference' do

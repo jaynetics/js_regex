@@ -109,7 +109,7 @@ In addition to the conversions supported by the default approach, this gem will 
 | option groups/switches        | (?i-m:..), (?x)..     |
 | local encoding options        | (?u:\w)               |
 | absence groups                | /\\\*(?~\\\*/)\\\*/   |
-| possessive quantifiers [2]    | ++, *+, ?+, {4,}+     |
+| possessive quantifiers [2]    | ++, *+, ?+            |
 | chained quantifiers           | /A{4}{6}/ =~ 'A' * 24 |
 | hex types \h and \H           | \H\h{6}               |
 | bell and escape shortcuts     | \a, \e                |
