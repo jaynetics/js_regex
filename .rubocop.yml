@@ -6,7 +6,7 @@ AllCops:
   RubyInterpreters:
     - ruby
     - rake
-  TargetRubyVersion: 2.5 # really 2.1, but 2.5 is lowest supported by rubocop
+  TargetRubyVersion: 2.6 # really 2.1, but 2.6 is lowest supported by rubocop
 
 # disable some non-linty lint cops, these are more like style checks
 Lint/AmbiguousOperatorPrecedence:
