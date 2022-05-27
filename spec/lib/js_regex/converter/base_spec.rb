@@ -62,6 +62,10 @@ describe JsRegex::Converter::Base do
         expect(/a{6,8}/).to stay_the_same
       end
 
+      it 'converts an implicit min value of 0 to an explicit one ({,y})' do
+        expect(/a{,8}/).to become(/a{0,8}/)
+      end
+
       it 'preserves set quantifiers' do
         expect(/[a-z]{6,8}/).to stay_the_same
       end
