@@ -32,11 +32,10 @@ class JsRegex
         return node if node.dropped? || (qtf = expression.quantifier).nil?
 
         if qtf.possessive?
-          node.update(quantifier: qtf.text[0..-2])
+          node.update(quantifier: qtf.dup.tap { |q| q.text = q.text[0..-2] })
           return wrap_in_backrefed_lookahead(node)
         elsif qtf.token == :interval && qtf.text[0..1] == "{,"
-          qtf.text = "{0,#{qtf.max}}"
-          node.update(quantifier: qtf)
+          node.update(quantifier: qtf.dup.tap { |q| q.text = "{0,#{q.max}}" })
         else
           node.update(quantifier: qtf)
         end

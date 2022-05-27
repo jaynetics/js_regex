@@ -63,6 +63,30 @@ class JsRegex
 
     private
 
-    attr_writer :children, :reference, :quantifier, :type
+    TypeError = Class.new(::TypeError).extend(JsRegex::Error)
+
+    def type=(arg)
+      arg.nil? || TYPES.include?(arg) ||
+        raise(TypeError, "unsupported type #{arg.class} for #{__method__}")
+      @type = arg
+    end
+
+    def children=(arg)
+      arg.class == Array ||
+        raise(TypeError, "unsupported type #{arg.class} for #{__method__}")
+      @children = arg
+    end
+
+    def quantifier=(arg)
+      arg.nil? || arg.class == Regexp::Expression::Quantifier ||
+        raise(TypeError, "unsupported type #{arg.class} for #{__method__}")
+      @quantifier = arg
+    end
+
+    def reference=(arg)
+      arg.nil? || arg.is_a?(Numeric) ||
+        raise(TypeError, "unsupported type #{arg.class} for #{__method__}")
+      @reference = arg
+    end
   end
 end

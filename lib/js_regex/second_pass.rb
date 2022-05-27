@@ -101,7 +101,9 @@ class JsRegex
         if qtf.max.equal?(1) # any zero_or_one quantifier (?, ??, ?+)
           node.update(quantifier: nil)
         else
-          node.update(quantifier: "{1,#{qtf.max}}#{'?' if qtf.reluctant?}")
+          min_quantifier = qtf.dup
+          min_quantifier.text = "{1,#{qtf.max}}#{'?' if qtf.reluctant?}"
+          node.update(quantifier: min_quantifier)
         end
       end
 
@@ -110,7 +112,8 @@ class JsRegex
       end
 
       def null_quantify(node)
-        node.update(quantifier: '{0}')
+        null_quantifier = Regexp::Expression::Quantifier.construct(text: '{0}')
+        node.update(quantifier: null_quantifier)
       end
     end
   end

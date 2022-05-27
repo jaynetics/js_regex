@@ -22,6 +22,6 @@ Gem::Specification.new do |s|
   s.required_ruby_version = '>= 2.1.0'
 
   s.add_dependency 'character_set', '~> 1.4'
-  s.add_dependency 'regexp_parser', '~> 2.4'
+  s.add_dependency 'regexp_parser', '~> 2.5'
   s.add_dependency 'regexp_property_values', '~> 1.0'
 end

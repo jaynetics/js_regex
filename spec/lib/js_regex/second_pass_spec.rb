@@ -12,8 +12,15 @@ describe JsRegex::SecondPass do
     it 'keeps 0..(n>1) quantifiers of the target group' do
       expect(/-(<){,2}a(?(1)>)-/).to\
       become(/(?:-(<){0}a(?:(?:>){0})-)|(?:-(<){1,2}a(?:(?:>))-)/)
-        .and keep_matching( '-<a>-', '-<<a>-')
+        .and keep_matching('-<a>-', '-<<a>-')
         .and keep_not_matching('-<a-', '-<<a-', '-a>-')
+    end
+
+    it 'keeps possessive quantifiers of the target group' do
+      expect(/-(<)?+a(?(1)>)/).to\
+      become(/(?:-(?=((<){0}))\2(?:)a(?:(?:>){0}))|(?:-(?=((<)))\3(?:)a(?:(?:>)))/)
+        .and keep_matching('-<a>', '-a')
+        .and keep_not_matching('-<a', '-<<a')
     end
 
     it 'replaces two-branch conditionals with equivalent alternations' do
