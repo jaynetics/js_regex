@@ -46,27 +46,33 @@ describe JsRegex::Converter::LiteralConverter do
     become('\\/').and keep_matching('a/b', with_results: %w[/])
   end
 
-  it 'converts astral plane literals to surrogate pairs' do
+  it 'converts astral plane literals to surrogate pairs', targets: [ES2009] do
     expect(/😁/).to\
     become('(?:\uD83D\uDE01)').and keep_matching('😁', with_results: %w[😁])
   end
 
-  it 'converts multiple astral plane literals to distinct surrogate pairs' do
+  it 'converts multiple astral plane literals to distinct surrogate pairs', targets: [ES2009] do
     expect(/😁😁/).to\
     become('(?:\uD83D\uDE01)(?:\uD83D\uDE01)')
       .and keep_matching('😁😁', with_results: %w[😁😁])
   end
 
-  it 'converts astral plane chars inside a bmp literal run' do
+  it 'converts astral plane chars inside a bmp literal run', targets: [ES2009] do
     expect(/a😁b/).to\
     become('a(?:\uD83D\uDE01)b')
       .and keep_matching('a😁b', with_results: %w[a😁b])
   end
 
-  it 'wraps substitutional surrogate pairs to ensure correct quantification' do
+  it 'wraps substitutional surrogate pairs to ensure correct quantification', targets: [ES2009] do
     expect(/😁{2}/).to\
     become('(?:\uD83D\uDE01){2}')
       .and keep_matching('😁😁😁😁', with_results: %w[😁😁 😁😁])
+  end
+
+  it 'keeps astral plane chars and adds the u-flag on ES2015+', targets: [ES2015, ES2018] do
+    expect(/😁😁/)
+      .to stay_the_same
+      .and keep_matching('😁😁', with_results: %w[😁😁])
   end
 
   it 'converts to a swapcase set if a local i-option applies' do

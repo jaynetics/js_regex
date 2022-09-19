@@ -66,6 +66,16 @@ describe JsRegex do
     end
   end
 
+  describe '#target' do
+    it 'is the given target' do
+      expect(JsRegex.new(//, target: ES2018).target).to eq 'ES2018'
+    end
+
+    it 'is ES2009 by default' do
+      expect(JsRegex.new(//).target).to eq 'ES2009'
+    end
+  end
+
   describe '::new!' do
     it 'returns a JsRegex' do
       expect(JsRegex.new!(//)).to be_a(JsRegex)

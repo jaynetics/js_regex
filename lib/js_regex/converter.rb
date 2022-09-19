@@ -13,6 +13,7 @@ class JsRegex
       expression:  SubexpressionConverter,
       free_space:  FreespaceConverter,
       group:       GroupConverter,
+      keep:        KeepConverter,
       literal:     LiteralConverter,
       meta:        MetaConverter,
       nonproperty: PropertyConverter,

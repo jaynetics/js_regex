@@ -9,10 +9,11 @@ class JsRegex
     attr_reader :children, :quantifier, :reference, :type
 
     TYPES = %i[
-      backref_num
+      backref
       captured_group
       conditional
       dropped
+      keep_mark
       plain
     ].freeze
 
@@ -46,7 +47,7 @@ class JsRegex
       case type
       when :dropped
         ''
-      when :backref_num, :captured_group, :plain
+      when :backref, :captured_group, :plain
         children.join << quantifier.to_s
       else
         raise TypeError.new(
@@ -59,6 +60,7 @@ class JsRegex
       self.children   = attrs.fetch(:children)   if attrs.key?(:children)
       self.quantifier = attrs.fetch(:quantifier) if attrs.key?(:quantifier)
       self.type       = attrs.fetch(:type)       if attrs.key?(:type)
+      self
     end
 
     private

@@ -10,16 +10,30 @@ class JsRegex
 
       def convert_data
         case subtype
-        when :name_ref, :number, :number_ref, :number_rel_ref then convert_ref
-        when :name_call, :number_call, :number_rel_call       then convert_call
+        when :name_ref then convert_name_ref
+        when :number, :number_ref, :number_rel_ref then convert_to_plain_num_ref
+        when :name_call, :number_call, :number_rel_call then convert_call
         else # name_recursion_ref, number_recursion_ref, ...
           warn_of_unsupported_feature
         end
       end
 
-      def convert_ref
-        position = context.new_capturing_group_position(target_position)
-        Node.new('\\', Node.new(position.to_s, type: :backref_num))
+      def convert_name_ref
+        if context.es_2018_or_higher?
+          # ES 2018+ supports named backrefs, but only the angled-bracket syntax
+          Node.new("\\k<#{expression.name}>", reference: new_position, type: :backref)
+        else
+          convert_to_plain_num_ref
+        end
+      end
+
+      def convert_to_plain_num_ref
+        position = new_position
+        Node.new("\\#{position}", reference: position, type: :backref)
+      end
+
+      def new_position
+        context.new_capturing_group_position(target_position)
       end
 
       def target_position
@@ -31,7 +45,10 @@ class JsRegex
           return warn_of_unsupported_feature('whole-pattern recursion')
         end
         context.increment_local_capturing_group_count
-        convert_expression(expression.referenced_expression.unquantified_clone)
+        target_copy = expression.referenced_expression.unquantified_clone
+        # avoid "Duplicate capture group name" error in JS
+        target_copy.token = :capture if target_copy.is?(:named, :group)
+        convert_expression(target_copy)
       end
     end
   end

@@ -41,7 +41,7 @@ class JsRegex
         when :control, :meta_sequence
           unicode_escape_codepoint
         when :literal
-          LiteralConverter.convert_data(expression.char)
+          LiteralConverter.convert_data(expression.char, context)
         when *ESCAPES_SHARED_BY_RUBY_AND_JS
           pass_through
         when :bell, :escape, :octal
@@ -52,9 +52,17 @@ class JsRegex
       end
 
       def convert_codepoint_list
-        expression.chars.each_with_object(Node.new) do |char, node|
-          node << LiteralConverter.convert_data(Regexp.escape(char))
+        if context.enable_u_option
+          split_codepoint_list
+        else
+          expression.chars.each_with_object(Node.new) do |char, node|
+            node << LiteralConverter.convert_data(Regexp.escape(char), context)
+          end
         end
+      end
+
+      def split_codepoint_list
+        expression.codepoints.map { |cp| "\\u{#{cp.to_s(16).upcase}}" }.join
       end
 
       def unicode_escape_codepoint

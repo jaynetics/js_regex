@@ -6,11 +6,25 @@ class JsRegex
   module SecondPass
     class << self
       def call(tree)
+        substitute_root_level_keep_mark(tree)
         alternate_conditional_permutations(tree)
         tree
       end
 
       private
+
+      def substitute_root_level_keep_mark(tree)
+        keep_mark_index = nil
+        tree.children.each.with_index do |child, i|
+          break keep_mark_index = i if child.type == :keep_mark
+        end
+        return unless keep_mark_index
+
+        pre = tree.children[0...keep_mark_index]
+        post = tree.children[(keep_mark_index + 1)..-1]
+        lookbehind = Node.new('(?<=', *pre, ')')
+        tree.update(children: [lookbehind, *post])
+      end
 
       def alternate_conditional_permutations(tree)
         permutations = conditional_tree_permutations(tree)
@@ -23,16 +37,16 @@ class JsRegex
       end
 
       def conditional_tree_permutations(tree)
-        all_conds = conditions(tree)
-        return [] if all_conds.empty?
+        conds = conditions(tree)
+        return [] if conds.empty?
 
         caps_per_branch = captured_group_count(tree)
 
-        condition_permutations(all_conds).map.with_index do |truthy_conds, i|
+        condition_permutations(conds).map.with_index do |truthy_conds, i|
           tree_permutation = tree.clone
           # find referenced groups and conditionals and make one-sided
           crawl(tree_permutation) do |node|
-            build_permutation(node, all_conds, truthy_conds, caps_per_branch, i)
+            build_permutation(node, conds, truthy_conds, caps_per_branch, i)
           end
         end
       end
@@ -63,16 +77,30 @@ class JsRegex
         end
       end
 
-      def build_permutation(node, all_conds, truthy_conds, caps_per_branch, i)
+      def build_permutation(node, conds, truthy_conds, caps_per_branch, i)
         truthy = truthy_conds.include?(node.reference)
 
-        if node.type.equal?(:captured_group) &&
-          all_conds.include?(node.reference)
-          adapt_referenced_group_to_permutation(node, truthy)
-        elsif node.type.equal?(:conditional)
-          adapt_conditional_to_permutation(node, truthy)
-        elsif node.type.equal?(:backref_num)
+        case node.type
+        when :backref
+          # We cannot use named groups or backrefs in the conditional expansion,
+          # their repetition would cause a "Duplicate capture group name" error in JS.
+          node.update(children: [
+            node.children.first.sub(/k<.*>/, node.reference.to_s)
+          ])
+          # backref numbers need to be incremented for subsequent "branches"
           adapt_backref_to_permutation(node, caps_per_branch, i)
+        when :captured_group
+          # Remove name, c.f. :backref handling.
+          node.update(children: [
+            node.children.first.sub(/\?<.*>/, ''),
+            *node.children[1..-1]
+          ])
+          # if the group is referenced by any condition, modulate its quantity
+          if conds.include?(node.reference)
+            adapt_referenced_group_to_permutation(node, truthy)
+          end
+        when :conditional
+          adapt_conditional_to_permutation(node, truthy)
         end
       end
 
@@ -91,8 +119,8 @@ class JsRegex
       end
 
       def adapt_backref_to_permutation(backref_node, caps_per_branch, i)
-        new_num = backref_node.children[0].to_i + caps_per_branch * i
-        backref_node.update(children: [new_num.to_s])
+        new_num = backref_node.reference + caps_per_branch * i
+        backref_node.update(children: ["\\#{new_num}"])
       end
 
       def min_quantify(node)

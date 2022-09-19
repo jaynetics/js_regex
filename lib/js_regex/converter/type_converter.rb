@@ -6,9 +6,11 @@ class JsRegex
     # Template class implementation.
     #
     class TypeConverter < JsRegex::Converter::Base
-      HEX_EXPANSION       = '[0-9A-Fa-f]'
-      NONHEX_EXPANSION    = '[^0-9A-Fa-f]'
-      LINEBREAK_EXPANSION = '(?:\r\n|[\n\v\f\r\u0085\u2028\u2029])'
+      HEX_EXPANSION           = '[0-9A-Fa-f]'
+      NONHEX_EXPANSION        = '[^0-9A-Fa-f]'
+      ES2018_HEX_EXPANSION    = '\p{AHex}'
+      ES2018_NONHEX_EXPANSION = '\P{AHex}'
+      LINEBREAK_EXPANSION     = '(?:\r\n|[\n\v\f\r\u0085\u2028\u2029])'
 
       def self.directly_compatible?(expression)
         case expression.token
@@ -23,8 +25,8 @@ class JsRegex
 
       def convert_data
         case subtype
-        when :hex then HEX_EXPANSION
-        when :nonhex then NONHEX_EXPANSION
+        when :hex then hex_expansion
+        when :nonhex then nonhex_expansion
         when :linebreak then LINEBREAK_EXPANSION
         when :digit, :space, :word
           return pass_through if self.class.directly_compatible?(expression)
@@ -34,6 +36,22 @@ class JsRegex
           negative_set_substitution
         else
           warn_of_unsupported_feature
+        end
+      end
+
+      def hex_expansion
+        if context.es_2018_or_higher? && context.enable_u_option
+          ES2018_HEX_EXPANSION
+        else
+          HEX_EXPANSION
+        end
+      end
+
+      def nonhex_expansion
+        if context.es_2018_or_higher? && context.enable_u_option
+          ES2018_NONHEX_EXPANSION
+        else
+          NONHEX_EXPANSION
         end
       end
 

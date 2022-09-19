@@ -218,8 +218,8 @@ describe JsRegex::Converter::Base do
     it 'returns the contents wrapped in a backreferenced lookahead' do
       result = converter.send(:wrap_in_backrefed_lookahead, %w[foo bar])
       expect(result.to_s).to eq('(?=(foobar))\\1(?:)')
-      expect(result.children[4].type).to eq :backref_num
-      expect(result.children[4].children).to eq %w[1]
+      expect(result.children[4].type).to eq :backref
+      expect(result.children[4].children).to eq %w[\\1]
     end
 
     it 'increases the count of captured groups' do

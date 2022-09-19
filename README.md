@@ -5,19 +5,21 @@
 [![Build Status](https://github.com/jaynetics/js_regex/workflows/gouteur/badge.svg)](https://github.com/jaynetics/js_regex/actions)
 [![codecov](https://codecov.io/gh/jaynetics/js_regex/branch/master/graph/badge.svg)](https://codecov.io/gh/jaynetics/js_regex)
 
-This is a Ruby gem that translates Ruby's regular expressions to the JavaScript flavor.
+This is a Ruby gem that translates Ruby's regular expressions to various JavaScript flavors.
 
 It can handle [far more](#SF) of Ruby's regex capabilities than a [search-and-replace approach](https://github.com/rails/rails/blob/b67043393b5ed6079989513299fe303ec3bc133b/actionpack/lib/action_dispatch/routing/inspector.rb#L42), and if any incompatibilities remain, it returns [helpful warnings](#HW) to indicate them.
 
 This means you'll have better chances of translating your regexes, and if there is still a problem, at least you'll know.
 
-### Installation
+## Installation
 
 Add it to your gemfile or run
 
     gem install js_regex
 
-### Usage
+## Usage
+
+### Basic usage
 
 In Ruby:
 
@@ -33,15 +35,6 @@ js_regex.source # => '0x[0-9A-Fa-f]+'
 js_regex.options # => 'i'
 ```
 
-An `options:` argument lets you force options:
-
-```ruby
-JsRegex.new(/x/i, options: 'g').to_h
-# => {source: 'x', options: 'gi'}
-```
-
-Set the [g flag](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/RegExp/global) like this if you want to use the regex to find or replace multiple matches per string.
-
 To inject the result directly into JavaScript, use `#to_s` or String interpolation. E.g. in inline JavaScript in HAML or SLIM you can simply do:
 
 ```javascript
@@ -53,10 +46,10 @@ Use `#to_json` if you want to send it as JSON or `#to_h` to include it as a data
 ```ruby
 render json: js_regex
 
-js_regex.to_h # => {source: '[0-9A-Fa-f]+', options: ''}
+js_regex.to_h # => { source: '[0-9A-Fa-f]+', options: '' }
 ```
 
-To turn the data attribute or parsed JSON back into a regex in JavaScript, use the `new RegExp()` constructor:
+To turn the data attribute or parsed JSON back into a RegExp in JavaScript, use the `new RegExp()` constructor:
 
 ```javascript
 var regExp = new RegExp(jsonObj.source, jsonObj.options);
@@ -72,13 +65,13 @@ js_regex = JsRegex.new(ruby_hex_regex)
 js_regex.warnings # => []
 ```
 
-If this array isn't empty, that means that your Ruby regex contained some [stuff that can't be carried over to JavaScript](#UF). You can still use the result, but this is not recommended. Most likely it won't match the same strings as your Ruby regex.
+If this array isn't empty, that means that your Ruby regex contained some stuff that can't be carried over to JavaScript. You can still use the result, but this is not recommended. Most likely it won't match the same strings as your Ruby regex.
 
 ```ruby
 advanced_ruby_regex = /(?<!fizz)buzz/
 
 js_regex = JsRegex.new(advanced_ruby_regex)
-js_regex.warnings # => ["Dropped unsupported negative lookbehind assertion '(?<!fizz)' at index 0"]
+js_regex.warnings # => ["Dropped unsupported negative lookbehind '(?<!fizz)' at index 0 (requires at least `target: 'ES2018'`)"]
 js_regex.source # => 'buzz'
 ```
 
@@ -93,81 +86,105 @@ rescue JsRegex::Error => e
 end
 ```
 
+### Modifying RegExp options/flags
+
+An `options:` argument lets you append options (a.k.a. "flags") to the output:
+
+```ruby
+JsRegex.new(/x/i, options: 'g').to_h
+# => { source: 'x', options: 'gi' }
+```
+
+Set the [g flag](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/RegExp/global) like this if you want to use the regex to find or replace multiple matches per string.
+
+### Converting for modern JavaScript
+
+A `target:` argument can be given to target more recent versions of JS and unlock extra features or nicer output. `'ES2009'` is the default target. `'ES2015'` and `'ES2018'` are also available. Please note that in 2022, Safari still doesn't fully support ES2018, so you should only use `'ES2018'` if you either don't need to support Safari or don't plan to use lookbehinds or word boundary anchors (see [supported features](#SF) for details).
+
+```ruby
+# ES2015 uses the u-flag to avoid lengthy escape sequences
+JsRegex.new(/😋/, target: 'ES2009').to_s # => "/(?:\\uD83D\\uDE0B)/"
+JsRegex.new(/😋/, target: 'ES2015').to_s # => "/😋/u"
+
+# ES2018 adds support for lookbehinds, properties etc.
+JsRegex.new(/foo\K\p{ascii}/, target: 'ES2015').to_s # => "/foo[\x00-\x7f]/"
+JsRegex.new(/foo\K\p{ascii}/, target: 'ES2018').to_s # => "/(?<=foo)\p{ASCII}/"
+```
+
 <a name='SF'></a>
-### Supported Features
+## Supported Features
 
-In addition to the conversions supported by the default approach, this gem will correctly handle the following features:
+These are the supported features by target.
 
-| Description                   | Example               |
-|-------------------------------|-----------------------|
-| escaped meta chars            | \\\A                  |
-| dot matching astral chars     | /./ =~ '😋'           |
-| Ruby's multiline mode [1]     | /.+/m                 |
-| Ruby's free-spacing mode      | / http (s?) /x        |
-| atomic groups [2]             | a(?>bc\|b)c           |
-| conditionals [2]              | (?(1)b), (?('a')b\|c) |
-| option groups/switches        | (?i-m:..), (?x)..     |
-| local encoding options        | (?u:\w)               |
-| absence groups                | /\\\*(?~\\\*/)\\\*/   |
-| possessive quantifiers [2]    | ++, *+, ?+            |
-| chained quantifiers           | /A{4}{6}/ =~ 'A' * 24 |
-| hex types \h and \H           | \H\h{6}               |
-| bell and escape shortcuts     | \a, \e                |
-| all literals, including \n    | eval("/\n/")          |
-| newline-ready anchor \Z       | last word\Z           |
-| generic linebreak \R          | data.split(/\R/)      |
-| meta and control escapes      | /\M-\C-X/             |
-| numeric backreferences        | \1, \k&lt;1&gt;       |
-| relative backreferences       | \k&lt;-1&gt;          |
-| named backreferences          | \k&lt;foo&gt;         |
-| numeric subexpression calls   | \g&lt;1&gt;           |
-| relative subexpression calls  | \g&lt;-1&gt;          |
-| named subexpression calls     | \g&lt;foo&gt;         |
-| nested sets                   | [a-z[A-Z]]            |
-| types in sets                 | [a-z\h]               |
-| properties in sets            | [a-z\p{sc}]           |
-| set intersections             | [\w&amp;&amp;[^a]]    |
-| recursive set negation        | [^a[^b]]              |
-| posix types                   | [[:alpha:]]           |
-| posix negations               | [[:^alpha:]]          |
-| codepoint lists               | \u{61 63 1F601}       |
-| unicode properties            | \p{Arabic}, \p{Dash}  |
-| unicode abbreviations         | \p{Mong}, \p{Sc}      |
-| unicode negations             | \p{^L}, \P{L}, \P{^L} |
-| astral plane properties [2]   | \p{emoji}             |
-| astral plane literals [2]     | &#x1f601;             |
-| astral plane ranges [2]       | [&#x1f601;-&#x1f632;] |
+Unsupported features are at the bottom of this list.
 
+When converting a Regexp that contains unsupported features, corresponding parts of the pattern are dropped from the result and warnings are emitted.
+
+
+| Description                 | Example              | ES2009 | ES2015 | ES2018 |
+|-----------------------------|----------------------|--------|--------|--------|
+| escaped meta chars          | \\\A                 | ✓      | ✓      | ✓      |
+| dot matching astral chars   | /./ =~ '😋'          | ✓      | ✓      | ✓      |
+| Ruby's multiline mode [1]   | /.+/m                | ✓      | ✓      | ✓      |
+| Ruby's free-spacing mode    | / http (s?) /x       | ✓      | ✓      | ✓      |
+| possessive quantifiers [2]  | ++, *+, ?+           | ✓      | ✓      | ✓      |
+| atomic groups [2]           | a(?>bc\|b)c          | ✓      | ✓      | ✓      |
+| conditionals [2]            | (?('a')b\|c)         | ✓      | ✓      | ✓      |
+| option groups/switches      | (?i-m:..), (?x)..    | ✓      | ✓      | ✓      |
+| local encoding options      | (?u:\w)              | ✓      | ✓      | ✓      |
+| absence groups              | /\\\*(?~\\\*/)\\\*/  | ✓      | ✓      | ✓      |
+| chained quantifiers         | /A{2}{4}/ =~ 'A' * 8 | ✓      | ✓      | ✓      |
+| hex types \h and \H         | \H\h{6}              | ✓      | ✓      | ✓      |
+| bell and escape shortcuts   | \a, \e               | ✓      | ✓      | ✓      |
+| all literals, including \n  | eval("/\n/")         | ✓      | ✓      | ✓      |
+| newline-ready anchor \Z     | last word\Z          | ✓      | ✓      | ✓      |
+| generic linebreak \R        | data.split(/\R/)     | ✓      | ✓      | ✓      |
+| meta and control escapes    | /\M-\C-X/            | ✓      | ✓      | ✓      |
+| numeric backreferences      | \1, \k&lt;1&gt;      | ✓      | ✓      | ✓      |
+| relative backreferences     | \k&lt;-1&gt;         | ✓      | ✓      | ✓      |
+| named backreferences        | \k&lt;foo&gt;        | ✓      | ✓      | ✓      |
+| numeric subexp calls        | \g&lt;1&gt;          | ✓      | ✓      | ✓      |
+| relative subexp calls       | \g&lt;-1&gt;         | ✓      | ✓      | ✓      |
+| named subexp calls          | \g&lt;foo&gt;        | ✓      | ✓      | ✓      |
+| nested sets                 | [a-z[A-Z]]           | ✓      | ✓      | ✓      |
+| types in sets               | [a-z\h]              | ✓      | ✓      | ✓      |
+| properties in sets          | [a-z\p{sc}]          | ✓      | ✓      | ✓      |
+| set intersections           | [\w&amp;&amp;[^a]]   | ✓      | ✓      | ✓      |
+| recursive set negation      | [^a[^b]]             | ✓      | ✓      | ✓      |
+| posix types                 | [[:alpha:]]          | ✓      | ✓      | ✓      |
+| posix negations             | [[:^alpha:]]         | ✓      | ✓      | ✓      |
+| codepoint lists             | \u{61 63 1F601}      | ✓      | ✓      | ✓      |
+| unicode properties          | \p{Dash}, \p{Thai}   | ✓      | ✓      | ✓      |
+| unicode abbreviations       | \p{Mong}, \p{Sc}     | ✓      | ✓      | ✓      |
+| unicode negations           | \p{^L}, \P{L}        | ✓      | ✓      | ✓      |
+| astral plane properties [2] | \p{emoji}            | ✓      | ✓      | ✓      |
+| astral plane literals [2]   | 😁                   | ✓      | ✓      | ✓      |
+| astral plane ranges [2]     | [😁-😲]              | ✓      | ✓      | ✓      |
+| capturing group names [3]   | (?&lt;a&gt;, (?'a'   | X      | X      | ✓      |
+| lookbehinds                 | (?<=a), (?<!a)       | X      | X      | ✓ [4]  |
+| keep marks                  | \K                   | X      | X      | ✓ [4]  |
+| sane word boundaries [5]    | \b, \B               | X      | X      | ✓ [4]  |
+| nested keep mark            | /a(b\Kc)d/           | X      | X      | X      |
+| whole pattern recursion     | \g<0>                | X      | X      | X      |
+| backref by recursion level  | \k<1+1>              | X      | X      | X      |
+| previous match anchor       | \G                   | X      | X      | X      |
+| extended grapheme type      | \X                   | X      | X      | X      |
+| variable length absence     | (?~(a+\|bar))        | X      | X      | X      |
+| comment groups [3]          | (?#comment)          | X      | X      | X      |
+| inline comments [3]         | /[a-z] # comment/x   | X      | X      | X      |
 
 [1] Keep in mind that [Ruby's multiline mode](http://ruby-doc.org/core-2.1.1/Regexp.html#class-Regexp-label-Options) is more of a "dot-all mode" and totally different from [JavaScript's multiline mode](http://javascript.info/regexp-multiline-mode).
 
 [2] See [here](#EX) for information about how this is achieved.
 
-<a name='UF'></a>
-### Unsupported Features
+[3] These are dropped without warning because they can be removed without affecting the matching behavior.
 
-Currently, the following functionalities can't be carried over to JavaScript. If you try to convert a regex that uses these features, corresponding parts of the pattern will be dropped from the result.
+[4] Not compatible with Safari. Regexps with this feature, transpiled for this target, will lead to JS errors in Safari because it [still doesn't support lookbehinds](https://bugs.webkit.org/show_bug.cgi?id=174931).
 
-In most of these cases that will lead to a warning, but changes that are not considered risky happen without warning. E.g. comments are removed silently because that won't lead to any operational differences between the Ruby and JavaScript regexes.
-
-| Description                    | Example               | Warning |
-|--------------------------------|-----------------------|---------|
-| lookbehind                     | (?&lt;=, (?&lt;!, \K  | yes     |
-| whole pattern recursion        | \g<0>                 | yes     |
-| backref by recursion level     | \k<1+1>               | yes     |
-| previous match anchor          | \G                    | yes     |
-| extended grapheme type         | \X                    | yes     |
-| variable length absence groups | (?~(a+\|bar))         | yes     |
-| working word boundary anchors  | \b, \B                | yes [3] |
-| capturing group names          | (?&lt;a&gt;, (?'a'    | no      |
-| comment groups                 | (?#comment)           | no      |
-| inline comments (in x-mode)    | /[a-z] # comment/x    | no      |
-
-
-[3] \b and \B *are* carried over, but generate a warning because they only recognize ASCII word chars in JavaScript. This holds true for all JavaScript versions and RegExp modes.
+[5] When targetting ES2018, \b and \B are replaced with a lookbehind/lookahead solution. For other targets, they are carried over as is, but generate a warning because they only recognize ASCII word chars in JavaScript (irrespective of the `u`-flag).
 
 <a name='EX'></a>
-### How it Works
+## How it Works
 
 JsRegex uses the gem [regexp_parser](https://github.com/ammar/regexp_parser) to parse a Ruby Regexp.
 
@@ -181,24 +198,22 @@ Many Regexp tokens work in JavaScript just as they do in Ruby, or allow for a st
 
 **Atomic groups and possessive quantifiers** are missing in JavaScript, so the only way to emulate their behavior is by substituting them with [backreferenced lookahead groups](http://instanceof.me/post/52245507631/regex-emulate-atomic-grouping-with-lookahead).
 
-**Astral plane characters** convert to ranges of [surrogate pairs](https://dmitripavlutin.com/what-every-javascript-developer-should-know-about-unicode/#24surrogatepairs), so they don't require ES6.
+**Astral plane characters** convert to ranges of [surrogate pairs](https://dmitripavlutin.com/what-every-javascript-developer-should-know-about-unicode/#24surrogatepairs) when targetting ES2009 (which doesn't support astral plane chars).
 
 **Properties and posix classes** expand to equivalent character sets, or surrogate pair alternations if necessary. The gem [regexp_property_values](https://github.com/jaynetics/regexp_property_values) helps by reading out their codepoints from Onigmo.
 
 **Character sets a.k.a. bracket expressions** offer many more features in Ruby compared to JavaScript. To work around this, JsRegex calls on the gem [character_set](https://github.com/jaynetics/character_set) to calculate the matched codepoints of the whole set and build a completely new set string for all except the most simple cases.
 
-**Conditionals** expand to equivalent expressions in the second pass, e.g. `(<)?foo(?(1)>)` expands to `(?:<foo>|foo)` (simplified example).
+**Conditionals** expand to equivalent alternations in the second pass, e.g. `(<)?foo(?(1)>)` expands to `(?:<foo>|foo)` (simplified example).
 
 **Subexpression calls** are replaced with the conversion result of their target, e.g. `(.{3})\g<1>` expands to `(.{3})(.{3})`.
 
 The tricky bit here is that these expressions may be nested, and that their expansions may increase the capturing group count. This means that any following backreferences need an update. E.g. <code>(.{3})\g<1>(.)<b>\2</b></code> (which matches strings like "FooBarXX") converts to <code>(.{3})(.{3})(.)<b>\3</b></code>.
 
-### Contributions
+## Contributions
 
 Feel free to send suggestions, point out issues, or submit pull requests.
 
-### Outlook
+## Outlook
 
-Possible future improvements might include an "ES6 mode" using the [u flag](https://javascript.info/regexp-unicode), which would allow for more concise representations of astral plane properties and sets.
-
-As far as supported conversions are concerned, this gem is pretty much feature-complete. Most of the unsupported features listed above are either impossible or impractical to replicate in JavaScript.
+The gem is pretty feature-complete at this point. The remaining unsupported features listed above are either impossible or impractical to replicate in JavaScript. The generated output could still be made more concise in some cases, maybe through usage of the `s`-flag. Finally, `ES2018` might become the default target when IE is sufficiently dead and Safari catches up with lookbehinds.

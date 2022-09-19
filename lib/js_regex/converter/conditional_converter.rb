@@ -10,12 +10,12 @@ class JsRegex
 
       def convert_data
         case subtype
-        when :open then mark_conditional
+        when :open then mark_conditional_for_second_pass
         else warn_of_unsupported_feature
         end
       end
 
-      def mark_conditional
+      def mark_conditional_for_second_pass
         reference = expression.referenced_expression.number
         node = Node.new('(?:', reference: reference, type: :conditional)
         expression.branches.each do |branch|

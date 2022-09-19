@@ -10,19 +10,30 @@ class JsRegex
 
       def convert_data
         case subtype
-        when :capture, :named then build_group
+        when :capture then build_group
+        when :named then build_named_group
         when :atomic then emulate_atomic_group
         when :comment then drop_without_warning
         when :options, :options_switch then build_options_group
         when :passive then build_passive_group
         when :absence then build_absence_group_if_simple
-        else build_unsupported_group
+        else warn_of_unsupported_feature
+        end
+      end
+
+      def build_named_group
+        if context.es_2018_or_higher?
+          # ES 2018+ supports named groups, but only the angled-bracket syntax
+          build_group(head: "(?<#{expression.name}>")
+        else
+          build_group
         end
       end
 
       def emulate_atomic_group
         if context.in_atomic_group
-          build_unsupported_group('nested atomic group')
+          warn_of_unsupported_feature('nested atomic group')
+          build_passive_group
         else
           context.start_atomic_group
           result = wrap_in_backrefed_lookahead(convert_subexpressions)
@@ -66,11 +77,6 @@ class JsRegex
         head = "(?:(?:.|\\n){,#{expression.inner_match_length.min - 1}}|(?:(?!"
         tail = ')(?:.|\n))*)'
         build_group(head: head, tail: tail, capturing: false)
-      end
-
-      def build_unsupported_group(description = nil)
-        warn_of_unsupported_feature(description)
-        build_passive_group
       end
 
       def build_group(opts = {})

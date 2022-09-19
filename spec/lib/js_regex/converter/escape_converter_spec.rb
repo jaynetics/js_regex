@@ -113,15 +113,27 @@ describe JsRegex::Converter::EscapeConverter do
     become(/\x1B/).and keep_matching("ab\ec", with_results: ["\e"])
   end
 
-  it 'converts codepoint lists, escaping meta chars and using surrogates' do
+  it 'converts codepoint lists, escaping meta chars and using surrogates', targets: [ES2009] do
     expect(/\u{61 a 28 1F601}/).to\
     become('a\n\((?:\uD83D\uDE01)')
       .and keep_matching("_a\n(😁_", with_results: %W[a\n(😁])
   end
 
-  it 'places quantifiers at the end of codepoint list conversions' do
+  it 'splits codepoint lists on ES2015+', targets: [ES2015, ES2018] do
+    expect(/\u{61 a 28 1F601}/).to\
+    become(/\u{61}\u{A}\u{28}\u{1F601}/)
+      .and keep_matching("_a\n(😁_", with_results: %W[a\n(😁])
+  end
+
+  it 'places quantifiers at the end of codepoint list conversions', targets: [ES2009] do
     expect(/\u{61 62 63}+/).to\
     become(/abc+/).and keep_matching('_abca_abcc_', with_results: %w[abc abcc])
+  end
+
+  it 'places quantifiers at the end of split codepoint lists in ES2015+', targets: [ES2015, ES2018] do
+    expect(/\u{61 62 63}+/).to\
+    become(/\u{61}\u{62}\u{63}+/)
+      .and keep_matching('_abca_abcc_', with_results: %w[abc abcc])
   end
 
   it 'converts control sequences to unicode escapes' do

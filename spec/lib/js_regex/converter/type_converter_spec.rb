@@ -28,14 +28,24 @@ describe JsRegex::Converter::TypeConverter do
       .to keep_matching(" ").and keep_not_matching(' ')
   end
 
-  it 'substitutes the hex type "\h" with an equivalent set' do
+  it 'substitutes the hex type "\h" with an equivalent set', targets: [ES2009, ES2015] do
     expect(/\h+/).to\
     become(/[0-9A-Fa-f]+/).and keep_matching('f').and keep_not_matching('x')
   end
 
-  it 'substitutes the nonhex type "\H" with an equivalent set' do
+  it 'substitutes the hex type "\h" with an equivalent set', targets: [ES2018] do
+    expect(/\h+/).to\
+    become(/\p{AHex}+/).and keep_matching('f').and keep_not_matching('x')
+  end
+
+  it 'substitutes the nonhex type "\H" with an equivalent set', targets: [ES2009, ES2015] do
     expect(/\H+/).to\
     become(/[^0-9A-Fa-f]+/).and keep_matching('x').and keep_not_matching('f')
+  end
+
+  it 'substitutes the nonhex type "\H" with an equivalent property on ES2018+', targets: [ES2018] do
+    expect(/\H+/).to\
+    become(/\P{AHex}+/).and keep_matching('x').and keep_not_matching('f')
   end
 
   it 'substitutes the generic linebreak type "\R"' do

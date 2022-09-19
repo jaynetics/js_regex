@@ -4,6 +4,30 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](http://keepachangelog.com/en/1.0.0/)
 and this project adheres to [Semantic Versioning](http://semver.org/spec/v2.0.0.html).
 
+## Unreleased
+
+### Added
+
+- added an optional `target:` argument
+  - `target: 'ES2009'`
+    - is the default
+    - does not make any changes from previous versions of `js_regex`
+  - `target: 'ES2015'`
+    - is compatible with all modern browsers (not with IE11 or below)
+    - uses the `u` flag in some cases to avoid lengthy escape sequences
+  - `target: 'ES2018'`
+    - is compatible with most modern browsers, but only partially with Safari
+    - supports lookbehinds (will cause JS errors in Safari, see README!)
+    - supports keep marks (`\K` - again not for Safari)
+    - adds better word-boundary anchor conversions (`\b`, `\B` - again not for Safari)
+    - brings more concise representations of unicode properties, posix classes, etc.
+    - preserves capturing group and backreference names (`(?<x>.)`, `\k<x>`)
+
+### Fixed
+
+- support for forcing the 's' flag via the `options` argument
+- fixed handling of astral plane literals with a codepoint above `0xFFFFF` (basically just private use chars)
+
 ## [3.7.2] - 2022-05-27
 
 - fixed handling of `{,m}` quantifiers; thanks to https://github.com/serch

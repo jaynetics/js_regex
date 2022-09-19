@@ -14,12 +14,23 @@ class JsRegex
       def convert_data
         case subtype
         when :lookahead, :nlookahead
-          build_group(head: pass_through, capturing: false)
+          keep_as_is
+        when :lookbehind
+          return keep_as_is if context.es_2018_or_higher?
+
+          warn_of_unsupported_feature('lookbehind', min_target: Target::ES2018)
+          build_passive_group
         when :nlookbehind
-          warn_of_unsupported_feature('negative lookbehind assertion')
-        else # :lookbehind, ...
-          build_unsupported_group
+          return keep_as_is if context.es_2018_or_higher?
+
+          warn_of_unsupported_feature('negative lookbehind', min_target: Target::ES2018)
+        else
+          warn_of_unsupported_feature
         end
+      end
+
+      def keep_as_is
+        build_group(head: pass_through, capturing: false)
       end
     end
   end

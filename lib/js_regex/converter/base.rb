@@ -51,10 +51,14 @@ class JsRegex
         Converter.convert(expression, context)
       end
 
-      def warn_of_unsupported_feature(description = nil)
+      def warn_of_unsupported_feature(description = nil, min_target: nil)
         description ||= "#{subtype} #{expression.type}".tr('_', ' ')
-        full_desc = "#{description} '#{expression}'"
-        warn_of("Dropped unsupported #{full_desc} at index #{expression.ts}")
+        full_text = "Dropped unsupported #{description} '#{expression}' "\
+                    "at index #{expression.ts}"
+        if min_target
+          full_text += " (requires at least `target: '#{min_target}'`)"
+        end
+        warn_of(full_text)
         drop
       end
 
@@ -68,11 +72,11 @@ class JsRegex
       alias drop_without_warning drop
 
       def wrap_in_backrefed_lookahead(content)
-        backref_num = context.capturing_group_count + 1
-        backref_num_node = Node.new(backref_num.to_s, type: :backref_num)
+        number = context.capturing_group_count + 1
+        backref_node = Node.new("\\#{number}", reference: number, type: :backref)
         context.increment_local_capturing_group_count
         # an empty passive group (?:) is appended as literal digits may follow
-        Node.new('(?=(', *content, '))\\', backref_num_node, '(?:)')
+        Node.new('(?=(', *content, '))', backref_node, '(?:)')
       end
     end
   end

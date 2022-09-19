@@ -18,9 +18,15 @@ describe JsRegex::Converter::SetConverter do
     become(/[0-9A-Fa-fw-y]+/).and keep_matching('zxa3n', with_results: %w[xa3])
   end
 
-  it 'handles the hex type in negative sets' do
+  it 'handles the hex type in negative sets', targets: [ES2009] do
     expect(/[^x-y\h]+/).to\
     become('(?:[\x00-\x2F:-@G-`g-wz-\uD7FF\uE000-\uFFFF]|[\uD800-\uDBFF][\uDC00-\uDFFF])+')
+      .and keep_matching('zxa3n', with_results: %w[z n])
+  end
+
+  it 'handles the hex type in negative sets on ES2015+', targets: [ES2015, ES2018] do
+    expect(/[^x-y\h]+/).to\
+    become('[\x00-\x2F:-@G-`g-wz-\uD7FF\uE000-\u{10FFFF}]+')
       .and keep_matching('zxa3n', with_results: %w[z n])
   end
 
@@ -43,9 +49,15 @@ describe JsRegex::Converter::SetConverter do
       .to keep_matching('ñbäõ_ß', with_results: %w[bä _ß])
   end
 
-  it 'handles negative posix classes in sets' do
+  it 'handles negative posix classes in sets', targets: [ES2009] do
     expect(/[x-z[:^ascii:]]+/).to\
     become('(?:[x-z\x80-\uD7FF\uE000-\uFFFF]|[\uD800-\uDBFF][\uDC00-\uDFFF])+')
+      .and keep_matching('xañbäõ_ßa😁', with_results: %w[x ñ äõ ß 😁])
+  end
+
+  it 'handles negative posix classes in sets on ES2015+', targets: [ES2015, ES2018] do
+    expect(/[x-z[:^ascii:]]+/).to\
+    become('[x-z\x80-\uD7FF\uE000-\u{10FFFF}]+').with_options('u')
       .and keep_matching('xañbäõ_ßa😁', with_results: %w[x ñ äõ ß 😁])
   end
 
@@ -64,9 +76,15 @@ describe JsRegex::Converter::SetConverter do
     become(/[a-z]+/).and keep_matching('abc', with_results: %w[abc])
   end
 
-  it 'handles properties in negative sets' do
+  it 'handles properties in negative sets', targets: [ES2009] do
     expect(/[^a\p{ascii}]+/).to\
     become('(?:[\x80-\uD7FF\uE000-\uFFFF]|[\uD800-\uDBFF][\uDC00-\uDFFF])+')
+      .and keep_matching('a1ü!😁', with_results: %w[ü 😁])
+  end
+
+  it 'handles properties in negative sets on ES2015+', targets: [ES2015, ES2018] do
+    expect(/[^a\p{ascii}]+/).to\
+    become('[\x80-\uD7FF\uE000-\u{10FFFF}]+')
       .and keep_matching('a1ü!😁', with_results: %w[ü 😁])
   end
 
@@ -75,14 +93,23 @@ describe JsRegex::Converter::SetConverter do
     become(/[c-x]/).and keep_matching('aftz', with_results: %w[f t])
   end
 
-  it 'extracts astral plane set members' do
+  it 'extracts astral plane set members', targets: [ES2009] do
     expect(/[a-z😁0-9]/).to\
     become('(?:[0-9a-z]|\uD83D\uDE01)')
       .and keep_matching('a😐😁A', with_results: %w[a 😁])
   end
 
-  it 'extracts 0x10000 and higher' do
+  it 'keeps astral plane set members on ES2015+', targets: [ES2015, ES2018] do
+    expect(/[a-z😁0-9]/).to stay_the_same
+      .and keep_matching('a😐😁A', with_results: %w[a 😁])
+  end
+
+  it 'extracts 0x10000 and higher', targets: [ES2009] do
     expect(/[𐀀]/).to become('(?:\uD800\uDC00)')
+  end
+
+  it 'keeps 0x10000 and higher on ES2015+', targets: [ES2015, ES2018] do
+    expect(/[𐀀]/).to become('[𐀀]')
   end
 
   it 'does not extract 0xFFFF and lower' do
@@ -94,9 +121,13 @@ describe JsRegex::Converter::SetConverter do
     expect(/[😁-😲]/).to keep_matching('a😐c', with_results: %w[😐])
   end
 
-  it 'converts astral plane ranges to surrogate ranges' do
+  it 'converts astral plane ranges to surrogate ranges on ES2009', targets: [ES2009] do
     expect(/[a\u{10000}-\u{10FFFF}]/).to\
     become('(?:[a]|[\uD800-\uDBFF][\uDC00-\uDFFF])')
+  end
+
+  it 'keeps astral plane ranges on ES2015+', targets: [ES2015, ES2018] do
+    expect(/[a\u{10000}-\u{10FFFF}]/).to stay_the_same
   end
 
   it 'preserves bmp unicode ranges' do
@@ -155,9 +186,15 @@ b
       become(/[0-9a-z]+/).and keep_matching('ab_12', with_results: %w[ab 12])
     end
 
-    it 'handles nested sets in negative sets' do
+    it 'handles nested sets in negative sets', targets: [ES2009] do
       expect(/[^a-c[0-9]]+/).to\
       become('(?:[\x00-\x2F:-`d-\uD7FF\uE000-\uFFFF]|[\uD800-\uDBFF][\uDC00-\uDFFF])+')
+        .and keep_matching('abcxyz123😁', with_results: %w[xyz 😁])
+    end
+
+    it 'handles nested sets in negative sets on ES2015+', targets: [ES2015, ES2018] do
+      expect(/[^a-c[0-9]]+/).to\
+      become('[\x00-\x2F:-`d-\uD7FF\uE000-\u{10FFFF}]+')
         .and keep_matching('abcxyz123😁', with_results: %w[xyz 😁])
     end
 
@@ -172,9 +209,15 @@ b
         .and keep_matching('bmx_123', with_results: %w[b x 12])
     end
 
-    it 'can flatten multiple sets nested in negative sets' do
+    it 'can flatten multiple sets nested in negative sets', targets: [ES2009] do
       expect(/[^a-c[x-z][0-2]]+/).to\
       become('(?:[\x00-\x2F3-`d-w{-\uD7FF\uE000-\uFFFF]|[\uD800-\uDBFF][\uDC00-\uDFFF])+')
+        .and keep_matching('bmx_1230😁', with_results: %w[m _ 3 😁])
+    end
+
+    it 'can flatten multiple sets nested in negative sets on ES2015+', targets: [ES2015, ES2018] do
+      expect(/[^a-c[x-z][0-2]]+/).to\
+      become('[\x00-\x2F3-`d-w{-\uD7FF\uE000-\u{10FFFF}]+')
         .and keep_matching('bmx_1230😁', with_results: %w[m _ 3 😁])
     end
 
@@ -184,15 +227,27 @@ b
         .and keep_matching('bmx_123', with_results: %w[b x 12])
     end
 
-    it 'can flatten deeply nested sets in negative sets' do
+    it 'can flatten deeply nested sets in negative sets', targets: [ES2009] do
       expect(/[^a-c[x-z[0-2]]]+/).to\
       become('(?:[\x00-\x2F3-`d-w{-\uD7FF\uE000-\uFFFF]|[\uD800-\uDBFF][\uDC00-\uDFFF])+')
         .and keep_matching('bmx_1230😁', with_results: %w[m _ 3 😁])
     end
 
-    it 'can handle deeply nested negative sets' do
+    it 'can flatten deeply nested sets in negative sets on ES2015+', targets: [ES2015, ES2018] do
+      expect(/[^a-c[x-z[0-2]]]+/).to\
+      become('[\x00-\x2F3-`d-w{-\uD7FF\uE000-\u{10FFFF}]+')
+        .and keep_matching('bmx_1230😁', with_results: %w[m _ 3 😁])
+    end
+
+    it 'can handle deeply nested negative sets', targets: [ES2009] do
       expect(/[a-c[x-z[^0-2]]]+/).to\
       become('(?:[\x00-\x2F3-\uD7FF\uE000-\uFFFF]|[\uD800-\uDBFF][\uDC00-\uDFFF])+')
+        .and keep_matching('bmx_1230😁', with_results: %w[bmx_ 3 😁])
+    end
+
+    it 'can handle deeply nested negative sets on ES2015+', targets: [ES2015, ES2018] do
+      expect(/[a-c[x-z[^0-2]]]+/).to\
+      become('[\x00-\x2F3-\uD7FF\uE000-\u{10FFFF}]+')
         .and keep_matching('bmx_1230😁', with_results: %w[bmx_ 3 😁])
     end
 
@@ -211,9 +266,15 @@ b
       expect(/[^\uFFFF]/).to stay_the_same.and keep_matching("a\uFFFFb", with_results: %w[a b])
     end
 
-    it 'can handle astral members in negative sets' do
+    it 'can handle astral members in negative sets', targets: [ES2009] do
       expect(/[^\u{10000}]/).to\
       become('(?:[\x00-\uD7FF\uE000-\uFFFF]|\uD800[\uDC01-\uDFFF]|[\uD801-\uDBFF][\uDC00-\uDFFF])')
+        .and keep_matching("a\u{10000}\u{10001}", with_results: ['a', "\u{10001}"])
+    end
+
+    it 'can handle astral members in negative sets on ES2015+', targets: [ES2015, ES2018] do
+      expect(/[^\u{10000}]/).to\
+      become('[\x00-\uD7FF\uE000-\uFFFF\u{10001}-\u{10FFFF}]')
         .and keep_matching("a\u{10000}\u{10001}", with_results: ['a', "\u{10001}"])
     end
   end

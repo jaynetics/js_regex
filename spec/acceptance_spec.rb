@@ -2,17 +2,27 @@ require 'spec_helper'
 require 'uri'
 
 describe JsRegex do
-  it 'can handle a complex email validation regex' do
-    expect(
-      /[a-z0-9!$#%&'*+=?^_\`\{|\}~-]+
+  let(:email_validation_regex) do
+    /
+      [a-z0-9!$#%&'*+=?^_\`\{|\}~-]+
       (?:\.[a-z0-9!$#%&'*+=?^_\`\{|}~-]+)*@
       (?:[a-z0-9](?:[a-z0-9-]*[a-z0-9])?\.)+
       (?:[A-Z]{2}|com|org|net|edu|gov|mil|
-      biz|info|mobi|name|aero|asia|jobs|museum)\b/xi
-    )
-    .to generate_warning("'\\b' at index 210 only works at ASCII word boundaries")
-    .and keep_matching('a@b me@s-w.com x.y@place.edu #ö+.',
-                       with_results: %w[me@s-w.com x.y@place.edu])
+      biz|info|mobi|name|aero|asia|jobs|museum)\b
+    /xi
+  end
+
+  it 'can handle a complex email validation regex', targets: [ES2009, ES2015] do
+    expect(email_validation_regex)
+      .to generate_warning("'\\b' at index 217 only works at ASCII word boundaries")
+      .and keep_matching('a@b me@s-w.com x.y@place.edu #ö+.',
+                         with_results: %w[me@s-w.com x.y@place.edu])
+  end
+
+  it 'can handle the email regex without warning on ES2018+', targets: [ES2018] do
+    expect(email_validation_regex)
+      .to keep_matching('a@b me@s-w.com x.y@place.edu #ö+.',
+                        with_results: %w[me@s-w.com x.y@place.edu])
   end
 
   it 'can handle a complex user name validation regex' do

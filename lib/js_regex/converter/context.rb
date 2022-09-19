@@ -11,12 +11,36 @@ class JsRegex
                   :in_atomic_group,
                   :warnings
 
-      def initialize(case_insensitive_root: false)
+      def initialize(case_insensitive_root: false, target: nil)
         self.added_capturing_groups_after_group = Hash.new(0)
         self.capturing_group_count = 0
         self.warnings = []
+        self.required_options_hash = {}
 
         self.case_insensitive_root = case_insensitive_root
+        self.target = target
+      end
+
+      # target context
+
+      def es_2015_or_higher?
+        target >= Target::ES2015
+      end
+
+      def es_2018_or_higher?
+        target >= Target::ES2018
+      end
+
+      # these methods allow appending options to the final Conversion output
+
+      def enable_u_option
+        return false unless es_2015_or_higher?
+
+        required_options_hash['u'] = true
+      end
+
+      def required_options
+        required_options_hash.keys
       end
 
       # group context
@@ -54,7 +78,9 @@ class JsRegex
 
       private
 
-      attr_accessor :added_capturing_groups_after_group
+      attr_accessor :added_capturing_groups_after_group,
+                    :required_options_hash,
+                    :target
 
       attr_writer :capturing_group_count,
                   :case_insensitive_root,

@@ -19,14 +19,25 @@ describe JsRegex::Converter::GroupConverter do
     expect(/(?:abc)/).to stay_the_same.and keep_matching('abc', with_results: %w[abc])
   end
 
-  it 'removes names from ab-named groups' do
+  it 'removes names from ab-named groups', targets: [ES2009, ES2015] do
     expect(/(?<protocol>http|ftp)/).to\
     become(/(http|ftp)/).and keep_matching('ftp', with_results: %w[ftp])
   end
 
-  it 'removes names from sq-named groups' do
+  it 'keeps names for ab-named groups on ES2018+', targets: [ES2018] do
+    expect(/(?<protocol>http|ftp)/)
+      .to stay_the_same
+      .and keep_matching('ftp', with_results: %w[ftp])
+  end
+
+  it 'removes names from sq-named groups', targets: [ES2009, ES2015] do
     expect(/(?'protocol'http|ftp)/).to\
     become(/(http|ftp)/).and keep_matching('ftp', with_results: %w[ftp])
+  end
+
+  it 'converts sq-names to ab-nameson ES2018+', targets: [ES2018] do
+    expect(/(?'protocol'http|ftp)/).to\
+    become(/(?<protocol>http|ftp)/).and keep_matching('ftp', with_results: %w[ftp])
   end
 
   it 'removes comment groups' do
@@ -44,18 +55,30 @@ describe JsRegex::Converter::GroupConverter do
     become(/1(?:2)34(?:)/)
   end
 
-  it 'works following positive lookbehind assertions' do
+  it 'works following positive lookbehind assertions', targets: [ES2009, ES2015] do
     expect(/(?<=A)(abc)/).to\
     become(/(?:A)(abc)/).with_warning
   end
 
-  it 'works following negative lookbehind assertions' do
+  it 'works following positive lookbehind assertions on ES2018+', targets: [ES2018] do
+    expect(/(?<=A)(abc)/)
+      .to stay_the_same
+      .and keep_matching('abc Aabc Aabc', with_results: %w[abc abc])
+  end
+
+  it 'works following negative lookbehind assertions', targets: [ES2009, ES2015] do
     expect(/(?<!A)(abc)/).to\
     become(/(abc)/).with_warning
   end
 
+  it 'works following negative lookbehind assertions on ES2018+', targets: [ES2018] do
+    expect(/(?<!A)(abc)/)
+      .to stay_the_same
+      .and keep_matching('abc Aabc Aabc', with_results: %w[abc])
+  end
+
   it 'opens passive groups for unknown group heads' do
-    expect([:group, :unknown]).to be_dropped_with_warning(substitute: '(?:)')
+    expect([:group, :unknown]).to be_dropped_with_warning
   end
 
   context 'when dealing with atomic groups' do

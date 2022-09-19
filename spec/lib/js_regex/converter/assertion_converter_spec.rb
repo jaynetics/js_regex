@@ -9,14 +9,22 @@ describe JsRegex::Converter::AssertionConverter do
     expect(/a(?!b)/i).to stay_the_same.and keep_matching('aAb', with_results: %w[a])
   end
 
-  it 'makes positive lookbehinds non-lookbehind with warning' do
+  it 'makes positive lookbehinds non-lookbehind with warning', targets: [ES2009, ES2015] do
     expect(/(?<=A)b/).to\
-    become(/(?:A)b/).with_warning
+    become(/(?:A)b/).with_warning(/lookbehind .*ES2018/)
   end
 
-  it 'drops negative lookbehinds with warning' do
+  it 'drops negative lookbehinds with warning', targets: [ES2009, ES2015] do
     expect(/(?<!A)b/).to\
-    become(/b/).with_warning('negative lookbehind assertion')
+    become(/b/).with_warning(/negative lookbehind .*ES2018/)
+  end
+
+  it 'keeps positive lookbehinds for ES2018+', targets: ES2018 do
+    expect(/(?<=A)b/).to stay_the_same
+  end
+
+  it 'keeps negative lookbehinds for ES2018+', targets: ES2018 do
+    expect(/(?<!A)b/).to stay_the_same
   end
 
   it 'does not count towards captured groups' do

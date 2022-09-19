@@ -26,7 +26,12 @@ class JsRegex
           warn_of_unsupported_feature('nested case-sensitive set')
         end
 
-        content.to_s_with_surrogate_ranges
+        if context.es_2015_or_higher?
+          context.enable_u_option if content.astral_part?
+          content.to_s(format: 'es6', in_brackets: true)
+        else
+          content.to_s_with_surrogate_ranges
+        end
       end
 
       def directly_compatible?
@@ -41,8 +46,8 @@ class JsRegex
       def child_directly_compatible?(exp)
         case exp.type
         when :literal
-          # surrogate pair substitution needed if astral
-          exp.text.ord <= 0xFFFF
+          # surrogate pair substitution needed on ES2009 if astral
+          exp.text.ord <= 0xFFFF || context.enable_u_option
         when :set
           # conversion needed for nested sets, intersections
           exp.token.equal?(:range)

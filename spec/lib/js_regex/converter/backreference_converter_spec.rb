@@ -50,16 +50,30 @@ describe JsRegex::Converter::BackreferenceConverter do
       .and keep_not_matching('abaa')
   end
 
-  it 'substitutes ab named backreferences ("\k<foo>") with numeric ones' do
+  it 'substitutes ab named backreferences ("\k<foo>") with numeric ones', targets: [ES2009, ES2015] do
     expect(/(a)(?<foo>b)(c)\k<foo>/).to\
     become(/(a)(b)(c)\2/)
       .and keep_matching('abcb')
       .and keep_not_matching('abc')
   end
 
-  it 'substitutes sq named backreferences ("\k\'foo\'") with numeric ones' do
+  it 'keeps ab named backreferences ("\k<foo>") on ES2018+', targets: [ES2018] do
+    expect(/(a)(?<foo>b)(c)\k<foo>/)
+      .to stay_the_same
+      .and keep_matching('abcb')
+      .and keep_not_matching('abc')
+  end
+
+  it 'substitutes sq named backreferences ("\k\'foo\'") with numeric ones', targets: [ES2009, ES2015] do
     expect(/(a)(?'foo'b)(c)\k'foo'/).to\
     become(/(a)(b)(c)\2/)
+      .and keep_matching('abcb')
+      .and keep_not_matching('abc')
+  end
+
+  it 'changes sq named backreferences ("\k\'foo\'") to ab named on ES2018+', targets: [ES2018] do
+    expect(/(a)(?'foo'b)(c)\k'foo'/).to\
+    become(/(a)(?<foo>b)(c)\k<foo>/)
       .and keep_matching('abcb')
       .and keep_not_matching('abc')
   end
@@ -70,8 +84,8 @@ describe JsRegex::Converter::BackreferenceConverter do
     result = JsRegex::Converter.convert(backref)
 
     expect(result).to be_a JsRegex::Node
-    expect(result.children.last.to_s).to eq '1'
-    expect(result.children.last.type).to eq :backref_num
+    expect(result.to_s).to eq '\1'
+    expect(result.type).to eq :backref
   end
 
   it 'drops recursion level backreferences with warning' do
@@ -101,11 +115,16 @@ describe JsRegex::Converter::BackreferenceConverter do
         .and keep_not_matching('aaaaX')
     end
 
-    it 'increments name backrefs accordingly' do
+    it 'increments name backrefs accordingly', targets: [ES2009, ES2015] do
       expect(/(?>aa|a)(?>aa|a)(?<foo>X)\k<foo>/).to\
       become(/(?=(aa|a))\1(?:)(?=(aa|a))\2(?:)(X)\3/)
         .and keep_matching('aaaaXX')
         .and keep_not_matching('aaaaX')
+    end
+
+    it 'keeps name backrefs on ES2018', targets: [ES2018] do
+      expect(/(?>aa|a)(?<foo>X)\k<foo>(?>aa|a)/).to\
+      become('(?=(aa|a))\1(?:)(?<foo>X)\k<foo>(?=(aa|a))\3(?:)')
     end
   end
 
@@ -131,7 +150,7 @@ describe JsRegex::Converter::BackreferenceConverter do
         .and keep_not_matching('aa_1337')
     end
 
-    it 'does not increment name backrefs' do
+    it 'does not increment name backrefs', targets: [ES2009, ES2015] do
       expect(/(?<foo>a)\k<foo>_1(?>33|3)37/).to\
       become(/(a)\1_1(?=(33|3))\2(?:)37/)
         .and keep_matching('aa_13337')
@@ -161,7 +180,7 @@ describe JsRegex::Converter::BackreferenceConverter do
         .and keep_not_matching('Xa')
     end
 
-    it 'does not increment name backrefs' do
+    it 'does not increment name backrefs', targets: [ES2009, ES2015] do
       expect(/(?<foo>X)(?>aa|a)\k<foo>/).to\
       become(/(X)(?=(aa|a))\2(?:)\1/)
         .and keep_matching('XaX')
@@ -198,11 +217,16 @@ describe JsRegex::Converter::BackreferenceConverter do
         .and keep_not_matching('foobarquz')
     end
 
-    it 'replaces named subexpression calls with the targeted subexpression' do
+    it 'replaces named subexpression calls with the targeted subexpression', targets: [ES2009, ES2015] do
       expect(/(foo)(?<x>bar)(baz)\g<x>+/).to\
       become(/(foo)(bar)(baz)(bar)+/)
         .and keep_matching('foobarbazbar')
         .and keep_not_matching('foobarbaz')
+    end
+
+    it 'replaces named subexpression calls with the targeted subexpression', targets: [ES2018] do
+      expect(/(foo)(?<x>bar)(baz)\g<x>+/).to\
+      become(/(foo)(?<x>bar)(baz)(bar)+/)
     end
 
     it 'does not carry over the quantifier when replacing subexpression calls' do
@@ -213,6 +237,11 @@ describe JsRegex::Converter::BackreferenceConverter do
     it 'keeps backrefs correct when replacing subexpression calls' do
       expect(/(foo)\g<1>(bar)\2/).to\
       become(/(foo)(foo)(bar)\3/).and keep_matching('foofoobarbar')
+    end
+
+    it 'keeps backrefs correct when replacing named subexpression calls', targets: [ES2018] do
+      expect('(?<a>foo)\g<a>(bar)\2').to\
+      become('(?<a>foo)(foo)(bar)\3')
     end
 
     it 'drops whole-pattern recursion calls with warning' do
