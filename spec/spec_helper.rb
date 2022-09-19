@@ -139,20 +139,24 @@ def expression_double(attributes)
   instance_double(Regexp::Expression::Root, defaults.merge(attributes))
 end
 
-require 'duktape'
-JS_CONTEXT = Duktape::Context.new
+require 'mini_racer'
+JS_CONTEXT = MiniRacer::Context.new
+
+def eval_js(string)
+  JS_CONTEXT.eval(string)
+end
 
 def matches_in_js(js_regex, string)
-  JS_CONTEXT.eval_string("'#{js_escape(string)}'.match(#{js_regex});").to_a
+  eval_js("'#{js_escape(string)}'.match(#{js_regex});").to_a
 end
 
 def test_in_js(js_regex, string)
-  JS_CONTEXT.eval_string("#{js_regex}.test('#{js_escape(string)}');")
+  eval_js("#{js_regex}.test('#{js_escape(string)}');")
 end
 
 def to_s_like_json(js_regex)
   json_string = js_escape(js_regex.to_json)
-  js = <<-JS
+  eval_js <<-JS
     "use strict";
 
     var jsonObj = JSON.parse('#{json_string}');
@@ -160,7 +164,6 @@ def to_s_like_json(js_regex)
     var stringRE = #{js_regex};
     jsonRE.source == stringRE.source && jsonRE.flags == stringRE.flags;
   JS
-  JS_CONTEXT.eval_string(js)
 end
 
 def js_escape(string)
