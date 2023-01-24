@@ -146,6 +146,7 @@ When converting a Regexp that contains unsupported features, corresponding parts
 | numeric subexp calls        | \g&lt;1&gt;          | ✓      | ✓      | ✓      |
 | relative subexp calls       | \g&lt;-1&gt;         | ✓      | ✓      | ✓      |
 | named subexp calls          | \g&lt;foo&gt;        | ✓      | ✓      | ✓      |
+| recursive subexp calls [3]  | \g<0>                | ✓      | ✓      | ✓      |
 | nested sets                 | [a-z[A-Z]]           | ✓      | ✓      | ✓      |
 | types in sets               | [a-z\h]              | ✓      | ✓      | ✓      |
 | properties in sets          | [a-z\p{sc}]          | ✓      | ✓      | ✓      |
@@ -160,28 +161,29 @@ When converting a Regexp that contains unsupported features, corresponding parts
 | astral plane properties [2] | \p{emoji}            | ✓      | ✓      | ✓      |
 | astral plane literals [2]   | 😁                   | ✓      | ✓      | ✓      |
 | astral plane ranges [2]     | [😁-😲]              | ✓      | ✓      | ✓      |
-| capturing group names [3]   | (?&lt;a&gt;, (?'a'   | X      | X      | ✓      |
-| lookbehinds                 | (?<=a), (?<!a)       | X      | X      | ✓ [4]  |
-| keep marks                  | \K                   | X      | X      | ✓ [4]  |
-| sane word boundaries [5]    | \b, \B               | X      | X      | ✓ [4]  |
+| capturing group names [4]   | (?&lt;a&gt;, (?'a'   | X      | X      | ✓      |
+| lookbehinds                 | (?<=a), (?<!a)       | X      | X      | ✓ [5]  |
+| keep marks                  | \K                   | X      | X      | ✓ [5]  |
+| sane word boundaries [6]    | \b, \B               | X      | X      | ✓ [5]  |
 | nested keep mark            | /a(b\Kc)d/           | X      | X      | X      |
-| whole pattern recursion     | \g<0>                | X      | X      | X      |
 | backref by recursion level  | \k<1+1>              | X      | X      | X      |
 | previous match anchor       | \G                   | X      | X      | X      |
 | extended grapheme type      | \X                   | X      | X      | X      |
 | variable length absence     | (?~(a+\|bar))        | X      | X      | X      |
-| comment groups [3]          | (?#comment)          | X      | X      | X      |
-| inline comments [3]         | /[a-z] # comment/x   | X      | X      | X      |
+| comment groups [4]          | (?#comment)          | X      | X      | X      |
+| inline comments [4]         | /[a-z] # comment/x   | X      | X      | X      |
 
 [1] Keep in mind that [Ruby's multiline mode](http://ruby-doc.org/core-2.1.1/Regexp.html#class-Regexp-label-Options) is more of a "dot-all mode" and totally different from [JavaScript's multiline mode](http://javascript.info/regexp-multiline-mode).
 
 [2] See [here](#EX) for information about how this is achieved.
 
-[3] These are dropped without warning because they can be removed without affecting the matching behavior.
+[3] Limited to 5 levels of depth.
 
-[4] Not compatible with Safari. Regexps with this feature, transpiled for this target, will lead to JS errors in Safari because it [still doesn't support lookbehinds](https://bugs.webkit.org/show_bug.cgi?id=174931).
+[4] These are dropped without warning because they can be removed without affecting the matching behavior.
 
-[5] When targetting ES2018, \b and \B are replaced with a lookbehind/lookahead solution. For other targets, they are carried over as is, but generate a warning because they only recognize ASCII word chars in JavaScript (irrespective of the `u`-flag).
+[5] Not compatible with Safari. Regexps with this feature, transpiled for this target, will lead to JS errors in Safari because it [still doesn't support lookbehinds](https://bugs.webkit.org/show_bug.cgi?id=174931).
+
+[6] When targetting ES2018, \b and \B are replaced with a lookbehind/lookahead solution. For other targets, they are carried over as is, but generate a warning because they only recognize ASCII word chars in JavaScript (irrespective of the `u`-flag).
 
 <a name='EX'></a>
 ## How it Works

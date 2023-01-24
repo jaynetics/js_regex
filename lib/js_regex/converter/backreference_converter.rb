@@ -41,14 +41,19 @@ class JsRegex
       end
 
       def convert_call
-        if expression.respond_to?(:number) && expression.number.equal?(0)
-          return warn_of_unsupported_feature('whole-pattern recursion')
+        if context.recursions(expression) >= 5
+          warn_of("Recursion for '#{expression}' curtailed at 5 levels")
+          return ''
         end
+
+        context.count_recursion(expression)
         context.increment_local_capturing_group_count
         target_copy = expression.referenced_expression.unquantified_clone
         # avoid "Duplicate capture group name" error in JS
         target_copy.token = :capture if target_copy.is?(:named, :group)
-        convert_expression(target_copy)
+        result = convert_expression(target_copy)
+        # wrap in group if it is a full-pattern recursion
+        expression.reference == 0 ? Node.new('(?:', result, ')') : result
       end
     end
   end

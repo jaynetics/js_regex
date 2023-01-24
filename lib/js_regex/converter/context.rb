@@ -14,6 +14,7 @@ class JsRegex
       def initialize(case_insensitive_root: false, target: nil)
         self.added_capturing_groups_after_group = Hash.new(0)
         self.capturing_group_count = 0
+        self.recursions_per_expression = {}
         self.warnings = []
         self.required_options_hash = {}
 
@@ -62,6 +63,18 @@ class JsRegex
         capture_group
       end
 
+      def recursions(exp)
+        recursions_per_expression[recursion_id(exp)] || 0
+      end
+
+      def count_recursion(exp)
+        recursions_per_expression[recursion_id(exp)] = recursions(exp) + 1
+      end
+
+      def recursion_id(exp)
+        [exp.class, exp.starts_at]
+      end
+
       # takes and returns 1-indexed group positions.
       # new is different from old if capturing groups were added in between.
       def new_capturing_group_position(old_position)
@@ -79,6 +92,7 @@ class JsRegex
       private
 
       attr_accessor :added_capturing_groups_after_group,
+                    :recursions_per_expression,
                     :required_options_hash,
                     :target
 

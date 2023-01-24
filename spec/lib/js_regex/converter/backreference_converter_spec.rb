@@ -244,9 +244,12 @@ describe JsRegex::Converter::BackreferenceConverter do
       become('(?<a>foo)(foo)(bar)\3')
     end
 
-    it 'drops whole-pattern recursion calls with warning' do
-      expect(/(a(b|\g<0>))/).to\
-      become(/(a(b))/).with_warning('whole-pattern recursion')
+    it 'keeps 5 levels of recursive calls with warning' do
+      expect(/a|b\g<0>/).to\
+      become(/a|b(?:a|b(?:a|b(?:a|b(?:a|b(?:a|b)))))/)
+        .with_warning("Recursion for '\\g<0>' curtailed at 5 levels")
+        .and keep_matching('ab', 'aaab', 'bab')
+        .and keep_not_matching('b')
     end
   end
 end
