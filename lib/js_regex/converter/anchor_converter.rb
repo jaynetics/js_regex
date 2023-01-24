@@ -10,8 +10,10 @@ class JsRegex
 
       def convert_data
         case subtype
-        when :bol, :bos then '^'
-        when :eol, :eos then '$'
+        when :bol then context.es_2018_or_higher? ? '(?<=^|\n)' : '^'
+        when :bos then '^'
+        when :eol then '(?=$|\n)'
+        when :eos then '$'
         when :eos_ob_eol then '(?=\n?$)'
         when :word_boundary then convert_boundary
         when :nonword_boundary then convert_nonboundary

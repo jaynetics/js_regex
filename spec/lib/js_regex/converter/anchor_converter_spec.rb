@@ -3,12 +3,12 @@ require 'spec_helper'
 describe JsRegex::Converter::AnchorConverter do
   it 'translates the beginning-of-string anchor "\A"' do
     expect(/\A\w/).to\
-    become(/^\w/).and keep_matching('abc', with_results: %w[a])
+    become(/^\w/).and keep_matching("abc\ndef", with_results: %w[a])
   end
 
   it 'translates the end-of-string anchor "\z"' do
     expect(/\w\z/).to\
-    become(/\w$/).and keep_matching('abc', with_results: %w[c])
+    become(/\w$/).and keep_matching("abc\ndef", with_results: %w[f])
   end
 
   it 'translates the end-of-string-with-optional-newline anchor "\Z"' do
@@ -18,12 +18,18 @@ describe JsRegex::Converter::AnchorConverter do
       .and keep_not_matching('abcdef', "abc\n\n")
   end
 
-  it 'preserves the beginning-of-line anchor "^"' do
+  it 'keeps the beginning-of-line anchor "^"', targets: [ES2009, ES2015] do
     expect(/^\w/).to stay_the_same.and keep_matching('abc', with_results: %w[a])
   end
 
-  it 'preserves the end-of-line anchor "$"' do
-    expect(/\w$/).to stay_the_same.and keep_matching('abc', with_results: %w[c])
+  it 'translates the beginning-of-line anchor "^"', targets: [ES2018] do
+    expect(/^\w/).to\
+    become(/(?<=^|\n)\w/).and keep_matching("abc\ndef", with_results: %w[a d])
+  end
+
+  it 'translates the end-of-line anchor "$"' do
+    expect(/\w$/).to\
+    become(/\w(?=$|\n)/).and keep_matching("abc\ndef", with_results: %w[c f])
   end
 
   it 'preserves the word-boundary anchor "\b" with a warning', targets: [ES2009, ES2015] do

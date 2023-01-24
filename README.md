@@ -99,7 +99,7 @@ Set the [g flag](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Referen
 
 ### Converting for modern JavaScript
 
-A `target:` argument can be given to target more recent versions of JS and unlock extra features or nicer output. `'ES2009'` is the default target. `'ES2015'` and `'ES2018'` are also available. Please note that in 2022, Safari still doesn't fully support ES2018, so you should only use `'ES2018'` if you either don't need to support Safari or don't plan to use lookbehinds or word boundary anchors (see [supported features](#SF) for details).
+A `target:` argument can be given to target more recent versions of JS and unlock extra features or nicer output. `'ES2009'` is the default target. `'ES2015'` and `'ES2018'` are also available. Please note that in 2022, Safari still doesn't fully support ES2018, so you should only use `'ES2018'` if you either don't need to support Safari or don't plan to use the `^`-anchor, lookbehinds, or word boundary anchors (see [supported features](#SF) for details).
 
 ```ruby
 # ES2015 uses the u-flag to avoid lengthy escape sequences
@@ -166,6 +166,7 @@ When converting a Regexp that contains unsupported features, corresponding parts
 | lookbehinds                 | (?<=a), (?<!a)       | X      | X      | ✓ [5]  |
 | keep marks                  | \K                   | X      | X      | ✓ [5]  |
 | sane word boundaries [6]    | \b, \B               | X      | X      | ✓ [5]  |
+| matching after \n with ^    | ^                    | X      | X      | ✓ [5]  |
 | nested keep mark            | /a(b\Kc)d/           | X      | X      | X      |
 | backref by recursion level  | \k<1+1>              | X      | X      | X      |
 | previous match anchor       | \G                   | X      | X      | X      |
