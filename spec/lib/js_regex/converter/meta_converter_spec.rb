@@ -28,12 +28,12 @@ describe JsRegex::Converter::MetaConverter do
   end
 
   it 'drops depleted alternation branches' do
-    expect(/(a|\X|b)/).to\
+    expect(/(a|\G|b)/).to\
     become(/(a|b)/).with_warning
   end
 
   it 'drops everything if all branches are depleted' do
-    expect(/\X|/).to become(//).with_warning
+    expect(/\G|/).to become(//).with_warning
   end
 
   it 'does not drop alternation branches that started out empty' do

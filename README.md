@@ -162,13 +162,13 @@ When converting a Regexp that contains unsupported features, corresponding parts
 | astral plane literals [2]   | 😁                   | ✓      | ✓      | ✓      |
 | astral plane ranges [2]     | [😁-😲]              | ✓      | ✓      | ✓      |
 | capturing group names [4]   | (?&lt;a&gt;, (?'a'   | X      | X      | ✓      |
+| extended grapheme type      | \X                   | X      | X      | ✓      |
 | lookbehinds                 | (?<=a), (?<!a)       | X      | X      | ✓ [5]  |
 | keep marks                  | \K                   | X      | X      | ✓ [5]  |
 | sane word boundaries [6]    | \b, \B               | X      | X      | ✓ [5]  |
 | nested keep mark            | /a(b\Kc)d/           | X      | X      | X      |
 | backref by recursion level  | \k<1+1>              | X      | X      | X      |
 | previous match anchor       | \G                   | X      | X      | X      |
-| extended grapheme type      | \X                   | X      | X      | X      |
 | variable length absence     | (?~(a+\|bar))        | X      | X      | X      |
 | comment groups [4]          | (?#comment)          | X      | X      | X      |
 | inline comments [4]         | /[a-z] # comment/x   | X      | X      | X      |

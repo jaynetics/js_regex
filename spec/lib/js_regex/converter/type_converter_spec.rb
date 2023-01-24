@@ -54,10 +54,19 @@ describe JsRegex::Converter::TypeConverter do
       .and keep_matching("_\n_\r\n_", with_results: %W[\n \r\n])
   end
 
-  it 'drops the extended grapheme type "\X" with warning' do
+  it 'drops the extended grapheme type "\X" with warning', targets: [ES2009, ES2015] do
     expect(/a\Xb/).to\
     become(/ab/)
       .with_warning("Dropped unsupported xgrapheme type '\\X' at index 1")
+  end
+
+  it 'substitutes the extended grapheme type "\X"', targets: [ES2018] do
+    expect(/\X/).to\
+    become('[\P{M}\P{Lm}](?:(?:[\u035C\u0361]\P{M}\p{M}*)|\u200d|\p{M}|\p{Lm}|\p{Emoji_Modifier})*')
+      .with_options('u')
+      .and keep_matching("aaßßギギn\u0303n\u0303😃😃👍🏿👍🏿", with_results: [
+        "a", "a", "ß", "ß", "ギ", "ギ", "n\u0303", "n\u0303", "😃", "😃", "👍🏿", "👍🏿"
+      ])
   end
 
   it 'drops unknown types with warning' do

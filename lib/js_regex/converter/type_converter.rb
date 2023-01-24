@@ -6,11 +6,12 @@ class JsRegex
     # Template class implementation.
     #
     class TypeConverter < JsRegex::Converter::Base
-      HEX_EXPANSION           = '[0-9A-Fa-f]'
-      NONHEX_EXPANSION        = '[^0-9A-Fa-f]'
-      ES2018_HEX_EXPANSION    = '\p{AHex}'
-      ES2018_NONHEX_EXPANSION = '\P{AHex}'
-      LINEBREAK_EXPANSION     = '(?:\r\n|[\n\v\f\r\u0085\u2028\u2029])'
+      HEX_EXPANSION              = '[0-9A-Fa-f]'
+      NONHEX_EXPANSION           = '[^0-9A-Fa-f]'
+      ES2018_HEX_EXPANSION       = '\p{AHex}'
+      ES2018_NONHEX_EXPANSION    = '\P{AHex}'
+      ES2018_XGRAPHEME_EXPANSION = '[\P{M}\P{Lm}](?:(?:[\u035C\u0361]\P{M}\p{M}*)|\u200d|\p{M}|\p{Lm}|\p{Emoji_Modifier})*'
+      LINEBREAK_EXPANSION        = '(?:\r\n|[\n\v\f\r\u0085\u2028\u2029])'
 
       def self.directly_compatible?(expression)
         case expression.token
@@ -28,6 +29,7 @@ class JsRegex
         when :hex then hex_expansion
         when :nonhex then nonhex_expansion
         when :linebreak then LINEBREAK_EXPANSION
+        when :xgrapheme then xgrapheme
         when :digit, :space, :word
           return pass_through if self.class.directly_compatible?(expression)
           set_substitution
@@ -67,6 +69,14 @@ class JsRegex
 
       def character_set
         CharacterSet.of_expression(expression)
+      end
+
+      def xgrapheme
+        if context.es_2018_or_higher? && context.enable_u_option
+          ES2018_XGRAPHEME_EXPANSION
+        else
+          warn_of_unsupported_feature
+        end
       end
     end
   end
