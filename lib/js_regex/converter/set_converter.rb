@@ -26,7 +26,7 @@ class JsRegex
         result = "[#{'^' if expression.negative?}".dup
 
         expression.expressions.each do |subexp|
-          return unless child_res = simple_convert_child(subexp)
+          return false unless (child_res = simple_convert_child(subexp))
 
           result << child_res.to_s
         end
