@@ -13,20 +13,21 @@ class JsRegex
     require_relative 'target'
 
     class << self
-      def of(input, options: nil, target: Target::ES2009)
+      def of(input, options: nil, target: Target::ES2009, fail_fast: false)
         target                       = Target.cast(target)
-        source, warnings, extra_opts = convert_source(input, target)
+        source, warnings, extra_opts = convert_source(input, target, fail_fast)
         options_string               = convert_options(input, options, extra_opts)
         [source, options_string, warnings, target]
       end
 
       private
 
-      def convert_source(input, target)
+      def convert_source(input, target, fail_fast)
         tree = Regexp::Parser.parse(input)
         context = Converter::Context.new(
           case_insensitive_root: tree.i?,
           target:                target,
+          fail_fast:             fail_fast,
         )
         converted_tree = Converter.convert(tree, context)
         final_tree = SecondPass.call(converted_tree)

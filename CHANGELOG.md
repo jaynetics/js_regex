@@ -8,6 +8,7 @@ and this project adheres to [Semantic Versioning](http://semver.org/spec/v2.0.0.
 
 ### Added
 
+- `JsRegex::compatible?` for checking if a Regexp can be converted
 - improved performance, particularly when dealing with character sets (`[...]`)
 
 ## [3.9.0] - 2023-01-24

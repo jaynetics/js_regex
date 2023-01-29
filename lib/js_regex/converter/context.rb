@@ -8,15 +8,17 @@ class JsRegex
     class Context
       attr_reader :capturing_group_count,
                   :case_insensitive_root,
+                  :fail_fast,
                   :in_atomic_group,
                   :warnings
 
-      def initialize(case_insensitive_root: false, target: nil)
+      def initialize(case_insensitive_root: false, fail_fast: false, target: nil)
         self.added_capturing_groups_after_group = Hash.new(0)
         self.capturing_group_count = 0
+        self.fail_fast = fail_fast
         self.recursions_per_expression = {}
-        self.warnings = []
         self.required_options_hash = {}
+        self.warnings = []
 
         self.case_insensitive_root = case_insensitive_root
         self.target = target
@@ -102,6 +104,7 @@ class JsRegex
 
       attr_writer :capturing_group_count,
                   :case_insensitive_root,
+                  :fail_fast,
                   :in_atomic_group,
                   :warnings
 

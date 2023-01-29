@@ -30,14 +30,17 @@ class JsRegex
     "/#{source.empty? ? '(?:)' : source}/#{options}"
   end
 
+  # @raise JsRegex::ConversionError
   def self.new!(ruby_regex, **kwargs)
-    js_regex = new(ruby_regex, **kwargs)
-    if js_regex.warnings.any?
-      raise StandardError.new(
-        "Could not fully convert the given regex #{ruby_regex.inspect}:\n" +
-        js_regex.warnings.join("\n")
-      ).extend(JsRegex::Error)
-    end
-    js_regex
+    new(ruby_regex, fail_fast: true, **kwargs)
   end
+
+  def self.compatible?(ruby_regex, **kwargs)
+    new!(ruby_regex, **kwargs)
+    true
+  rescue ConversionError
+    false
+  end
+
+  ConversionError = Class.new(StandardError).send(:include, JsRegex::Error)
 end

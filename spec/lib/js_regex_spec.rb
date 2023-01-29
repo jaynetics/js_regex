@@ -82,7 +82,20 @@ describe JsRegex do
     end
 
     it 'raises if there are incompatibility warnings' do
-      expect { JsRegex.new!(/\G/) }.to raise_error(JsRegex::Error, /supported/)
+      expect { JsRegex.new!(/\G/) }.to raise_error(
+        JsRegex::ConversionError,
+        "unsupported match start anchor '\\G' at index 0"
+      )
+    end
+  end
+
+  describe '::compatible?' do
+    it 'returns true for supported regexps' do
+      expect(JsRegex.compatible?(//)).to eq true
+    end
+
+    it 'raises if there are incompatibility warnings' do
+      expect(JsRegex.compatible?(/\G/)).to eq false
     end
   end
 end
