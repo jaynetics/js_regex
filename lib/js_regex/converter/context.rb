@@ -40,6 +40,10 @@ class JsRegex
         required_options_hash['u'] = true
       end
 
+      def u?
+        required_options_hash['u']
+      end
+
       def required_options
         required_options_hash.keys
       end

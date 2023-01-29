@@ -13,7 +13,7 @@ class JsRegex
       ES2018_XGRAPHEME_EXPANSION = '[\P{M}\P{Lm}](?:(?:[\u035C\u0361]\P{M}\p{M}*)|\u200d|\p{M}|\p{Lm}|\p{Emoji_Modifier})*'
       LINEBREAK_EXPANSION        = '(?:\r\n|[\n\v\f\r\u0085\u2028\u2029])'
 
-      def self.directly_compatible?(expression)
+      def self.directly_compatible?(expression, _context = nil)
         case expression.token
         when :space, :nonspace
           !expression.ascii_classes?

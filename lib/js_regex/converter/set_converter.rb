@@ -17,54 +17,70 @@ class JsRegex
       private
 
       def convert_data
-        return pass_through_with_escaping if directly_compatible?
-
-        content = CharacterSet.of_expression(expression)
-        if expression.case_insensitive? && !context.case_insensitive_root
-          content = content.case_insensitive
-        elsif !expression.case_insensitive? && context.case_insensitive_root
-          warn_of_unsupported_feature('nested case-sensitive set')
-        end
-
-        if context.es_2015_or_higher?
-          context.enable_u_option if content.astral_part?
-          content.to_s(format: 'es6', in_brackets: true)
-        else
-          content.to_s_with_surrogate_ranges
-        end
+        simple_conversion || full_recalculation
       end
 
-      def directly_compatible?
-        all_children_directly_compatible? && !casefolding_needed?
-      end
+      def simple_conversion
+        return false if casefolding_needed?
 
-      def all_children_directly_compatible?
-        # note that #each_expression is recursive
-        expression.each_expression.all? { |ch| child_directly_compatible?(ch) }
-      end
+        result = "[#{'^' if expression.negative?}".dup
 
-      def child_directly_compatible?(exp)
-        case exp.type
-        when :literal
-          # surrogate pair substitution needed on ES2009 if astral
-          exp.text.ord <= 0xFFFF || context.enable_u_option
-        when :set
-          # conversion needed for nested sets, intersections
-          exp.token.equal?(:range)
-        when :type
-          TypeConverter.directly_compatible?(exp)
-        when :escape
-          EscapeConverter::ESCAPES_SHARED_BY_RUBY_AND_JS.include?(exp.token)
+        expression.expressions.each do |subexp|
+          return unless child_res = simple_convert_child(subexp)
+
+          result << child_res.to_s
         end
+
+        result << ']'
       end
 
       def casefolding_needed?
         expression.case_insensitive? ^ context.case_insensitive_root
       end
 
-      def pass_through_with_escaping
-        string = expression.to_s(:base)
-        LiteralConverter.escape_incompatible_bmp_literals(string)
+      def simple_convert_child(exp)
+        case exp.type
+        when :literal
+          return false if !context.u? &&
+            exp.text =~ LiteralConverter::ASTRAL_PLANE_CODEPOINT_PATTERN &&
+            !context.enable_u_option
+
+          LiteralConverter.escape_incompatible_bmp_literals(exp.text)
+        when :set
+          # full conversion is needed for nested sets and intersections
+          exp.token.equal?(:range) && exp.expressions.map do |op|
+            simple_convert_child(op) or return false
+          end.join('-')
+        when :type
+          TypeConverter.directly_compatible?(exp, context) &&
+            exp.text
+        when :escape
+          case exp.token
+          when *CONVERTIBLE_ESCAPE_TOKENS
+            EscapeConverter.new.convert(exp, context)
+          when :literal
+            exp.char.ord <= 0xFFFF &&
+              LiteralConverter.escape_incompatible_bmp_literals(exp.char)
+          end
+        end
+      end
+
+      CONVERTIBLE_ESCAPE_TOKENS = %i[control meta_sequence bell escape octal] +
+        EscapeConverter::ESCAPES_SHARED_BY_RUBY_AND_JS
+
+      def full_recalculation
+        content = CharacterSet.of_expression(expression)
+        if expression.case_insensitive? && !context.case_insensitive_root
+          content = content.case_insensitive
+        elsif !expression.case_insensitive? && context.case_insensitive_root
+          warn_of_unsupported_feature('nested case-sensitive set')
+        end
+        if context.es_2015_or_higher?
+          context.enable_u_option if content.astral_part?
+          content.to_s(format: 'es6', in_brackets: true)
+        else
+          content.to_s_with_surrogate_ranges
+        end
       end
     end
   end

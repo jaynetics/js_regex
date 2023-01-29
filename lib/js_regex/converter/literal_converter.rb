@@ -6,11 +6,12 @@ class JsRegex
     # Template class implementation.
     #
     class LiteralConverter < JsRegex::Converter::Base
-      class << self
-        ASTRAL_PLANE_CODEPOINT_PATTERN = /[\u{10000}-\u{10FFFF}]/
+      ASTRAL_PLANE_CODEPOINT_PATTERN = /[\u{10000}-\u{10FFFF}]/
+      LITERAL_REQUIRING_ESCAPE_PATTERN = /[\/\f\n\r\t\v]/
 
+      class << self
         def convert_data(data, context)
-          if data =~ ASTRAL_PLANE_CODEPOINT_PATTERN
+          if !context.u? && data =~ ASTRAL_PLANE_CODEPOINT_PATTERN
             if context.enable_u_option
               escape_incompatible_bmp_literals(data)
             else
@@ -23,7 +24,7 @@ class JsRegex
 
         def convert_astral_data(data)
           data.each_char.each_with_object(Node.new) do |char, node|
-            if char =~ ASTRAL_PLANE_CODEPOINT_PATTERN
+            if char.ord > 0xFFFF
               node << surrogate_substitution_for(char)
             else
               node << escape_incompatible_bmp_literals(char)
@@ -31,8 +32,12 @@ class JsRegex
           end
         end
 
+        ESCAPES = Hash.new { |h, k| raise KeyError, "#{h}[#{k.inspect}]" }
+          .merge("\f\n\r\t\v".chars.to_h { |c| [c, Regexp.escape(c)] })
+          .merge('/' => '\\/')
+
         def escape_incompatible_bmp_literals(data)
-          data.gsub('/', '\\/').gsub(/[\f\n\r\t]/) { |lit| Regexp.escape(lit) }
+          data.gsub(LITERAL_REQUIRING_ESCAPE_PATTERN, ESCAPES)
         end
 
         private
