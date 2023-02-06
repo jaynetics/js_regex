@@ -7,9 +7,7 @@
 
 This is a Ruby gem that translates Ruby's regular expressions to various JavaScript flavors.
 
-It can handle [far more](#SF) of Ruby's regex capabilities than a [search-and-replace approach](https://github.com/rails/rails/blob/b67043393b5ed6079989513299fe303ec3bc133b/actionpack/lib/action_dispatch/routing/inspector.rb#L42), and if any incompatibilities remain, it returns [helpful warnings](#HW) to indicate them.
-
-This means you'll have better chances of translating your regexes, and if there is still a problem, at least you'll know.
+It can handle [almost all of Ruby's regex features](#SF), unlike a [search-and-replace approach](https://github.com/rails/rails/blob/b67043393b5ed6079989513299fe303ec3bc133b/actionpack/lib/action_dispatch/routing/inspector.rb#L42). If any incompatibilities remain, it returns [helpful warnings](#HW) to indicate them.
 
 ## Installation
 
