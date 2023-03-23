@@ -8,7 +8,7 @@ class JsRegex
     def self.cast(arg)
       return ES2009 if arg.nil?
 
-      normalized_arg = arg.to_s.upcase
+      normalized_arg = arg.to_s.upcase.sub(/^(ECMASCRIPT|ES|JAVASCRIPT|JS)? ?/, 'ES')
       return normalized_arg if SUPPORTED.include?(normalized_arg)
 
       raise ArgumentError.new(
