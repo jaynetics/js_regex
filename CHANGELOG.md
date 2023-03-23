@@ -10,6 +10,12 @@ and this project adheres to [Semantic Versioning](http://semver.org/spec/v2.0.0.
 
 - more lenient casting for the `target:` argument
 
+### Fixed
+
+- regression in 3.10.0 that caused the loss of some escapes in character sets
+  - e.g. `[\^\-\.]` was converted to `[^-.]`; fixed to convert to `[\^\-.]`
+  - thanks to https://github.com/slfrnkln for the report
+
 ## [3.10.0] - 2023-01-29
 
 ### Added

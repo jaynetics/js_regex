@@ -55,6 +55,8 @@ class JsRegex
           TypeConverter.directly_compatible?(exp, context) &&
             exp.text
         when :escape
+          return exp.text if SET_SPECIFIC_ESCAPES_PATTERN.match?(exp.text)
+
           case exp.token
           when *CONVERTIBLE_ESCAPE_TOKENS
             EscapeConverter.new.convert(exp, context)
@@ -65,6 +67,7 @@ class JsRegex
         end
       end
 
+      SET_SPECIFIC_ESCAPES_PATTERN = /[\^\-]/
       CONVERTIBLE_ESCAPE_TOKENS = %i[control meta_sequence bell escape octal] +
         EscapeConverter::ESCAPES_SHARED_BY_RUBY_AND_JS
 

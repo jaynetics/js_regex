@@ -142,6 +142,10 @@ describe JsRegex::Converter::SetConverter do
     expect(/[^x\b]/).to stay_the_same.and keep_matching("a\bz", with_results: %w[a z])
   end
 
+  it 'preserves escapes that are specific to sets' do
+    expect(/[\^x\-y]/).to stay_the_same.and keep_matching("^x-y.", with_results: %w[^ x - y])
+  end
+
   it 'converts forward slashes to forward slash escapes' do
     expect(%r{[/]}).to\
     become(%r{[\/]}).and keep_matching('/')
