@@ -1,10 +1,8 @@
 if ENV['CI'] && RUBY_VERSION.start_with?('2.7')
   require 'simplecov'
+  require 'simplecov-cobertura'
+  SimpleCov.formatter = SimpleCov::Formatter::CoberturaFormatter
   SimpleCov.start
-
-  ENV['CODECOV_TOKEN'] = '2276a5a2-709c-4a19-9096-824135a5c0b7'
-  require 'codecov'
-  SimpleCov.formatter = SimpleCov::Formatter::Codecov
 end
 
 require 'js_regex'

@@ -3,7 +3,7 @@
 [![Gem Version](https://badge.fury.io/rb/js_regex.svg)](http://badge.fury.io/rb/js_regex)
 [![Build Status](https://github.com/jaynetics/js_regex/workflows/tests/badge.svg)](https://github.com/jaynetics/js_regex/actions)
 [![Build Status](https://github.com/jaynetics/js_regex/workflows/gouteur/badge.svg)](https://github.com/jaynetics/js_regex/actions)
-[![codecov](https://codecov.io/gh/jaynetics/js_regex/branch/master/graph/badge.svg)](https://codecov.io/gh/jaynetics/js_regex)
+[![Coverage](https://codecov.io/gh/jaynetics/js_regex/branch/main/graph/badge.svg?token=jYoA3bnAKY)](https://codecov.io/gh/jaynetics/js_regex)
 
 This is a Ruby gem that translates Ruby's regular expressions to various JavaScript flavors.
 

@@ -20,3 +20,5 @@ jobs:
         run: bundle install --jobs 4
       - name: Test with Rake
         run: bundle exec rake
+      - uses: codecov/codecov-action@v3
+        if: matrix.ruby == '2.7'
