@@ -4,7 +4,7 @@ source 'https://rubygems.org'
 gemspec
 
 gem 'debug'
-gem 'mini_racer', '~> 0.6.3'
+gem 'mini_racer', '~> 0.8'
 gem 'rake', '~> 13.0'
 gem 'rspec', '~> 3.10'
 
