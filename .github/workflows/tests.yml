@@ -17,7 +17,9 @@ jobs:
         with:
           ruby-version: ${{ matrix.ruby }}
       - name: Install dependencies
-        run: bundle install --jobs 4
+        run: |
+          gem update --system # https://github.com/rubyjs/mini_racer/issues/289
+          bundle install --jobs 4
       - name: Test with Rake
         run: bundle exec rake
       - uses: codecov/codecov-action@v3
