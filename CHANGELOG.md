@@ -6,6 +6,8 @@ and this project adheres to [Semantic Versioning](http://semver.org/spec/v2.0.0.
 
 ## Unreleased
 
+## [3.11.1] - 2024-01-07
+
 ### Fixed
 
 - nicer set rendering with the upcoming `character_set` 1.8.0 (cosmetic fix)
