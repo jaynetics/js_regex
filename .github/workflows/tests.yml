@@ -21,4 +21,4 @@ jobs:
       - name: Test with Rake
         run: bundle exec rake
       - uses: codecov/codecov-action@v3
-        if: matrix.ruby == '2.7'
+        if: matrix.ruby == '3.2'

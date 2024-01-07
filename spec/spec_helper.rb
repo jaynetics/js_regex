@@ -1,4 +1,4 @@
-if ENV['CI'] && RUBY_VERSION.start_with?('2.7')
+if ENV['CI'] && RUBY_VERSION.start_with?('3.2')
   require 'simplecov'
   require 'simplecov-cobertura'
   SimpleCov.formatter = SimpleCov::Formatter::CoberturaFormatter

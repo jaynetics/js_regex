@@ -4,12 +4,9 @@ source 'https://rubygems.org'
 gemspec
 
 gem 'debug'
+gem 'gouteur', '~> 1.0'
 gem 'mini_racer', '~> 0.8'
 gem 'rake', '~> 13.0'
 gem 'rspec', '~> 3.10'
-
-if RUBY_VERSION.to_f >= 2.7
-  gem 'gouteur', '~> 1.0'
-  gem 'rubocop', '~> 1.8'
-  gem 'simplecov-cobertura'
-end
+gem 'rubocop', '~> 1.8'
+gem 'simplecov-cobertura'
