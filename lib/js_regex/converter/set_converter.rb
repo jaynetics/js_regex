@@ -72,7 +72,11 @@ class JsRegex
         EscapeConverter::ESCAPES_SHARED_BY_RUBY_AND_JS
 
       def full_recalculation
-        content = CharacterSet.of_expression(expression)
+        # Fetch codepoints as if the set was case-sensitive, then re-add
+        # case-insensitivity if needed.
+        # This way we preserve the casing of the original set in cases where the
+        # whole regexp is case-insensitive, e.g. /[ABc]/i => /[ABc]/i.
+        content = original_case_character_set
         if expression.case_insensitive? && !context.case_insensitive_root
           content = content.case_insensitive
         elsif !expression.case_insensitive? && context.case_insensitive_root
@@ -84,6 +88,12 @@ class JsRegex
         else
           content.to_s_with_surrogate_ranges
         end
+      end
+
+      def original_case_character_set
+        neutral_set = expression.dup
+        neutral_set.each_expression(true) { |exp| exp.options[:i] = false }
+        CharacterSet.of_expression(neutral_set)
       end
     end
   end
