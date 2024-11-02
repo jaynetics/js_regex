@@ -97,12 +97,13 @@ Set the [g flag](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Referen
 
 ### Converting for modern JavaScript
 
-A `target:` argument can be given to target more recent versions of JS and unlock extra features or nicer output. `'ES2009'` is the default target. `'ES2015'` and `'ES2018'` are also available. Please note that in 2022, Safari still doesn't fully support ES2018, so you should only use `'ES2018'` if you either don't need to support Safari or don't plan to use lookbehinds or word boundary anchors (see [supported features](#SF) for details).
+A `target:` argument can be given to target more recent versions of JS and unlock extra features or nicer output. `'ES2009'` is the default target. `'ES2015'` and `'ES2018'` are also available.
 
 ```ruby
-# ES2015 uses the u-flag to avoid lengthy escape sequences
+# ES2015 and greater use the u-flag to avoid lengthy escape sequences
 JsRegex.new(/😋/, target: 'ES2009').to_s # => "/(?:\\uD83D\\uDE0B)/"
 JsRegex.new(/😋/, target: 'ES2015').to_s # => "/😋/u"
+JsRegex.new(/😋/, target: 'ES2018').to_s # => "/😋/u"
 
 # ES2018 adds support for lookbehinds, properties etc.
 JsRegex.new(/foo\K\p{ascii}/, target: 'ES2015').to_s # => "/foo[\x00-\x7f]/"
@@ -161,9 +162,9 @@ When converting a Regexp that contains unsupported features, corresponding parts
 | astral plane ranges [2]     | [😁-😲]              | ✓      | ✓      | ✓      |
 | capturing group names [4]   | (?&lt;a&gt;, (?'a'   | X      | X      | ✓      |
 | extended grapheme type      | \X                   | X      | X      | ✓      |
-| lookbehinds                 | (?<=a), (?<!a)       | X      | X      | ✓ [5]  |
-| keep marks                  | \K                   | X      | X      | ✓ [5]  |
-| sane word boundaries [6]    | \b, \B               | X      | X      | ✓ [5]  |
+| lookbehinds                 | (?<=a), (?<!a)       | X      | X      | ✓      |
+| keep marks                  | \K                   | X      | X      | ✓      |
+| sane word boundaries [5]    | \b, \B               | X      | X      | ✓      |
 | nested keep mark            | /a(b\Kc)d/           | X      | X      | X      |
 | backref by recursion level  | \k<1+1>              | X      | X      | X      |
 | previous match anchor       | \G                   | X      | X      | X      |
@@ -179,9 +180,7 @@ When converting a Regexp that contains unsupported features, corresponding parts
 
 [4] These are dropped without warning because they can be removed without affecting the matching behavior.
 
-[5] Not compatible with Safari. Regexps with this feature, transpiled for this target, will lead to JS errors in Safari because it [still doesn't support lookbehinds](https://bugs.webkit.org/show_bug.cgi?id=174931).
-
-[6] When targetting ES2018, \b and \B are replaced with a lookbehind/lookahead solution. For other targets, they are carried over as is, but generate a warning because they only recognize ASCII word chars in JavaScript (irrespective of the `u`-flag).
+[5] When targetting ES2018, \b and \B are replaced with a lookbehind/lookahead solution. For other targets, they are carried over as is, but generate a warning. They only recognize ASCII word chars in JavaScript, and neither the `u` nor the `v` flag makes them behave correctly.
 
 <a name='EX'></a>
 ## How it Works
@@ -216,4 +215,4 @@ Feel free to send suggestions, point out issues, or submit pull requests.
 
 ## Outlook
 
-The gem is pretty feature-complete at this point. The remaining unsupported features listed above are either impossible or impractical to replicate in JavaScript. The generated output could still be made more concise in some cases, maybe through usage of the `s`-flag. Finally, `ES2018` might become the default target when IE is sufficiently dead and Safari catches up with lookbehinds.
+The gem is pretty feature-complete at this point. The remaining unsupported features listed above are either impossible or impractical to replicate in JavaScript. The generated output could still be made more concise in some cases, through usage of the newer `s` or `v` flags. Finally, `ES2018` might become the default target at some point.
