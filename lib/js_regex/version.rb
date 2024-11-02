@@ -1,3 +1,3 @@
 class JsRegex
-  VERSION = '3.11.1'
+  VERSION = '3.12.0'
 end
