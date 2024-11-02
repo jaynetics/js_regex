@@ -29,7 +29,7 @@ ruby_hex_regex = /0x\h+/i
 js_regex = JsRegex.new(ruby_hex_regex)
 
 js_regex.warnings # => []
-js_regex.source # => '0x[0-9A-Fa-f]+'
+js_regex.source # => '0x[0-9A-F]+'
 js_regex.options # => 'i'
 ```
 
@@ -44,7 +44,7 @@ Use `#to_json` if you want to send it as JSON or `#to_h` to include it as a data
 ```ruby
 render json: js_regex
 
-js_regex.to_h # => { source: '[0-9A-Fa-f]+', options: '' }
+js_regex.to_h # => { source: '[0-9A-F]+', options: 'i' }
 ```
 
 To turn the data attribute or parsed JSON back into a RegExp in JavaScript, use the `new RegExp()` constructor:

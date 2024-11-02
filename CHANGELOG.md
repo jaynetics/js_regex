@@ -6,6 +6,8 @@ and this project adheres to [Semantic Versioning](http://semver.org/spec/v2.0.0.
 
 ## Unreleased
 
+- nicer substitution of hex types `\h` and `\H` in `i`-mode
+
 ## [3.11.1] - 2024-01-07
 
 ### Fixed

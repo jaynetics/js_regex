@@ -8,6 +8,8 @@ class JsRegex
     class TypeConverter < JsRegex::Converter::Base
       HEX_EXPANSION              = '[0-9A-Fa-f]'
       NONHEX_EXPANSION           = '[^0-9A-Fa-f]'
+      I_MODE_HEX_EXPANSION       = '[0-9A-F]'
+      I_MODE_NONHEX_EXPANSION    = '[^0-9A-F]'
       ES2018_HEX_EXPANSION       = '\p{AHex}'
       ES2018_NONHEX_EXPANSION    = '\P{AHex}'
       ES2018_XGRAPHEME_EXPANSION = '[\P{M}\P{Lm}](?:(?:[\u035C\u0361]\P{M}\p{M}*)|\u200d|\p{M}|\p{Lm}|\p{Emoji_Modifier})*'
@@ -44,6 +46,8 @@ class JsRegex
       def hex_expansion
         if context.es_2018_or_higher? && context.enable_u_option
           ES2018_HEX_EXPANSION
+        elsif context.case_insensitive_root
+          I_MODE_HEX_EXPANSION
         else
           HEX_EXPANSION
         end
@@ -52,6 +56,8 @@ class JsRegex
       def nonhex_expansion
         if context.es_2018_or_higher? && context.enable_u_option
           ES2018_NONHEX_EXPANSION
+        elsif context.case_insensitive_root
+          I_MODE_NONHEX_EXPANSION
         else
           NONHEX_EXPANSION
         end
