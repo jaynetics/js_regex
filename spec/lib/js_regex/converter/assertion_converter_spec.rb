@@ -1,6 +1,6 @@
 require 'spec_helper'
 
-describe JsRegex::Converter::AssertionConverter do
+describe LangRegex::Converter::AssertionConverter do
   it 'preserves positive lookaheads' do
     expect(/a(?=b)/i).to stay_the_same.and keep_matching('aAb', with_results: %w[A])
   end
@@ -28,9 +28,9 @@ describe JsRegex::Converter::AssertionConverter do
   end
 
   it 'does not count towards captured groups' do
-    expect_any_instance_of(JsRegex::Converter::Context)
+    expect_any_instance_of(LangRegex::Converter::Context)
       .not_to receive(:capturing_group_count=)
       .with(1)
-    JsRegex.new(/a(?=b)/i)
+    LangRegex::JsRegex.new(/a(?=b)/i)
   end
 end

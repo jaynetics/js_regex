@@ -1,5 +1,5 @@
-class JsRegex
+module LangRegex
   # This is mixed into errors, e.g. those thrown by the parser,
-  # allowing to `rescue JsRegex::Error`.
+  # allowing to `rescue LangRegex::Error`.
   module Error; end
 end

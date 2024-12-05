@@ -1,7 +1,7 @@
 #!/usr/bin/env ruby
 
 require 'bundler/setup'
-require 'js_regex'
+require 'lang_regex'
 
 RP = Regexp::Parser
 RS = Regexp::Scanner

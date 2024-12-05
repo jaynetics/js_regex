@@ -1,14 +1,14 @@
 require_relative 'base'
 require_relative 'group_converter'
 
-class JsRegex
+module LangRegex
   module Converter
     #
     # Template class implementation.
     #
     # Note the inheritance from GroupConverter.
     #
-    class AssertionConverter < JsRegex::Converter::GroupConverter
+    class AssertionConverter < GroupConverter
       private
 
       def convert_data

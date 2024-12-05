@@ -1,6 +1,6 @@
 require 'spec_helper'
 
-describe JsRegex::SecondPass do
+describe LangRegex::SecondPass do
   describe '::alternate_conditional_permutations' do
     it 'replaces one-branch conditionals with equivalent alternations' do
       expect(/-(<)?a(?(1)>)-/).to\

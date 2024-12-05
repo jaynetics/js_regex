@@ -1,6 +1,6 @@
 require 'spec_helper'
 
-describe JsRegex::Converter::GroupConverter do
+describe LangRegex::Converter::GroupConverter do
   it 'preserves capturing groups' do
     expect(/(abc)/).to stay_the_same.and keep_matching('abc', with_results: %w[abc])
   end
@@ -8,9 +8,9 @@ describe JsRegex::Converter::GroupConverter do
   it 'sets Node#reference for SecondPass lookups' do
     group = Regexp::Parser.parse(/(abc)/)[0]
 
-    result = JsRegex::Converter.convert(group)
+    result = LangRegex::JsRegex.js_converter.convert(group)
 
-    expect(result).to be_a JsRegex::Node
+    expect(result).to be_a LangRegex::Node
     expect(result.type).to eq(:captured_group)
     expect(result.reference).to eq(1)
   end

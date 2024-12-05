@@ -1,4 +1,4 @@
-class JsRegex
+module LangRegex
   module Converter
     #
     # Passed among Converters to globalize basic status data.
@@ -26,12 +26,14 @@ class JsRegex
 
       # target context
 
+      ES_TARGETS = [Target::ES2009, Target::ES2015, Target::ES2018].freeze
+
       def es_2015_or_higher?
-        target >= Target::ES2015
+        ES_TARGETS[1..].include?(target)
       end
 
       def es_2018_or_higher?
-        target >= Target::ES2018
+        ES_TARGETS[2..].include?(target)
       end
 
       # these methods allow appending options to the final Conversion output

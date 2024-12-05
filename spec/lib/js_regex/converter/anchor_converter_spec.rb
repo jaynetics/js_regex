@@ -1,6 +1,6 @@
 require 'spec_helper'
 
-describe JsRegex::Converter::AnchorConverter do
+describe LangRegex::Converter::AnchorConverter do
   it 'translates the beginning-of-string anchor "\A"' do
     expect(/\A\w/).to\
     become(/^\w/).and keep_matching('abc', with_results: %w[a])

@@ -1,6 +1,6 @@
 require 'spec_helper'
 
-describe JsRegex::Converter::PropertyConverter do
+describe LangRegex::Converter::PropertyConverter do
   it 'substitutes the \p{...} property style', targets: [ES2009, ES2015] do
     expect(/\p{ascii}/).to\
     become(/[\x00-\x7F]/).and keep_matching('añB', with_results: %w[a B])
@@ -50,12 +50,12 @@ describe JsRegex::Converter::PropertyConverter do
   end
 
   it 'uses case-insensitive substitutions if needed' do
-    result = JsRegex.new(/1(?i:\p{lower})2/)
+    result = LangRegex::JsRegex.new(/1(?i:\p{lower})2/)
     expect(result.source).to include 'A-Z'
   end
 
   it 'does not use case-insensitive substitutions if everything is i anyway' do
-    result = JsRegex.new(/1\p{lower}2/i)
+    result = LangRegex::JsRegex.new(/1\p{lower}2/i)
     expect(result.source).not_to include 'A-Z'
     expect(result.warnings).to be_empty
   end

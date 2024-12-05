@@ -1,6 +1,6 @@
 require 'spec_helper'
 
-describe JsRegex::Converter::MetaConverter do
+describe LangRegex::Converter::MetaConverter do
   it 'replaces the dot meta char so that it keeps matching astral stuff, too' do
     expect(/a.a/).to\
     become('a(?:[\uD800-\uDBFF][\uDC00-\uDFFF]|[^\n\uD800-\uDFFF])a')

@@ -1,11 +1,11 @@
 require_relative 'base'
 
-class JsRegex
+module LangRegex
   module Converter
     #
     # Template class implementation.
     #
-    class MetaConverter < JsRegex::Converter::Base
+    class MetaConverter < Base
       DOT_EXPANSION    = '(?:[\uD800-\uDBFF][\uDC00-\uDFFF]|[^\n\uD800-\uDFFF])'
       ML_DOT_EXPANSION = '(?:[\uD800-\uDBFF][\uDC00-\uDFFF]|[^\uD800-\uDFFF])'
       # Possible improvements for dot conversion:

@@ -1,7 +1,7 @@
 require 'spec_helper'
 require 'uri'
 
-describe JsRegex do
+describe LangRegex do
   let(:email_validation_regex) do
     /
       [a-z0-9!$#%&'*+=?^_\`\{|\}~-]+

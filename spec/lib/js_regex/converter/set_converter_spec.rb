@@ -1,6 +1,6 @@
 require 'spec_helper'
 
-describe JsRegex::Converter::SetConverter do
+describe LangRegex::Converter::SetConverter do
   it 'preserves hex escape members' do
     expect(/[\x41]/).to stay_the_same.and keep_matching('ABC', with_results: %w[A])
   end

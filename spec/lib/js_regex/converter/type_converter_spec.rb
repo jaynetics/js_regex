@@ -1,6 +1,6 @@
 require 'spec_helper'
 
-describe JsRegex::Converter::TypeConverter do
+describe LangRegex::Converter::TypeConverter do
   it 'preserves all types supported by JS in regular mode' do
     expect(/\d\D\s\S\w\W/).to stay_the_same
   end
@@ -28,12 +28,12 @@ describe JsRegex::Converter::TypeConverter do
       .to keep_matching(" ").and keep_not_matching(' ')
   end
 
-  it 'substitutes the hex type "\h" with an equivalent set', targets: [ES2009, ES2015] do
+  it 'substitutes the hex type "\h" with an equivalent set', targets: [ES2009, ES2015, PCRE] do
     expect(/\h+/).to\
     become(/[0-9A-Fa-f]+/).and keep_matching('f').and keep_not_matching('x')
   end
 
-  it 'substitutes the hex type "\h" with an equivalent set in i-mode', targets: [ES2009, ES2015] do
+  it 'substitutes the hex type "\h" with an equivalent set in i-mode', targets: [ES2009, ES2015, PCRE] do
     expect(/\h+/i).to\
     become(/[0-9A-F]+/i).and keep_matching('f').and keep_not_matching('x')
   end
@@ -43,12 +43,12 @@ describe JsRegex::Converter::TypeConverter do
     become(/\p{AHex}+/).and keep_matching('f').and keep_not_matching('x')
   end
 
-  it 'substitutes the nonhex type "\H" with an equivalent set', targets: [ES2009, ES2015] do
+  it 'substitutes the nonhex type "\H" with an equivalent set', targets: [ES2009, ES2015, PCRE] do
     expect(/\H+/).to\
     become(/[^0-9A-Fa-f]+/).and keep_matching('x').and keep_not_matching('f', 'F')
   end
 
-  it 'substitutes the nonhex type "\H" with an equivalent set in i-mode', targets: [ES2009, ES2015] do
+  it 'substitutes the nonhex type "\H" with an equivalent set in i-mode', targets: [ES2009, ES2015, PCRE] do
     expect(/\H+/i).to\
     become(/[^0-9A-F]+/i).and keep_matching('x').and keep_not_matching('f', 'F')
   end
@@ -64,7 +64,7 @@ describe JsRegex::Converter::TypeConverter do
       .and keep_matching("_\n_\r\n_", with_results: %W[\n \r\n])
   end
 
-  it 'drops the extended grapheme type "\X" with warning', targets: [ES2009, ES2015] do
+  it 'drops the extended grapheme type "\X" with warning', targets: [ES2009, ES2015, PCRE] do
     expect(/a\Xb/).to\
     become(/ab/)
       .with_warning("Dropped unsupported xgrapheme type '\\X' at index 1")

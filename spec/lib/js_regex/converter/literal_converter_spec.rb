@@ -9,7 +9,7 @@
 
 require 'spec_helper'
 
-describe JsRegex::Converter::LiteralConverter do
+describe LangRegex::Converter::LiteralConverter do
   it 'converts literal newlines into newline escapes' do
     expect(/
 

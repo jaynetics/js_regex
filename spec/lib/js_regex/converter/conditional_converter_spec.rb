@@ -1,13 +1,13 @@
 require 'spec_helper'
 
-describe JsRegex::Converter::ConditionalConverter do
+describe LangRegex::Converter::ConditionalConverter do
   # see second_pass_spec.rb for tests of the final results
   it 'marks conditionals for SecondPass conversion' do
     conditional = Regexp::Parser.parse(/(a)(?(1)b|c)/)[1]
 
-    result = JsRegex::Converter.convert(conditional)
+    result = LangRegex::JsRegex.js_converter.convert(conditional)
 
-    expect(result).to be_a JsRegex::Node
+    expect(result).to be_a LangRegex::Node
     expect(result.reference).to eq 1
     expect(result.type).to eq :conditional
     expect(result.children[0].to_s).to eq '(?:'

@@ -9,7 +9,7 @@
 
 require 'spec_helper'
 
-describe JsRegex::Converter::FreespaceConverter do
+describe LangRegex::Converter::FreespaceConverter do
   context 'when extended mode is set' do
     it 'drops comments and whitespace' do
       expect(/Multiple    #   comment 1
