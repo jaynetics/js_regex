@@ -1,9 +1,11 @@
 require 'spec_helper'
 
-describe JsRegex::Converter::Base do
+js_converter = LangRegex::JsRegex.js_converter
+
+describe LangRegex::Converter::Base do
   describe '#warn_of_unsupported_feature' do
     it 'adds a warning with token class, subtype, data and index' do
-      conv = described_class.new
+      conv = described_class.new(js_converter)
       expr = expression_double(type: 'bar', token: 'big_bad', ts: 7)
       allow(expr).to receive(:to_s).and_return('foo')
       allow(conv).to receive(:expression).and_return(expr)
@@ -15,7 +17,7 @@ describe JsRegex::Converter::Base do
     end
 
     it 'takes an argument to override the description' do
-      conv = described_class.new
+      conv = described_class.new(js_converter)
       expr = expression_double(type: 'bar', token: 'big', ts: 7)
       allow(expr).to receive(:to_s).and_return('foo')
       allow(conv).to receive(:expression).and_return(expr)
@@ -27,7 +29,7 @@ describe JsRegex::Converter::Base do
     end
 
     it 'returns a dropped node that appends as an empty string' do
-      conv = described_class.new
+      conv = described_class.new(js_converter)
       expr = expression_double(type: 'bar', token: 'big', ts: 7)
       allow(expr).to receive(:to_s).and_return('foo')
       allow(conv).to receive(:expression).and_return(expr)
@@ -188,22 +190,22 @@ describe JsRegex::Converter::Base do
 
   describe '#drop_without_warning' do
     it 'returns an empty string to be appended to the source' do
-      expect(described_class.new.send(:drop_without_warning).to_s).to eq('')
+      expect(described_class.new(js_converter).send(:drop_without_warning).to_s).to eq('')
     end
 
     it 'does not generate warnings' do
-      converter = described_class.new
-      context = JsRegex::Converter::Context.new
+      converter = described_class.new(js_converter)
+      context = LangRegex::Converter::Context.new
       allow(converter).to receive(:context).and_return(context)
-      expect { described_class.new.send(:drop_without_warning) }
+      expect { described_class.new(js_converter).send(:drop_without_warning) }
         .not_to(change { context.warnings.count })
     end
   end
 
   describe '#warn_of' do
     it 'adds a warning to the context' do
-      converter = described_class.new
-      context = JsRegex::Converter::Context.new
+      converter = described_class.new(js_converter)
+      context = LangRegex::Converter::Context.new
       allow(converter).to receive(:context).and_return(context)
       expect { converter.send(:warn_of, 'foo') }
         .to(change { context.warnings }.from([]).to(['foo']))
@@ -211,8 +213,8 @@ describe JsRegex::Converter::Base do
   end
 
   describe '#wrap_in_backrefed_lookahead' do
-    let(:converter) { described_class.new }
-    let(:context) { JsRegex::Converter::Context.new }
+    let(:converter) { described_class.new(js_converter) }
+    let(:context) { LangRegex::Converter::Context.new }
     before { allow(converter).to receive(:context).and_return(context) }
 
     it 'returns the contents wrapped in a backreferenced lookahead' do

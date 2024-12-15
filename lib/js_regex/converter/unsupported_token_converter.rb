@@ -1,11 +1,11 @@
 require_relative 'base'
 
-class JsRegex
+module LangRegex
   module Converter
     #
     # Template class implementation.
     #
-    class UnsupportedTokenConverter < JsRegex::Converter::Base
+    class UnsupportedTokenConverter < Base
       private
 
       def convert_data

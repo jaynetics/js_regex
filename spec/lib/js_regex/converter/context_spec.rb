@@ -1,6 +1,6 @@
 require 'spec_helper'
 
-describe JsRegex::Converter::Context do
+describe LangRegex::Converter::Context do
   let(:context) { described_class.new }
 
   describe '#initialize' do

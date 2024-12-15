@@ -3,7 +3,7 @@ require_relative 'escape_converter'
 require_relative 'type_converter'
 require 'character_set'
 
-class JsRegex
+module LangRegex
   module Converter
     #
     # Template class implementation.
@@ -13,7 +13,7 @@ class JsRegex
     # children, it uses the `character_set` gem to establish the codepoints
     # matched by the whole set and build a completely new set string.
     #
-    class SetConverter < JsRegex::Converter::Base
+    class SetConverter < Base
       private
 
       def convert_data
@@ -59,7 +59,7 @@ class JsRegex
 
           case exp.token
           when *CONVERTIBLE_ESCAPE_TOKENS
-            EscapeConverter.new.convert(exp, context)
+            EscapeConverter.new(@converter).convert(exp, context)
           when :literal
             exp.char.ord <= 0xFFFF &&
               LiteralConverter.escape_incompatible_bmp_literals(exp.char)

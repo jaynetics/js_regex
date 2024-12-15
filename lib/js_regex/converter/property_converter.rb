@@ -1,7 +1,7 @@
 require_relative 'base'
 require 'character_set'
 
-class JsRegex
+module LangRegex
   module Converter
     #
     # Template class implementation.
@@ -9,7 +9,7 @@ class JsRegex
     # Uses the `character_set` and `regexp_property_values` gems to get the
     # codepoints matched by the property and build a set string from them.
     #
-    class PropertyConverter < JsRegex::Converter::Base
+    class PropertyConverter < Base
       # A map of normalized Ruby property names to names supported by ES2018+.
       def self.map
         @map ||= File.read("#{__dir__}/property_map.csv").scan(/(.+),(.+)/).to_h

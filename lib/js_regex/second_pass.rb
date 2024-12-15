@@ -1,4 +1,4 @@
-class JsRegex
+module LangRegex
   #
   # After conversion of a full Regexp::Expression tree, this
   # checks for Node instances that need further processing.

@@ -1,11 +1,11 @@
 require_relative 'base'
 
-class JsRegex
+module LangRegex
   module Converter
     #
     # Template class implementation.
     #
-    class AnchorConverter < JsRegex::Converter::Base
+    class AnchorConverter < Base
       private
 
       def convert_data

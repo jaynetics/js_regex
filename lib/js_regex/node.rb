@@ -1,4 +1,4 @@
-class JsRegex
+module LangRegex
   #
   # Converter#convert result. Represents a branch or leaf node with an optional
   # quantifier as well as type and reference annotations for SecondPass.
@@ -52,7 +52,7 @@ class JsRegex
       else
         raise TypeError.new(
           "#{type} must be substituted before stringification"
-        ).extend(JsRegex::Error)
+        ).extend(Error)
       end
     end
 
@@ -65,7 +65,7 @@ class JsRegex
 
     private
 
-    TypeError = Class.new(::TypeError).extend(JsRegex::Error)
+    TypeError = Class.new(::TypeError).extend(Error)
 
     def type=(arg)
       arg.nil? || TYPES.include?(arg) ||

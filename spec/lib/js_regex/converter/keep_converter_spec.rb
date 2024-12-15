@@ -1,6 +1,6 @@
 require 'spec_helper'
 
-describe JsRegex::Converter::KeepConverter do
+describe LangRegex::Converter::KeepConverter do
   it 'drops the keep mark "\K" with warning', targets: [ES2009, ES2015] do
     expect(/a\Kb/).to\
     become(/ab/).with_warning('ES2018')

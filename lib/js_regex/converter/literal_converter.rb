@@ -1,11 +1,11 @@
 require_relative 'base'
 
-class JsRegex
+module LangRegex
   module Converter
     #
     # Template class implementation.
     #
-    class LiteralConverter < JsRegex::Converter::Base
+    class LiteralConverter < Base
       ASTRAL_PLANE_CODEPOINT_PATTERN = /[\u{10000}-\u{10FFFF}]/
       LITERAL_REQUIRING_ESCAPE_PATTERN = /[\/\f\n\r\t\v]/
 

@@ -1,6 +1,6 @@
 require 'spec_helper'
 
-describe JsRegex::Converter::BackreferenceConverter do
+describe LangRegex::Converter::BackreferenceConverter do
   it 'preserves traditional numeric backreferences' do
     expect(/(a)(b)(c)\2/)
       .to stay_the_same
@@ -81,9 +81,9 @@ describe JsRegex::Converter::BackreferenceConverter do
   it 'marks backrefs for SecondPass conversion' do
     backref = Regexp::Parser.parse(/(a)\1/).last
 
-    result = JsRegex::Converter.convert(backref)
+    result = LangRegex::JsRegex.js_converter.convert(backref)
 
-    expect(result).to be_a JsRegex::Node
+    expect(result).to be_a LangRegex::Node
     expect(result.to_s).to eq '\1'
     expect(result.type).to eq :backref
   end

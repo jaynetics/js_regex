@@ -1,10 +1,14 @@
-class JsRegex
+module LangRegex
   module Converter
     #
     # Template class. Implement #convert_data in subclasses and return
     # instance of String or Node from it.
     #
     class Base
+      def initialize(converter)
+        @converter = converter
+      end
+
       # returns instance of Node with #quantifier attached.
       def convert(expression, context)
         self.context    = context
@@ -48,7 +52,7 @@ class JsRegex
       end
 
       def convert_expression(expression)
-        Converter.convert(expression, context)
+        @converter.convert(expression, context)
       end
 
       def warn_of_unsupported_feature(description = nil, min_target: nil)

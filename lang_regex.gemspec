@@ -5,7 +5,7 @@ require File.join(dir, 'lib', 'js_regex', 'version')
 Gem::Specification.new do |s|
   s.platform      = Gem::Platform::RUBY
   s.name          = 'js_regex'
-  s.version       = JsRegex::VERSION
+  s.version       = LangRegex::VERSION
   s.license       = 'MIT'
 
   s.summary       = 'Converts Ruby regexes to JavaScript regexes.'

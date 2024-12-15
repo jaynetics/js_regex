@@ -1,11 +1,11 @@
 require_relative 'base'
 
-class JsRegex
+module LangRegex
   module Converter
     #
     # Template class implementation.
     #
-    class TypeConverter < JsRegex::Converter::Base
+    class TypeConverter < Base
       HEX_EXPANSION              = '[0-9A-Fa-f]'
       NONHEX_EXPANSION           = '[^0-9A-Fa-f]'
       I_MODE_HEX_EXPANSION       = '[0-9A-F]'

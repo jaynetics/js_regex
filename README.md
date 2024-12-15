@@ -22,11 +22,14 @@ Add it to your gemfile or run
 In Ruby:
 
 ```ruby
-require 'js_regex'
+require 'lang_regex'
 
 ruby_hex_regex = /0x\h+/i
 
-js_regex = JsRegex.new(ruby_hex_regex)
+# To JS
+js_regex = LangRegex::JsRegex.new(ruby_hex_regex)
+# To PHP
+php_regex = LangRegex::Php.new(ruby_hex_regex)
 
 js_regex.warnings # => []
 js_regex.source # => '0x[0-9A-F]+'
@@ -59,7 +62,7 @@ var regExp = new RegExp(jsonObj.source, jsonObj.options);
 You might have noticed the empty `warnings` array in the example above:
 
 ```ruby
-js_regex = JsRegex.new(ruby_hex_regex)
+js_regex = LangRegex::JsRegex.new(ruby_hex_regex)
 js_regex.warnings # => []
 ```
 
@@ -68,18 +71,18 @@ If this array isn't empty, that means that your Ruby regex contained some stuff 
 ```ruby
 advanced_ruby_regex = /(?<!fizz)buzz/
 
-js_regex = JsRegex.new(advanced_ruby_regex)
+js_regex = LangRegex::JsRegex.new(advanced_ruby_regex)
 js_regex.warnings # => ["Dropped unsupported negative lookbehind '(?<!fizz)' at index 0 (requires at least `target: 'ES2018'`)"]
 js_regex.source # => 'buzz'
 ```
 
-There is also a strict initializer, `JsRegex::new!`, which raises a `JsRegex::Error` if there are incompatibilites. This is particularly useful if you use JsRegex to convert regex-like strings, e.g. strings entered by users, as a `JsRegex::Error` might also occur if the given regex is invalid:
+There is also a strict initializer, `LangRegex::new!`, which raises a `LangRegex::Error` if there are incompatibilites. This is particularly useful if you use JsRegex to convert regex-like strings, e.g. strings entered by users, as a `LangRegex::Error` might also occur if the given regex is invalid:
 
 ```ruby
 begin
   user_input = '('
-  JsRegex.new(user_input)
-rescue JsRegex::Error => e
+  LangRegex::JsRegex.new(user_input)
+rescue LangRegex::Error => e
   e.message # => "Premature end of pattern (missing group closing parenthesis)"
 end
 ```
@@ -89,7 +92,7 @@ end
 An `options:` argument lets you append options (a.k.a. "flags") to the output:
 
 ```ruby
-JsRegex.new(/x/i, options: 'g').to_h
+LangRegex::JsRegex.new(/x/i, options: 'g').to_h
 # => { source: 'x', options: 'gi' }
 ```
 
@@ -101,13 +104,13 @@ A `target:` argument can be given to target more recent versions of JS and unloc
 
 ```ruby
 # ES2015 and greater use the u-flag to avoid lengthy escape sequences
-JsRegex.new(/😋/, target: 'ES2009').to_s # => "/(?:\\uD83D\\uDE0B)/"
-JsRegex.new(/😋/, target: 'ES2015').to_s # => "/😋/u"
-JsRegex.new(/😋/, target: 'ES2018').to_s # => "/😋/u"
+LangRegex::JsRegex.new(/😋/, target: 'ES2009').to_s # => "/(?:\\uD83D\\uDE0B)/"
+LangRegex::JsRegex.new(/😋/, target: 'ES2015').to_s # => "/😋/u"
+LangRegex::JsRegex.new(/😋/, target: 'ES2018').to_s # => "/😋/u"
 
 # ES2018 adds support for lookbehinds, properties etc.
-JsRegex.new(/foo\K\p{ascii}/, target: 'ES2015').to_s # => "/foo[\x00-\x7f]/"
-JsRegex.new(/foo\K\p{ascii}/, target: 'ES2018').to_s # => "/(?<=foo)\p{ASCII}/"
+LangRegex::JsRegex.new(/foo\K\p{ascii}/, target: 'ES2015').to_s # => "/foo[\x00-\x7f]/"
+LangRegex::JsRegex.new(/foo\K\p{ascii}/, target: 'ES2018').to_s # => "/(?<=foo)\p{ASCII}/"
 ```
 
 <a name='SF'></a>

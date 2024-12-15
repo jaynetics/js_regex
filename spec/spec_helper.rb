@@ -5,9 +5,9 @@ if ENV['CI'] && RUBY_VERSION.start_with?('3.3') # match version in tests.yml
   SimpleCov.start
 end
 
-require 'js_regex'
+require 'lang_regex'
 
-include JsRegex::Target
+include LangRegex::Target
 
 RSpec.configure do |config|
   config.mock_with(:rspec) { |mocks| mocks.verify_partial_doubles = true }
@@ -36,18 +36,18 @@ end
 $js_regex_cache = {}
 
 # Returns a Hash of all targetted ECMAScript versions, mapped to their
-# JsRegex output. Use `targets:` RSpec metadata to test specific version(s).
-# This method should be used for all JsRegex initializations in syntax specs.
+# LangRegex output. Use `targets:` RSpec metadata to test specific version(s).
+# This method should be used for all LangRegex initializations in syntax specs.
 def conversions(rb_regex)
   active_targets.to_h do |target|
     output = $js_regex_cache[[rb_regex, target]] ||=
-      JsRegex.new(rb_regex, target: target)
+      LangRegex::JsRegex.new(rb_regex, target: target)
     [target, output]
   end
 end
 
 def active_targets
-  Thread.current[:js_regex_custom_targets] || JsRegex::Target::SUPPORTED
+  Thread.current[:js_regex_custom_targets] || LangRegex::Target::FULLY_SUPPORTED
 end
 
 def use_custom_targets(arg)
@@ -134,8 +134,12 @@ RSpec::Matchers.define(:keep_matching) do |*test_strings, with_results: nil|
           # are not completely identical between Ruby and JS matching calls.
           # In that case, don't specify expected results and just check that
           # a valid string does produce a match.
-          rb_regex =~ string           || @msg = "rb did not match `#{string}`"
-          test_in_js(js_regex, string) || @msg = "js did not match `#{string}`"
+          rb_regex =~ string || @msg = "rb did not match `#{string}`"
+          if target == PCRE
+            test_in_php(js_regex, string) || @msg = "php did not match `#{string}`"
+          else
+            test_in_js(js_regex, string) || @msg = "js did not match `#{string}`"
+          end
         end
       end
 
@@ -169,7 +173,7 @@ RSpec::Matchers.define(:be_dropped_with_warning) do
     allow_any_instance_of(Regexp::Expression::Root).to receive(:map).and_yield(exp)
     active_targets.all? do |target|
       @target = target
-      result = JsRegex.new(/dummy/, target: target)
+      result = LangRegex::JsRegex.new(/dummy/, target: target)
       source = result.source
       source.empty? || @msg = "expected empty source, got `#{source}`"
       result.warnings.count > 0 || @msg = 'did not warn'
@@ -201,6 +205,13 @@ end
 
 def test_in_js(js_regex, string)
   eval_js("#{js_regex}.test('#{js_escape(string)}');")
+end
+
+require 'open3'
+
+def test_in_php(php_regex, string)
+  _, _, status = Open3.capture3('php', '-r', "exit(preg_match('#{php_regex}', '#{js_escape(string)}'));")
+  !status.success?
 end
 
 def to_s_like_json(js_regex)

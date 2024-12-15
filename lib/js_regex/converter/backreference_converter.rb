@@ -1,11 +1,11 @@
 require_relative 'base'
 
-class JsRegex
+module LangRegex
   module Converter
     #
     # Template class implementation.
     #
-    class BackreferenceConverter < JsRegex::Converter::Base
+    class BackreferenceConverter < Base
       private
 
       def convert_data

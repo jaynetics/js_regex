@@ -1,7 +1,7 @@
 require 'spec_helper'
 
-describe JsRegex::Target do
-  subject { JsRegex::Target }
+describe LangRegex::Target do
+  subject { LangRegex::Target }
 
   it 'can ::cast input to a supported target' do
     # default value

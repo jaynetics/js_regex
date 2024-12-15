@@ -1,12 +1,12 @@
 require_relative 'base'
 require_relative 'literal_converter'
 
-class JsRegex
+module LangRegex
   module Converter
     #
     # Template class implementation.
     #
-    class EscapeConverter < JsRegex::Converter::Base
+    class EscapeConverter < Base
       ESCAPES_SHARED_BY_RUBY_AND_JS = %i[
         alternation
         backslash
