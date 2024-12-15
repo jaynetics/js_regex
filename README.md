@@ -216,3 +216,8 @@ Feel free to send suggestions, point out issues, or submit pull requests.
 ## Outlook
 
 The gem is pretty feature-complete at this point. The remaining unsupported features listed above are either impossible or impractical to replicate in JavaScript. The generated output could still be made more concise in some cases, through usage of the newer `s` or `v` flags. Finally, `ES2018` might become the default target at some point.
+
+## Similar projects
+
+- [Oniguruma-To-ES](https://github.com/slevithan/oniguruma-to-es) is an Oniguruma to JavaScript regex transpiler, written in JavaScript. Please note that it is not fully compatible with Ruby regexes as Ruby uses Onigmo, a fork of Oniguruma.
+- [regex-translator](https://github.com/Anadian/regex-translator) is a regex transpiler written in JavaScript that covers various formats, not including Ruby.
