@@ -42,10 +42,10 @@ class JsRegex
           unicode_escape_codepoint
         when :literal
           LiteralConverter.convert_data(expression.char, context)
+        when :bell, :escape, :hex, :octal
+          hex_escape_codepoint
         when *ESCAPES_SHARED_BY_RUBY_AND_JS
           pass_through
-        when :bell, :escape, :octal
-          hex_escape_codepoint
         else
           warn_of_unsupported_feature
         end

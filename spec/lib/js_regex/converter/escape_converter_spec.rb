@@ -84,6 +84,10 @@ describe JsRegex::Converter::EscapeConverter do
     expect(/\x42/).to stay_the_same.and keep_matching('ABC', with_results: %w[B])
   end
 
+  it 'pads single digit hex escapes' do
+    expect(/\xA/).to become(/\x0A/).and keep_matching("A\nC", with_results: ["\n"])
+  end
+
   it 'lets unicode / codepoint escapes pass through' do
     expect(/\u263A/).to stay_the_same.and keep_matching('A☺C', with_results: %w[☺])
   end
