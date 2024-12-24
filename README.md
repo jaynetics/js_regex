@@ -69,7 +69,7 @@ If this array isn't empty, that means that your Ruby regex contained some stuff 
 advanced_ruby_regex = /(?<!fizz)buzz/
 
 js_regex = JsRegex.new(advanced_ruby_regex)
-js_regex.warnings # => ["Dropped unsupported negative lookbehind '(?<!fizz)' at index 0 (requires at least `target: 'ES2018'`)"]
+js_regex.warnings # => ["Dropped unsupported negated lookbehind '(?<!fizz)' at index 0 (requires at least `target: 'ES2018'`)"]
 js_regex.source # => 'buzz'
 ```
 
