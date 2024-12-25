@@ -33,10 +33,8 @@ describe JsRegex do
   end
 
   it 'can handle the email validation regex of the devise gem' do
-    # regexp from: https://github.com/plataformatec/devise/blob/
-    # 7df57d5081f9884849ca15e4fde179ef164a575f/lib/devise.rb
-    # examples from: https://github.com/plataformatec/devise/blob/
-    # 7df57d5081f9884849ca15e4fde179ef164a575f/test/devise_test.rb
+    # regexp from: https://github.com/plataformatec/devise/blob/7df57d5/lib/devise.rb
+    # examples from: https://github.com/plataformatec/devise/blob/7df57d5/test/devise_test.rb
     valid_emails = ['test@example.com', 'jo@jo.co', 'f4$_m@you.com',
                     'testing.example@example.com.ua']
     invalid_emails = ['rex', 'test@go,com', 'test user@example.com',
