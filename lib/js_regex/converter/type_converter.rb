@@ -83,7 +83,7 @@ class JsRegex
 
       def xgrapheme
         if context.es_2018_or_higher? && context.enable_u_option
-          ES2018_XGRAPHEME_EXPANSION
+          wrap_in_backrefed_lookahead(ES2018_XGRAPHEME_EXPANSION)
         else
           warn_of_unsupported_feature
         end
