@@ -18,12 +18,20 @@ describe JsRegex::Converter::AnchorConverter do
       .and keep_not_matching('abcdef', "abc\n\n")
   end
 
-  it 'preserves the beginning-of-line anchor "^"' do
+  it 'preserves the beginning-of-line anchor "^"', targets: [ES2009, ES2015] do
     expect(/^\w/).to stay_the_same.and keep_matching('abc', with_results: %w[a])
   end
 
-  it 'preserves the end-of-line anchor "$"' do
-    expect(/\w$/).to stay_the_same.and keep_matching('abc', with_results: %w[c])
+  it 'converts the beginning-of-line anchor "^"', targets: [ES2018] do
+    expect(/^\w?/).to\
+    become('(?<=^|\n(?!$))\w?')
+      .and keep_matching("a\nb", with_results: %w[a b])
+  end
+
+  it 'converts the end-of-line anchor "$"' do
+    expect(/\w$/).to\
+    become(/\w(?=$|\n)/)
+      .and keep_matching("a\nbc", with_results: %w[a c])
   end
 
   it 'preserves the word-boundary anchor "\b" with a warning', targets: [ES2009, ES2015] do

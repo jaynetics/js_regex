@@ -122,6 +122,7 @@ When converting a Regexp that contains unsupported features, corresponding parts
 
 | Description                 | Example              | ES2009 | ES2015 | ES2018 |
 |-----------------------------|----------------------|--------|--------|--------|
+| anchors                     | \A, \z, ^, $         | ✓ [6]  | ✓ [6]  | ✓      |
 | escaped meta chars          | \\\A                 | ✓      | ✓      | ✓      |
 | dot matching astral chars   | /./ =~ '😋'          | ✓      | ✓      | ✓      |
 | Ruby's multiline mode [1]   | /.+/m                | ✓      | ✓      | ✓      |
@@ -164,7 +165,7 @@ When converting a Regexp that contains unsupported features, corresponding parts
 | extended grapheme type      | \X                   | X      | X      | ✓      |
 | lookbehinds                 | (?<=a), (?<!a)       | X      | X      | ✓      |
 | keep marks                  | \K                   | X      | X      | ✓      |
-| sane word boundaries [5]    | \b, \B               | X      | X      | ✓      |
+| sane word boundaries        | \b, \B               | X [5]  | X [5]  | ✓      |
 | nested keep mark            | /a(b\Kc)d/           | X      | X      | X      |
 | backref by recursion level  | \k<1+1>              | X      | X      | X      |
 | previous match anchor       | \G                   | X      | X      | X      |
@@ -181,6 +182,8 @@ When converting a Regexp that contains unsupported features, corresponding parts
 [4] These are dropped without warning because they can be removed without affecting the matching behavior.
 
 [5] When targetting ES2018, \b and \B are replaced with a lookbehind/lookahead solution. For other targets, they are carried over as is, but generate a warning. They only recognize ASCII word chars in JavaScript, and neither the `u` nor the `v` flag makes them behave correctly.
+
+[6] `^` only matches at the beginning of the string for the targets ES2009 and ES2015. See https://github.com/jaynetics/js_regex/issues/30
 
 <a name='EX'></a>
 ## How it Works

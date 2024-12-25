@@ -10,13 +10,24 @@ class JsRegex
 
       def convert_data
         case subtype
-        when :bol, :bos then '^'
-        when :eol, :eos then '$'
+        when :bol then convert_bol
+        when :bos then '^'
+        when :eol then '(?=$|\n)'
+        when :eos then '$'
         when :eos_ob_eol then '(?=\n?$)'
         when :word_boundary then convert_boundary
         when :nonword_boundary then convert_nonboundary
         else
           warn_of_unsupported_feature
+        end
+      end
+
+      def convert_bol
+        if context.es_2018_or_higher?
+          '(?<=^|\n(?!$))'
+        else
+          # TODO: warn in v4.0.0, or drop ES2009 & ES2015 support
+          '^'
         end
       end
 

@@ -9,6 +9,7 @@ and this project adheres to [Semantic Versioning](http://semver.org/spec/v2.0.0.
 ### Fixed
 
 - thanks to https://github.com/slevithan for reporting all these
+- more closely emulate `^` and `$` (`^` only for newer JS)
 - handling of single digit hex escapes, e.g. `\xA`
 - handling of numeric backrefs followed by space and numbers in x-mode
 
