@@ -6,6 +6,12 @@ and this project adheres to [Semantic Versioning](http://semver.org/spec/v2.0.0.
 
 ## Unreleased
 
+### Fixed
+
+- thanks to https://github.com/slevithan for reporting all these
+- handling of single digit hex escapes, e.g. `\xA`
+- handling of numeric backrefs followed by space and numbers in x-mode
+
 ## [3.12.0] - 2024-11-02
 
 ### Added

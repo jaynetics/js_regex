@@ -8,6 +8,12 @@ describe JsRegex::Converter::BackreferenceConverter do
       .and keep_not_matching('abc')
   end
 
+  it 'delimits traditional numeric backreferences in x-mode' do
+    expect(/(a)\1 0/x).to\
+    become(/(a)\1(?:)0/)
+      .and keep_matching('aa0')
+  end
+
   it 'substitutes ab number backreferences ("\k<1>") with numeric ones' do
     expect(/(a)(b)(c)\k<2>/).to\
     become(/(a)(b)(c)\2/)

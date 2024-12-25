@@ -29,7 +29,8 @@ class JsRegex
 
       def convert_to_plain_num_ref
         position = new_position
-        Node.new("\\#{position}", reference: position, type: :backref)
+        text = "\\#{position}#{'(?:)' if expression.x?}"
+        Node.new(text, reference: position, type: :backref)
       end
 
       def new_position
