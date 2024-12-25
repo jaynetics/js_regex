@@ -6,6 +6,10 @@ and this project adheres to [Semantic Versioning](http://semver.org/spec/v2.0.0.
 
 ## Unreleased
 
+### Added
+
+- support for forcing the 'd' and 'v' flags via the `options` argument
+
 ### Fixed
 
 - thanks to https://github.com/slevithan for reporting all these

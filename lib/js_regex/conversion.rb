@@ -37,7 +37,7 @@ class JsRegex
       end
 
       def convert_options(input, custom_options, required_options)
-        options = custom_options.to_s.scan(/[gimsuy]/) + required_options
+        options = custom_options.to_s.scan(/[dgimsuvy]/) + required_options
         if input.is_a?(Regexp) && (input.options & Regexp::IGNORECASE).nonzero?
           options << 'i'
         end
