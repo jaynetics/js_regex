@@ -235,7 +235,7 @@ describe JsRegex::Converter::BackreferenceConverter do
       become(/(foo)(?<x>bar)(baz)(bar)+/)
     end
 
-    it 'replaces recursive subexpression calls', targets: [ES2009] do # TODO target all
+    it 'replaces recursive subexpression calls' do
       expect(/(a\g<1>?b) (c)\2/).to\
       become(/(a(a(a(a(a(ab)?b)?b)?b)?b)?b) (c)\7/)
         .with_warning("Recursion for '\\g<1>?' curtailed at 5 levels")
