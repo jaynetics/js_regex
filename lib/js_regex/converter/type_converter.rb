@@ -30,7 +30,7 @@ class JsRegex
         case subtype
         when :hex then hex_expansion
         when :nonhex then nonhex_expansion
-        when :linebreak then LINEBREAK_EXPANSION
+        when :linebreak then linebreak_expansion
         when :xgrapheme then xgrapheme
         when :digit, :space, :word
           return pass_through if self.class.directly_compatible?(expression)
@@ -61,6 +61,10 @@ class JsRegex
         else
           NONHEX_EXPANSION
         end
+      end
+
+      def linebreak_expansion
+        wrap_in_backrefed_lookahead(LINEBREAK_EXPANSION)
       end
 
       def negative_set_substitution

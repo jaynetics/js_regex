@@ -58,10 +58,12 @@ describe JsRegex::Converter::TypeConverter do
     become(/\P{AHex}+/).and keep_matching('x').and keep_not_matching('f', 'F')
   end
 
-  it 'substitutes the generic linebreak type "\R"' do
+  it 'substitutes the generic linebreak type "\R", preserving atomicity' do
     expect(/\R/).to\
-    become(/(?:\r\n|[\n\v\f\r\u0085\u2028\u2029])/)
+    become(/(?:(?=((?:\r\n|[\n\v\f\r\u0085\u2028\u2029])))\1)/)
       .and keep_matching("_\n_\r\n_", with_results: %W[\n \r\n])
+
+    expect(/\R\n/).to keep_not_matching("\r\n")
   end
 
   it 'drops the extended grapheme type "\X" with warning', targets: [ES2009, ES2015] do
