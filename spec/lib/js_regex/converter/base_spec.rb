@@ -100,47 +100,47 @@ describe JsRegex::Converter::Base do
     context 'when quantifiers are possessive' do
       it 'emulates possessiveness for zero-or-ones (?+)' do
         expect(/a?+/).to\
-        become(/(?=(a?))\1(?:)/)
+        become(/(?:(?=(a?))\1)/)
       end
 
       it 'emulates possessiveness for zero-or-mores (*+)' do
         expect(/a*+/).to\
-        become(/(?=(a*))\1(?:)/)
+        become(/(?:(?=(a*))\1)/)
       end
 
       it 'emulates possessiveness for one-or-mores (++)' do
         expect(/a++/).to\
-        become(/(?=(a+))\1(?:)/)
+        become(/(?:(?=(a+))\1)/)
       end
 
       it 'emulates possessiveness for set quantifiers' do
         expect(/[a-z]++/).to\
-        become(/(?=([a-z]+))\1(?:)/)
+        become(/(?:(?=([a-z]+))\1)/)
       end
 
       it 'emulates possessiveness for group quantifiers' do
         expect(/(?:a|b)++/).to\
-        become(/(?=((?:a|b)+))\1(?:)/)
+        become(/(?:(?=((?:a|b)+))\1)/)
       end
 
       it 'takes into account preceding active groups for the backreference' do
         expect(/(a)(b)(c)_d++/).to\
-        become(/(a)(b)(c)_(?=(d+))\4(?:)/)
+        become(/(a)(b)(c)_(?:(?=(d+))\4)/)
       end
 
       it 'isnt confused by preceding passive groups' do
         expect(/(?:c)_a++/).to\
-        become(/(?:c)_(?=(a+))\1(?:)/)
+        become(/(?:c)_(?:(?=(a+))\1)/)
       end
 
       it 'isnt confused by preceding lookahead groups' do
         expect(/(?=c)_a++/).to\
-        become(/(?=c)_(?=(a+))\1(?:)/)
+        become(/(?=c)_(?:(?=(a+))\1)/)
       end
 
       it 'isnt confused by preceding negative lookahead groups' do
         expect(/(?!=x)_a++/).to\
-        become(/(?!=x)_(?=(a+))\1(?:)/)
+        become(/(?!=x)_(?:(?=(a+))\1)/)
       end
     end
 
@@ -217,7 +217,7 @@ describe JsRegex::Converter::Base do
 
     it 'returns the contents wrapped in a backreferenced lookahead' do
       result = converter.send(:wrap_in_backrefed_lookahead, %w[foo bar])
-      expect(result.to_s).to eq('(?=(foobar))\\1(?:)')
+      expect(result.to_s).to eq('(?:(?=(foobar))\\1)')
       expect(result.children[4].type).to eq :backref
       expect(result.children[4].children).to eq %w[\\1]
     end

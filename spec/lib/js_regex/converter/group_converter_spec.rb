@@ -87,53 +87,59 @@ describe JsRegex::Converter::GroupConverter do
     # regex-emulate-atomic-grouping-with-lookahead
     it 'emulates them using backreferenced lookahead groups' do
       expect(/1(?>33|3)37/).to\
-      become(/1(?=(33|3))\1(?:)37/)
+      become(/1(?:(?=(33|3))\1)37/)
         .and keep_matching('13337', with_results: ['13337'])
         .and keep_not_matching('1337')
     end
 
     it 'can handle multiple atomic groups' do
       expect(/(?>33|3)(?:3)(?>33|3)3/).to\
-      become(/(?=(33|3))\1(?:)(?:3)(?=(33|3))\2(?:)3/)
+      become(/(?:(?=(33|3))\1)(?:3)(?:(?=(33|3))\2)3/)
         .and keep_matching('333333', with_results: ['333333'])
         .and keep_not_matching('3333')
     end
 
     it 'can handle atomic groups nested in non-atomic groups' do
       expect(/1((?>33|3))37/).to\
-      become(/1((?=(33|3))\2(?:))37/)
+      become(/1((?:(?=(33|3))\2))37/)
         .and keep_matching('13337')
         .and keep_not_matching('1337')
     end
 
+    it 'can handle quantifiers' do
+      expect(/1(?>3)+37/).to\
+      become(/1(?:(?=(3))\1)+37/)
+        .and keep_matching('1337')
+    end
+
     it 'makes atomic groups nested in atomic groups non-atomic with warning' do
-      expect(/1(?>(?>33|3))37/).to\
-      become(/1(?=((?:33|3)))\1(?:)37/).with_warning('nested atomic group')
+      expect(/1(?>(?:(?>33|3)))37/).to\
+      become(/1(?:(?=((?:(?:33|3))))\1)37/).with_warning('nested atomic group')
     end
 
     it 'takes into account preceding active groups for the backreference' do
       expect(/(a(b))_1(?>33|3)37/).to\
-      become(/(a(b))_1(?=(33|3))\3(?:)37/)
+      become(/(a(b))_1(?:(?=(33|3))\3)37/)
         .and keep_matching('ab_13337')
         .and keep_not_matching('ab_1337')
     end
 
     it 'isnt confused by preceding passive groups' do
       expect(/(?:c)_1(?>33|3)37/).to\
-      become(/(?:c)_1(?=(33|3))\1(?:)37/)
+      become(/(?:c)_1(?:(?=(33|3))\1)37/)
         .and keep_matching('c_13337')
         .and keep_not_matching('c_1337')
     end
 
     it 'isnt confused by preceding lookahead groups' do
       expect(/(?=c)_1(?>33|3)37/).to\
-      become(/(?=c)_1(?=(33|3))\1(?:)37/)
+      become(/(?=c)_1(?:(?=(33|3))\1)37/)
         .and keep_not_matching('c_1337')
     end
 
     it 'isnt confused by preceding negative lookahead groups' do
       expect(/(?!=x)_1(?>33|3)37/).to\
-      become(/(?!=x)_1(?=(33|3))\1(?:)37/)
+      become(/(?!=x)_1(?:(?=(33|3))\1)37/)
         .and keep_matching('c_13337')
         .and keep_not_matching('c_1337')
     end

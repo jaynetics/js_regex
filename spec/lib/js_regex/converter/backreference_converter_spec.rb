@@ -102,63 +102,63 @@ describe JsRegex::Converter::BackreferenceConverter do
   context 'when there are preceding substitutions' do
     it 'increments traditional number backrefs accordingly' do
       expect(/(?>aa|a)(?>aa|a)(X)\1/).to\
-      become(/(?=(aa|a))\1(?:)(?=(aa|a))\2(?:)(X)\3/)
+      become(/(?:(?=(aa|a))\1)(?:(?=(aa|a))\2)(X)\3/)
         .and keep_matching('aaaaXX')
         .and keep_not_matching('aaaaX')
     end
 
     it 'increments \k-style number backrefs accordingly' do
       expect(/(?>aa|a)(?>aa|a)(X)\k<1>/).to\
-      become(/(?=(aa|a))\1(?:)(?=(aa|a))\2(?:)(X)\3/)
+      become(/(?:(?=(aa|a))\1)(?:(?=(aa|a))\2)(X)\3/)
         .and keep_matching('aaaaXX')
         .and keep_not_matching('aaaaX')
     end
 
     it 'increments relative backrefs accordingly' do
       expect(/(?>aa|a)(?>aa|a)(X)\k<-1>/).to\
-      become(/(?=(aa|a))\1(?:)(?=(aa|a))\2(?:)(X)\3/)
+      become(/(?:(?=(aa|a))\1)(?:(?=(aa|a))\2)(X)\3/)
         .and keep_matching('aaaaXX')
         .and keep_not_matching('aaaaX')
     end
 
     it 'increments name backrefs accordingly', targets: [ES2009, ES2015] do
       expect(/(?>aa|a)(?>aa|a)(?<foo>X)\k<foo>/).to\
-      become(/(?=(aa|a))\1(?:)(?=(aa|a))\2(?:)(X)\3/)
+      become(/(?:(?=(aa|a))\1)(?:(?=(aa|a))\2)(X)\3/)
         .and keep_matching('aaaaXX')
         .and keep_not_matching('aaaaX')
     end
 
     it 'keeps name backrefs on ES2018', targets: [ES2018] do
       expect(/(?>aa|a)(?<foo>X)\k<foo>(?>aa|a)/).to\
-      become('(?=(aa|a))\1(?:)(?<foo>X)\k<foo>(?=(aa|a))\3(?:)')
+      become('(?:(?=(aa|a))\1)(?<foo>X)\k<foo>(?:(?=(aa|a))\3)')
     end
   end
 
   context 'when there are group additions after the backref' do
     it 'does not increment traditional number backrefs' do
       expect(/(a)\1_1(?>33|3)37/).to\
-      become(/(a)\1_1(?=(33|3))\2(?:)37/)
+      become(/(a)\1_1(?:(?=(33|3))\2)37/)
         .and keep_matching('aa_13337')
         .and keep_not_matching('aa_1337')
     end
 
     it 'does not increment \k-style number backrefs' do
       expect(/(a)\k<1>_1(?>33|3)37/).to\
-      become(/(a)\1_1(?=(33|3))\2(?:)37/)
+      become(/(a)\1_1(?:(?=(33|3))\2)37/)
         .and keep_matching('aa_13337')
         .and keep_not_matching('aa_1337')
     end
 
     it 'does not increment relative number backrefs' do
       expect(/(a)\k<-1>_1(?>33|3)37/).to\
-      become(/(a)\1_1(?=(33|3))\2(?:)37/)
+      become(/(a)\1_1(?:(?=(33|3))\2)37/)
         .and keep_matching('aa_13337')
         .and keep_not_matching('aa_1337')
     end
 
     it 'does not increment name backrefs', targets: [ES2009, ES2015] do
       expect(/(?<foo>a)\k<foo>_1(?>33|3)37/).to\
-      become(/(a)\1_1(?=(33|3))\2(?:)37/)
+      become(/(a)\1_1(?:(?=(33|3))\2)37/)
         .and keep_matching('aa_13337')
         .and keep_not_matching('aa_1337')
     end
@@ -167,28 +167,28 @@ describe JsRegex::Converter::BackreferenceConverter do
   context 'when there are group additions between the backref and its target' do
     it 'does not increment traditional number backrefs' do
       expect(/(X)(?>aa|a)\1/).to\
-      become(/(X)(?=(aa|a))\2(?:)\1/)
+      become(/(X)(?:(?=(aa|a))\2)\1/)
         .and keep_matching('XaX')
         .and keep_not_matching('Xa')
     end
 
     it 'does not increment \k-style number backrefs' do
       expect(/(X)(?>aa|a)\k<1>/).to\
-      become(/(X)(?=(aa|a))\2(?:)\1/)
+      become(/(X)(?:(?=(aa|a))\2)\1/)
         .and keep_matching('XaX')
         .and keep_not_matching('Xa')
     end
 
     it 'does not increment relative number backrefs' do
       expect(/(X)(?>aa|a)\k<-1>/).to\
-      become(/(X)(?=(aa|a))\2(?:)\1/)
+      become(/(X)(?:(?=(aa|a))\2)\1/)
         .and keep_matching('XaX')
         .and keep_not_matching('Xa')
     end
 
     it 'does not increment name backrefs', targets: [ES2009, ES2015] do
       expect(/(?<foo>X)(?>aa|a)\k<foo>/).to\
-      become(/(X)(?=(aa|a))\2(?:)\1/)
+      become(/(X)(?:(?=(aa|a))\2)\1/)
         .and keep_matching('XaX')
         .and keep_not_matching('Xa')
     end

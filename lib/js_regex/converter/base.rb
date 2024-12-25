@@ -79,8 +79,9 @@ class JsRegex
         number = context.capturing_group_count + 1
         backref_node = Node.new("\\#{number}", reference: number, type: :backref)
         context.increment_local_capturing_group_count
-        # an empty passive group (?:) is appended as literal digits may follow
-        Node.new('(?=(', *content, '))', backref_node, '(?:)')
+        # The surrounding group is added so that quantifiers apply to the whole.
+        # Without it, `(?:)` would need to be appended as literal digits may follow.
+        Node.new('(?:(?=(', *content, '))', backref_node, ')')
       end
     end
   end
