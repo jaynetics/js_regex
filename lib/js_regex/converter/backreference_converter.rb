@@ -44,7 +44,7 @@ class JsRegex
       def convert_call
         if context.recursions(expression) >= 5
           warn_of("Recursion for '#{expression}' curtailed at 5 levels")
-          return ''
+          return drop
         end
 
         context.count_recursion(expression)
@@ -52,7 +52,9 @@ class JsRegex
         target_copy = expression.referenced_expression.unquantified_clone
         # avoid "Duplicate capture group name" error in JS
         target_copy.token = :capture if target_copy.is?(:named, :group)
+        context.start_subexp_recursion
         result = convert_expression(target_copy)
+        context.end_subexp_recursion
         # wrap in group if it is a full-pattern recursion
         expression.reference == 0 ? Node.new('(?:', result, ')') : result
       end

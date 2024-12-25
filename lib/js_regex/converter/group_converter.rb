@@ -84,7 +84,7 @@ class JsRegex
         tail = opts[:tail] || ')'
         return Node.new(*wrap(head, tail)) if opts[:capturing].equal?(false)
 
-        context.capture_group
+        context.capture_group unless context.in_subexp_recursion
         ref = expression.number
         Node.new(*wrap(head, tail), reference: ref, type: :captured_group)
       end

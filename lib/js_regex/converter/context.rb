@@ -10,6 +10,7 @@ class JsRegex
                   :case_insensitive_root,
                   :fail_fast,
                   :in_atomic_group,
+                  :in_subexp_recursion,
                   :warnings
 
       def initialize(case_insensitive_root: false, fail_fast: false, target: nil)
@@ -81,6 +82,14 @@ class JsRegex
         [exp.class, exp.starts_at]
       end
 
+      def start_subexp_recursion
+        self.in_subexp_recursion = true
+      end
+
+      def end_subexp_recursion
+        self.in_subexp_recursion = false
+      end
+
       # takes and returns 1-indexed group positions.
       # new is different from old if capturing groups were added in between.
       def new_capturing_group_position(old_position)
@@ -106,6 +115,7 @@ class JsRegex
                   :case_insensitive_root,
                   :fail_fast,
                   :in_atomic_group,
+                  :in_subexp_recursion,
                   :warnings
 
       def total_added_capturing_groups

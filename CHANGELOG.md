@@ -13,6 +13,7 @@ and this project adheres to [Semantic Versioning](http://semver.org/spec/v2.0.0.
 - handling of single digit hex escapes, e.g. `\xA` (#31)
 - handling of quantified atomic groups, e.g. `(?>a){2}` (#34)
 - handling of numeric backrefs followed by space and numbers in x-mode (#33)
+- handling of recursive subexp calls and following backrefs (#36)
 
 ## [3.12.0] - 2024-11-02
 
