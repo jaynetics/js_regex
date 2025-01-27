@@ -12,7 +12,9 @@ and this project adheres to [Semantic Versioning](http://semver.org/spec/v2.0.0.
 
 ### Fixed
 
-- thanks to https://github.com/slevithan for reporting all these
+- fix handling of set members that need to be escaped in v-mode
+  - thanks to https://github.com/dmke for the report
+- thanks to https://github.com/slevithan for reporting all the following:
 - more closely emulate `^` and `$` (`^` only for newer JS) (#30)
 - handling of single digit hex escapes, e.g. `\xA` (#31)
 - handling of quantified atomic groups, e.g. `(?>a){2}` (#34)

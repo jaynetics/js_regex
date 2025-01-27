@@ -41,11 +41,7 @@ class JsRegex
       def simple_convert_child(exp)
         case exp.type
         when :literal
-          return false if !context.u? &&
-            exp.text =~ LiteralConverter::ASTRAL_PLANE_CODEPOINT_PATTERN &&
-            !context.enable_u_option
-
-          LiteralConverter.escape_incompatible_bmp_literals(exp.text)
+          simple_convert_literal_child(exp)
         when :set
           # full conversion is needed for nested sets and intersections
           exp.token.equal?(:range) && exp.expressions.map do |op|
@@ -67,6 +63,19 @@ class JsRegex
         end
       end
 
+      def simple_convert_literal_child(exp)
+        if !context.u? &&
+           exp.text =~ LiteralConverter::ASTRAL_PLANE_CODEPOINT_PATTERN &&
+           !context.enable_u_option
+          false
+        elsif SET_LITERALS_REQUIRING_ESCAPE_PATTERN.match?(exp.text)
+          "\\#{exp.text}"
+        else
+          LiteralConverter.escape_incompatible_bmp_literals(exp.text)
+        end
+      end
+
+      SET_LITERALS_REQUIRING_ESCAPE_PATTERN = Regexp.union(%w<( ) [ ] { } / - |>)
       SET_SPECIFIC_ESCAPES_PATTERN = /[\^\-]/
       CONVERTIBLE_ESCAPE_TOKENS = %i[control meta_sequence bell escape octal] +
         EscapeConverter::ESCAPES_SHARED_BY_RUBY_AND_JS

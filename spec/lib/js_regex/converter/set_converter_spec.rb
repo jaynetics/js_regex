@@ -134,6 +134,18 @@ describe JsRegex::Converter::SetConverter do
     expect(/[字-汉]/).to stay_the_same.and keep_matching('孙孜', with_results: %w[孙 孜])
   end
 
+  it 'escapes literal (non-range) hyphens' do
+    expect(/[-]/).to become(/[\-]/).and keep_matching('a-b', with_results: %w[-])
+  end
+
+  it 'escapes forward slash members' do
+    expect(%r{[/]}).to become('[\/]').and keep_matching('a/b', with_results: %w[/])
+  end
+
+  it 'escapes other literal members as required in v-mode' do
+    expect(/[|{(]/).to become(/[\|\{\(]/).and keep_matching('a{b', with_results: %w[{])
+  end
+
   it 'preserves the backspace pseudo set' do
     expect(/[x\b]/).to stay_the_same.and keep_matching("a\bz", with_results: %W[\b])
   end
