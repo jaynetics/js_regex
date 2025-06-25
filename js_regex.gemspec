@@ -1,4 +1,3 @@
-# encoding: utf-8
 dir = File.expand_path(__dir__)
 require File.join(dir, 'lib', 'js_regex', 'version')
 

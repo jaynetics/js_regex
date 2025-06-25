@@ -13,9 +13,9 @@ jobs:
     - name: Set up Ruby
       uses: ruby/setup-ruby@v1
       with:
-        ruby-version: 3.3
+        ruby-version: 3.4
     - name: Cache gems
-      uses: actions/cache@v1
+      uses: actions/cache@v4
       with:
         path: vendor/bundle
         key: ${{ runner.os }}-rubocop-${{ hashFiles('**/Gemfile.lock') }}
