@@ -58,30 +58,16 @@ describe JsRegex::Converter::BackreferenceConverter do
       .and keep_not_matching('abaa')
   end
 
-  it 'substitutes ab named backreferences ("\k<foo>") with numeric ones', targets: [ES2009, ES2015] do
+  it 'substitutes ab named backreferences ("\k<foo>") with numeric ones' do
     expect(/(a)(?<foo>b)(c)\k<foo>/).to\
     become(/(a)(b)(c)\2/)
       .and keep_matching('abcb')
       .and keep_not_matching('abc')
   end
 
-  it 'keeps ab named backreferences ("\k<foo>") on ES2018+', targets: [ES2018] do
-    expect(/(a)(?<foo>b)(c)\k<foo>/)
-      .to stay_the_same
-      .and keep_matching('abcb')
-      .and keep_not_matching('abc')
-  end
-
-  it 'substitutes sq named backreferences ("\k\'foo\'") with numeric ones', targets: [ES2009, ES2015] do
+  it 'substitutes sq named backreferences ("\k\'foo\'") with numeric ones' do
     expect(/(a)(?'foo'b)(c)\k'foo'/).to\
     become(/(a)(b)(c)\2/)
-      .and keep_matching('abcb')
-      .and keep_not_matching('abc')
-  end
-
-  it 'changes sq named backreferences ("\k\'foo\'") to ab named on ES2018+', targets: [ES2018] do
-    expect(/(a)(?'foo'b)(c)\k'foo'/).to\
-    become(/(a)(?<foo>b)(c)\k<foo>/)
       .and keep_matching('abcb')
       .and keep_not_matching('abc')
   end
@@ -130,10 +116,6 @@ describe JsRegex::Converter::BackreferenceConverter do
         .and keep_not_matching('aaaaX')
     end
 
-    it 'keeps name backrefs on ES2018', targets: [ES2018] do
-      expect(/(?>aa|a)(?<foo>X)\k<foo>(?>aa|a)/).to\
-      become('(?:(?=(aa|a))\1)(?<foo>X)\k<foo>(?:(?=(aa|a))\3)')
-    end
   end
 
   context 'when there are group additions after the backref' do
@@ -225,16 +207,11 @@ describe JsRegex::Converter::BackreferenceConverter do
         .and keep_not_matching('foobarquz')
     end
 
-    it 'replaces named subexpression calls with the targeted subexpression', targets: [ES2009, ES2015] do
+    it 'replaces named subexpression calls with the targeted subexpression' do
       expect(/(foo)(?<x>bar)(baz)\g<x>+/).to\
       become(/(foo)(bar)(baz)(bar)+/)
         .and keep_matching('foobarbazbar')
         .and keep_not_matching('foobarbaz')
-    end
-
-    it 'replaces named subexpression calls with the targeted subexpression', targets: [ES2018] do
-      expect(/(foo)(?<x>bar)(baz)\g<x>+/).to\
-      become(/(foo)(?<x>bar)(baz)(bar)+/)
     end
 
     it 'replaces recursive subexpression calls' do
@@ -253,9 +230,10 @@ describe JsRegex::Converter::BackreferenceConverter do
       become(/(foo)(foo)(bar)\3/).and keep_matching('foofoobarbar')
     end
 
-    it 'keeps backrefs correct when replacing named subexpression calls', targets: [ES2018] do
+    it 'keeps backrefs correct when replacing named subexpression calls' do
+      # Named groups are always converted to numbered
       expect('(?<a>foo)\g<a>(bar)\2').to\
-      become('(?<a>foo)(foo)(bar)\3')
+      become('(foo)(foo)(bar)\3')
     end
 
     it 'keeps 5 levels of recursive calls with warning' do
@@ -271,6 +249,52 @@ describe JsRegex::Converter::BackreferenceConverter do
       become(/(a(c(a(c(a(c(a(c(a(c(ab)?d)?b)?d)?b)?d)?b)?d)?b)?d)?b) - (c(a(c(a(c(a(c(a(c(a(cd)?b)?d)?b)?d)?b)?d)?b)?d)?b)?d)/)
         .with_warning(["Recursion for '\\g<2>?' curtailed at 5 levels",
                        "Recursion for '\\g<1>?' curtailed at 5 levels"])
+    end
+  end
+
+  context 'when handling multiplexed named groups' do
+    it 'converts named backreferences to multiplexed groups as alternations', targets: [ES2009, ES2015] do
+      expect(/(?<a>a)(?<a>b)\k<a>/).to\
+      become(/(a)(b)(?:\1|\2)/)
+        .and keep_matching('aba', 'abb')
+        .and keep_not_matching('abc', 'ab')
+    end
+
+    it 'converts multiplexed named groups to numbered groups on ES2018+', targets: [ES2018] do
+      # All named groups are converted to numbered groups, even on ES2018+
+      expect(/(?<a>a)(?<a>b)\k<a>/).to\
+      become(/(a)(b)(?:\1|\2)/)
+        .and keep_matching('aba', 'abb')
+        .and keep_not_matching('abc', 'ab')
+    end
+
+    it 'handles multiple multiplexed groups', targets: [ES2009, ES2015] do
+      expect(/(?<x>a)(?<y>b)(?<x>c)\k<x>/).to\
+      become(/(a)(b)(c)(?:\1|\3)/)
+        .and keep_matching('abca', 'abcc')
+        .and keep_not_matching('abcb', 'abcd')
+    end
+
+    it 'handles multiplexed groups with alternation', targets: [ES2009, ES2015] do
+      expect(/(?<x>foo)|(?<x>bar)/).to\
+      become(/(foo)|(bar)/)
+        .and keep_matching('foo', 'bar')
+        .and keep_not_matching('baz')
+    end
+
+    it 'handles single named group references normally', targets: [ES2009, ES2015] do
+      expect(/(?<a>a)\k<a>/).to\
+      become(/(a)\1/)
+        .and keep_matching('aa')
+        .and keep_not_matching('ab')
+    end
+
+
+    it 'handles multiplexed groups in x-mode', targets: [ES2009, ES2015] do
+      expect(/(?<a> a ) (?<a> b ) \k<a> /x).to\
+      become(/(a)(b)(?:\1|\2)/)
+        .and keep_matching('aba', 'abb')
+        .and keep_not_matching('abc')
     end
   end
 end

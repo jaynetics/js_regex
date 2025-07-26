@@ -21,25 +21,15 @@ describe JsRegex::Converter::GroupConverter do
     expect(/(?:abc)/).to stay_the_same.and keep_matching('abc', with_results: %w[abc])
   end
 
-  it 'removes names from ab-named groups', targets: [ES2009, ES2015] do
+  it 'removes names from ab-named groups' do
     expect(/(?<protocol>http|ftp)/).to\
-    become(/(http|ftp)/).and keep_matching('ftp', with_results: %w[ftp])
-  end
-
-  it 'keeps names for ab-named groups on ES2018+', targets: [ES2018] do
-    expect(/(?<protocol>http|ftp)/)
-      .to stay_the_same
+    become(/(http|ftp)/)
       .and keep_matching('ftp', with_results: %w[ftp])
   end
 
-  it 'removes names from sq-named groups', targets: [ES2009, ES2015] do
+  it 'removes names from sq-named groups' do
     expect(/(?'protocol'http|ftp)/).to\
     become(/(http|ftp)/).and keep_matching('ftp', with_results: %w[ftp])
-  end
-
-  it 'converts sq-names to ab-nameson ES2018+', targets: [ES2018] do
-    expect(/(?'protocol'http|ftp)/).to\
-    become(/(?<protocol>http|ftp)/).and keep_matching('ftp', with_results: %w[ftp])
   end
 
   it 'removes comment groups' do

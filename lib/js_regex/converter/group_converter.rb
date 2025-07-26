@@ -24,12 +24,10 @@ class JsRegex
       end
 
       def build_named_group
-        if context.es_2018_or_higher?
-          # ES 2018+ supports named groups, but only the angled-bracket syntax
-          build_group(head: "(?<#{expression.name}>")
-        else
-          build_group
-        end
+        # Always convert named groups to numbered groups. ES2018+ supports named
+        # groups, but can not handle repeated names in multiplexing or conditional
+        # expansion scenarios.
+        build_group
       end
 
       def emulate_atomic_group
@@ -69,10 +67,6 @@ class JsRegex
 
       def unmatchable_absence_group?
         expression.empty?
-      end
-
-      def unmatchable_substitution
-        '(?!)'
       end
 
       def build_absence_group

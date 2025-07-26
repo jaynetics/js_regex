@@ -39,11 +39,6 @@ describe JsRegex::SecondPass do
         .and keep_not_matching('-<a-', '-a>-')
     end
 
-    it 'removes names from backrefs to avoid duplicate group name errors', targets: [ES2018] do
-      expect(/(?<A><)?(?(<A>)>)\k'A'/).to\
-      become(/(?:(<){0}(?:(?:>){0})\1)|(?:(<)(?:(?:>))\2)/)
-    end
-
     it 'replaces quantified conditionals with equivalent alternations' do
       expect(/-(<)?a(?(1)>){3}-/).to\
       become(/(?:-(<){0}a(?:(?:>){0}){3}-)|(?:-(<)a(?:(?:>)){3}-)/)

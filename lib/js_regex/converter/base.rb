@@ -85,6 +85,10 @@ class JsRegex
         # Without it, `(?:)` would need to be appended as literal digits may follow.
         Node.new('(?:(?=(', *content, '))', backref_node, ')')
       end
+
+      def unmatchable_substitution
+        '(?!)'
+      end
     end
   end
 end

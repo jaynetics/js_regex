@@ -10,6 +10,12 @@ and this project adheres to [Semantic Versioning](http://semver.org/spec/v2.0.0.
 
 - enable frozen string literals (#42)
 
+### Fixed
+
+- thanks to https://github.com/slevithan for reporting all of the following:
+- handling of backreference multiplexing, e.g. `(?<n>a)(?<n>b)\k<n>` (#28)
+- handling of indirect recursion, e.g. `(a\g<2>?b)(c\g<1>?d)` (#35)
+
 ## [3.13.0] - 2025-01-27
 
 ### Added
