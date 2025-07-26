@@ -1,4 +1,4 @@
-if ENV['CI'] && RUBY_VERSION.start_with?('3.3') # match version in tests.yml
+if ENV['CI'] && RUBY_VERSION.start_with?('3.4') # match version in tests.yml
   require 'simplecov'
   require 'simplecov-cobertura'
   SimpleCov.formatter = SimpleCov::Formatter::CoberturaFormatter

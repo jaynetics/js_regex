@@ -1,4 +1,4 @@
-desc <<~TXT
+desc <<-TXT
   Finds Unicode properties supported by both Ruby and ES2018+, filters out those
   that match the same character set in both languages, and writes a file mapping
   normalized, Ruby-compatible property names to ES-compatible property names.
