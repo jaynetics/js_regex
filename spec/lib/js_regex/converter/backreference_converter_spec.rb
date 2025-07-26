@@ -265,5 +265,12 @@ describe JsRegex::Converter::BackreferenceConverter do
         .and keep_matching('ab', 'aaab', 'bab')
         .and keep_not_matching('b')
     end
+
+    it 'handles indirect recursion between two groups' do
+      expect(/(a\g<2>?b) - (c\g<1>?d)/).to\
+      become(/(a(c(a(c(a(c(a(c(a(c(ab)?d)?b)?d)?b)?d)?b)?d)?b)?d)?b) - (c(a(c(a(c(a(c(a(c(a(cd)?b)?d)?b)?d)?b)?d)?b)?d)?b)?d)/)
+        .with_warning(["Recursion for '\\g<2>?' curtailed at 5 levels",
+                       "Recursion for '\\g<1>?' curtailed at 5 levels"])
+    end
   end
 end

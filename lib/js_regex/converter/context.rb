@@ -20,6 +20,7 @@ class JsRegex
         self.capturing_group_count = 0
         self.fail_fast = fail_fast
         self.recursions_per_expression = {}
+        self.recursion_stack = []
         self.required_options_hash = {}
         self.warnings = []
 
@@ -73,11 +74,12 @@ class JsRegex
       end
 
       def recursions(exp)
-        recursions_per_expression[recursion_id(exp)] || 0
+        # Count recursions in the current stack path only
+        recursion_stack.count { |e| recursion_id(e) == recursion_id(exp) }
       end
 
       def count_recursion(exp)
-        recursions_per_expression[recursion_id(exp)] = recursions(exp) + 1
+        recursion_stack.push(exp)
       end
 
       def recursion_id(exp)
@@ -90,6 +92,8 @@ class JsRegex
 
       def end_subexp_recursion
         self.in_subexp_recursion = false
+        # Pop the last recursion from stack when exiting
+        recursion_stack.pop if recursion_stack.any?
       end
 
       # takes and returns 1-indexed group positions.
@@ -110,6 +114,7 @@ class JsRegex
 
       attr_accessor :added_capturing_groups_after_group,
                     :recursions_per_expression,
+                    :recursion_stack,
                     :required_options_hash,
                     :target
 
