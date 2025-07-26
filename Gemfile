@@ -7,7 +7,7 @@ gemspec
 
 gem 'debug'
 gem 'gouteur', '~> 1.0'
-gem 'mini_racer', '~> 0.16'
+gem 'mini_racer', '~> 0.19'
 gem 'rake', '~> 13.0'
 gem 'rspec', '~> 3.13'
 gem 'rubocop', '~> 1.68'

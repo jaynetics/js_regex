@@ -77,10 +77,26 @@ def error_for_warnings(js_regex, expected)
   warnings = js_regex.warnings
   if !expected
     "expected no warnings, got #{warnings}" if warnings.any?
-  elsif warnings.count != 1
-    "expected one warning, got #{warnings.count}"
-  elsif expected.is_a?(String) && !(msg = warnings.first).include?(expected)
-    "expected warning `#{msg}` to include `#{expected}`"
+  elsif expected == true
+    "expected warning(s), got none" if warnings.empty?
+  else
+    expected_array = Array(expected)
+    if warnings.count != expected_array.count
+      "expected #{expected_array.count} warning(s), got #{warnings.count}"
+    else
+      expected_array.each do |exp_warning|
+        case exp_warning
+        when Regexp
+          next if warnings.any? { |w| w.match(exp_warning) }
+        when String
+          next if warnings.any? { |w| w.include?(exp_warning) }
+        else
+          raise "unsupported expected warning class: #{exp_warning.class}"
+        end
+        return "no warning matches #{exp_warning.inspect}"
+      end
+      nil
+    end
   end
 end
 
