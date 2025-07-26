@@ -21,10 +21,12 @@ class JsRegex
       end
 
       def convert_name_ref
-        if context.es_2018_or_higher?
-          # ES 2018+ supports named backrefs, but only the angled-bracket syntax
-          Node.new("\\k<#{expression.name}>", reference: new_position, type: :backref)
+        # Check if this is a multiplexed named group reference
+        if expression.referenced_expressions.count > 1
+          convert_multiplexed_name_ref
         else
+          # Always use numeric backrefs since we convert all named groups to numbered
+          # (see comment in GroupConverter)
           convert_to_plain_num_ref
         end
       end
@@ -33,6 +35,17 @@ class JsRegex
         position = new_position
         text = "\\#{position}#{'(?:)' if expression.x?}"
         Node.new(text, reference: position, type: :backref)
+      end
+
+      def convert_multiplexed_name_ref
+        # Create alternation of all groups with the same name
+        positions = expression.referenced_expressions.map do |ref_exp|
+          context.new_capturing_group_position(ref_exp.number)
+        end
+
+        # Build alternation like (?:\1|\2)
+        alternation = positions.map { |pos| "\\#{pos}" }.join('|')
+        Node.new("(?:#{alternation})", type: :backref)
       end
 
       def new_position

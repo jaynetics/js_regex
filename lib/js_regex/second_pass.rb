@@ -92,11 +92,6 @@ class JsRegex
           # backref numbers need to be incremented for subsequent "branches"
           adapt_backref_to_permutation(node, caps_per_branch, i)
         when :captured_group
-          # Remove name, c.f. :backref handling.
-          node.update(children: [
-            node.children.first.sub(/\?<.*>/, ''),
-            *node.children[1..-1]
-          ])
           # if the group is referenced by any condition, modulate its quantity
           if conds.include?(node.reference)
             adapt_referenced_group_to_permutation(node, truthy)
