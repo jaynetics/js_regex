@@ -1,3 +1,5 @@
+# frozen_string_literal: true
+
 class JsRegex
   #
   # After conversion of a full Regexp::Expression tree, this

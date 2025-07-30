@@ -1,3 +1,5 @@
+# frozen_string_literal: true
+
 class JsRegex
   # This is mixed into errors, e.g. those thrown by the parser,
   # allowing to `rescue JsRegex::Error`.

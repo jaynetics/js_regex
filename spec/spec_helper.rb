@@ -1,3 +1,5 @@
+# frozen_string_literal: true
+
 if ENV['CI'] && RUBY_VERSION.start_with?('3.4') # match version in tests.yml
   require 'simplecov'
   require 'simplecov-cobertura'

@@ -1,3 +1,5 @@
+# frozen_string_literal: true
+
 class JsRegex
   module Target
     ES2009 = 'ES2009'

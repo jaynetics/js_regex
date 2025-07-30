@@ -1,3 +1,5 @@
+# frozen_string_literal: true
+
 require_relative 'base'
 
 class JsRegex
@@ -6,8 +8,8 @@ class JsRegex
     # Template class implementation.
     #
     class LiteralConverter < JsRegex::Converter::Base
-      ASTRAL_PLANE_CODEPOINT_PATTERN = /[\u{10000}-\u{10FFFF}]/
-      LITERAL_REQUIRING_ESCAPE_PATTERN = /[\/\f\n\r\t\v]/
+      ASTRAL_PLANE_CODEPOINT_PATTERN = /[\u{10000}-\u{10FFFF}]/.freeze
+      LITERAL_REQUIRING_ESCAPE_PATTERN = /[\/\f\n\r\t\v]/.freeze
 
       class << self
         def convert_data(data, context)
@@ -59,7 +61,7 @@ class JsRegex
         result
       end
 
-      HAS_CASE_PATTERN = /[\p{lower}\p{upper}]/
+      HAS_CASE_PATTERN = /[\p{lower}\p{upper}]/.freeze
 
       def handle_locally_case_insensitive_literal(literal)
         literal =~ HAS_CASE_PATTERN ? case_insensitivize(literal) : literal
