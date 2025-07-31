@@ -1,12 +1,17 @@
 AllCops:
+  DisabledByDefault: true
   Exclude:
-    - '**/vendor/**/*' # vendored dependencies
-    - './tmp/**/*'
+    - '.git/**/*'
+    - '{bin,pkg,tmp,vendor}/**/*' # vendored dependencies etc.
   NewCops: enable
   RubyInterpreters:
     - ruby
     - rake
+  SuggestExtensions: false
   TargetRubyVersion: 2.1
+
+Lint:
+  Enabled: true
 
 # disable some non-linty lint cops, these are more like style checks
 Lint/AmbiguousOperatorPrecedence:
