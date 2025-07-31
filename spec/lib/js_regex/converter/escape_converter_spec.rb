@@ -90,6 +90,15 @@ describe JsRegex::Converter::EscapeConverter do
     expect(/\xA/).to become(/\x0A/).and keep_matching("A\nC", with_results: ["\n"])
   end
 
+  it 'handles UTF-8 hex escapes' do
+    expect(/\xE2\x82\xAC/).to become(/\u20AC/)
+      .and keep_matching("a€c", with_results: ["€"])
+  end
+
+  it 'handles binary high hex escapes' do
+    expect(/\xE2\x82\xAC/n).to stay_the_same
+  end
+
   it 'lets unicode / codepoint escapes pass through' do
     expect(/\u263A/).to stay_the_same.and keep_matching('A☺C', with_results: %w[☺])
   end
