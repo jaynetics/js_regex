@@ -40,7 +40,7 @@ class JsRegex
         case subtype
         when :codepoint_list
           convert_codepoint_list
-        when :control, :meta_sequence
+        when :control, :meta_sequence, :utf8_hex
           unicode_escape_codepoint
         when :literal
           LiteralConverter.convert_data(expression.char, context)
