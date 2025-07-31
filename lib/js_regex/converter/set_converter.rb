@@ -1,3 +1,5 @@
+# frozen_string_literal: true
+
 require_relative 'base'
 require_relative 'escape_converter'
 require_relative 'type_converter'
@@ -76,7 +78,7 @@ class JsRegex
       end
 
       SET_LITERALS_REQUIRING_ESCAPE_PATTERN = Regexp.union(%w<( ) [ ] { } / - |>)
-      SET_SPECIFIC_ESCAPES_PATTERN = /[\^\-]/
+      SET_SPECIFIC_ESCAPES_PATTERN = /[\^\-]/.freeze
       CONVERTIBLE_ESCAPE_TOKENS = %i[control meta_sequence bell escape octal] +
         EscapeConverter::ESCAPES_SHARED_BY_RUBY_AND_JS
 

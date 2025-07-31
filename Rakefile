@@ -1,3 +1,5 @@
+# frozen_string_literal: true
+
 Dir['tasks/**/*.rake'].each { |file| load(file) }
 
 require 'bundler/gem_tasks'

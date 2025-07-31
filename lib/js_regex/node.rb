@@ -1,3 +1,5 @@
+# frozen_string_literal: true
+
 class JsRegex
   #
   # Converter#convert result. Represents a branch or leaf node with an optional
