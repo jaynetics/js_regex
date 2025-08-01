@@ -53,7 +53,7 @@ class JsRegex
 
         # Build alternation like (?:\1|\2)
         alternation = positions.map { |pos| "\\#{pos}" }.join('|')
-        Node.new("(?:#{alternation})", type: :backref)
+        Node.new("(?:#{alternation})")
       end
 
       def new_position
@@ -102,7 +102,7 @@ class JsRegex
           context.track_recursive_group_call(old_group_num, new_group_num)
         end
 
-        # wrap in group if it is a full-pattern recursion
+        # wrap in passive group if it is a full-pattern recursion
         expression.reference == 0 ? Node.new('(?:', result, ')') : result
       end
 

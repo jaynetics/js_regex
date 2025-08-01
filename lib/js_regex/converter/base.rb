@@ -46,7 +46,9 @@ class JsRegex
       end
 
       def convert_subexpressions
-        Node.new(*expression.map { |subexp| convert_expression(subexp) })
+        # mark alternation and conditional branches for processing in second pass
+        type = expression.is?(:sequence) ? :branch : :plain
+        Node.new(*expression.map { |subexp| convert_expression(subexp) }, type: type)
       end
 
       def convert_expression(expression)
@@ -80,10 +82,11 @@ class JsRegex
       def wrap_in_backrefed_lookahead(content)
         number = context.capturing_group_count + 1
         backref_node = Node.new("\\#{number}", reference: number, type: :backref)
+        backrefed_group = Node.new('(', *content, ')', reference: number, type: :captured_group)
         context.increment_local_capturing_group_count
         # The surrounding group is added so that quantifiers apply to the whole.
         # Without it, `(?:)` would need to be appended as literal digits may follow.
-        Node.new('(?:(?=(', *content, '))', backref_node, ')')
+        Node.new('(?:(?=', backrefed_group, ')', backref_node, ')')
       end
 
       def unmatchable_substitution

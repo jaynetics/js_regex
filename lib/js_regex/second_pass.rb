@@ -10,6 +10,7 @@ class JsRegex
       def call(tree)
         substitute_root_level_keep_mark(tree)
         alternate_conditional_permutations(tree)
+        handle_non_participating_backrefs(tree)
         tree
       end
 
@@ -28,12 +29,49 @@ class JsRegex
         tree.update(children: [lookbehind, *post])
       end
 
+      def handle_non_participating_backrefs(tree)
+        level = 0
+        completed_group_numbers = {}
+        group_branches = {}
+        branch_stack = []
+
+        crawl(tree, true) do |node, event|
+          case [node.type, event]
+          when [:branch, :enter]
+            branch_stack.push(node)
+          when [:branch, :exit]
+            branch_stack.pop
+          when [:captured_group, :enter]
+            level += 1
+          when [:captured_group, :exit]
+            unless node.optional? # ignore optional groups
+              group_branches[node.reference] = branch_stack.last
+            end
+            number = level
+            number += 1 while completed_group_numbers[number]
+            completed_group_numbers[number] = true
+            level -= 1
+          when [:backref, :exit]
+            ref_branch = group_branches[node.reference]
+            current_branch = branch_stack.last
+
+            # make bad backrefs non-matchable
+            references_other_branch =
+              ref_branch && current_branch && ref_branch != current_branch
+            forward_reference = !completed_group_numbers[node.reference]
+            if references_other_branch || forward_reference
+              node.update(type: :plain, children: ['(?!)'])
+            end
+          end
+        end
+      end
+
       def alternate_conditional_permutations(tree)
         permutations = conditional_tree_permutations(tree)
         return if permutations.empty?
 
         alternatives = permutations.map.with_index do |variant, i|
-          Node.new((i.zero? ? '(?:' : '|(?:'), variant, ')')
+          Node.new((i.zero? ? '(?:' : '|(?:'), variant, ')', type: :branch)
         end
         tree.update(children: alternatives)
       end
@@ -50,13 +88,16 @@ class JsRegex
           crawl(tree_permutation) do |node|
             build_permutation(node, conds, truthy_conds, caps_per_branch, i)
           end
+          tree_permutation
         end
       end
 
-      def crawl(node, &block)
+      def crawl(node, trace = false, &block)
         return if node.instance_of?(String)
-        yield(node)
-        node.children.each { |child| crawl(child, &block) }
+
+        trace ? yield(node, :enter) : yield(node)
+        node.children.each { |child| crawl(child, trace, &block) }
+        trace && yield(node, :exit)
       end
 
       def conditions(tree)
@@ -121,8 +162,9 @@ class JsRegex
       end
 
       def min_quantify(node)
-        return if guarantees_at_least_one_match?(qtf = node.quantifier)
+        return unless node.optional?
 
+        qtf = node.quantifier
         if qtf.max.equal?(1) # any zero_or_one quantifier (?, ??, ?+)
           node.update(quantifier: nil)
         else
@@ -130,10 +172,6 @@ class JsRegex
           min_quantifier.text = "{1,#{qtf.max}}#{'?' if qtf.reluctant?}"
           node.update(quantifier: min_quantifier)
         end
-      end
-
-      def guarantees_at_least_one_match?(quantifier)
-        quantifier.nil? || quantifier.min > 0
       end
 
       def null_quantify(node)

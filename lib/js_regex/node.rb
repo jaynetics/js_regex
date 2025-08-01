@@ -12,6 +12,7 @@ class JsRegex
 
     TYPES = %i[
       backref
+      branch
       captured_group
       conditional
       dropped
@@ -49,7 +50,7 @@ class JsRegex
       case type
       when :dropped
         ''
-      when :backref, :captured_group, :plain
+      when :backref, :branch, :captured_group, :plain
         children.join << quantifier.to_s
       else
         raise TypeError.new(
@@ -63,6 +64,10 @@ class JsRegex
       self.quantifier = attrs.fetch(:quantifier) if attrs.key?(:quantifier)
       self.type       = attrs.fetch(:type)       if attrs.key?(:type)
       self
+    end
+
+    def optional?
+      quantifier && quantifier.min == 0
     end
 
     private

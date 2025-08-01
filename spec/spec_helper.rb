@@ -166,18 +166,18 @@ end
 
 RSpec::Matchers.define(:keep_not_matching) do |*test_strings|
   match do |rb_regex|
+    @errors = []
     conversions(rb_regex).all? do |target, js_regex|
       @target = target
       test_strings.each do |string|
-        rb_regex =~ string           && @msg = "rb did match `#{string}`"
-        test_in_js(js_regex, string) && @msg = "js did match `#{string}`"
+        rb_regex =~ string           && @errors.push("rb did match `#{string}`")
+        test_in_js(js_regex, string) && @errors.push("js did match `#{string}`")
       end
-
-      @msg.nil?
+      @errors.empty?
     end
   end
 
-  failure_message { @msg + " for #{@target}" }
+  failure_message { "#{@errors.join(', ')} for #{@target}" }
 end
 
 # match on [regexp_parser_token_class, regexp_parser_token_token]
