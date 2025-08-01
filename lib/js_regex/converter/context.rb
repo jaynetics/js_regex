@@ -23,6 +23,7 @@ class JsRegex
         self.recursion_stack = []
         self.required_options_hash = {}
         self.warnings = []
+        self.recursive_group_map = {}
 
         self.case_insensitive_root = case_insensitive_root
         self.target = target
@@ -88,12 +89,18 @@ class JsRegex
 
       def start_subexp_recursion
         self.in_subexp_recursion = true
+        self.recursion_start_group_count = capturing_group_count
       end
 
       def end_subexp_recursion
         self.in_subexp_recursion = false
         # Pop the last recursion from stack when exiting
         recursion_stack.pop if recursion_stack.any?
+      end
+
+      # Get the number of groups at the start of the current recursion
+      def recursion_start_group_count
+        self.recursion_start_group_count || 0
       end
 
       # takes and returns 1-indexed group positions.
@@ -110,12 +117,23 @@ class JsRegex
         capturing_group_count - total_added_capturing_groups
       end
 
+      # Track that a group was created by a recursive call
+      def track_recursive_group_call(original_group_num, new_group_num)
+        recursive_group_map[original_group_num] = new_group_num
+      end
+
+      # Get the group number created by a recursive call
+      def get_recursive_group_position(original_group_num)
+        recursive_group_map[original_group_num]
+      end
+
       private
 
       attr_accessor :added_capturing_groups_after_group,
                     :recursions_per_expression,
                     :recursion_stack,
                     :required_options_hash,
+                    :recursive_group_map,
                     :target
 
       attr_writer :capturing_group_count,
@@ -123,6 +141,7 @@ class JsRegex
                   :fail_fast,
                   :in_atomic_group,
                   :in_subexp_recursion,
+                  :recursion_start_group_count,
                   :warnings
 
       def total_added_capturing_groups
