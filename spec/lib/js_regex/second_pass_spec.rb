@@ -20,7 +20,7 @@ describe JsRegex::SecondPass do
 
     it 'keeps possessive quantifiers of the target group' do
       expect(/-(<)?+a(?(1)>)/).to\
-      become(/(?:-(?:(?=((<){0}))\2)a(?:(?:>){0}))|(?:-(?:(?=((<)))\3)a(?:(?:>)))/)
+      become(/(?:-(?:(?=((<){0}))\2)a(?:(?:>){0}))|(?:-(?:(?=((<)))\4)a(?:(?:>)))/)
         .and keep_matching('-<a>', '-a')
         .and keep_not_matching('-<a', '-<<a')
     end

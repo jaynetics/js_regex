@@ -319,4 +319,49 @@ describe JsRegex::Converter::BackreferenceConverter do
         .and keep_not_matching('abc')
     end
   end
+
+  context 'when backreferences point to non-participating groups' do
+    it 'handles forward references' do
+      expect(/\1()/).to\
+      become(/(?!)()/)
+        .and keep_not_matching('', 'foo')
+    end
+
+    it 'handles backreferences within the same group' do
+      expect(/(\1)/).to\
+      become(/((?!))/)
+        .and keep_not_matching('', 'foo')
+    end
+
+    it 'handles backreference to non-participating branches' do
+      expect(/(a)|b\1/).to\
+      become(/(a)|b(?!)/)
+        .and keep_matching('a')
+        .and keep_not_matching('b')
+    end
+
+    it 'handles named backreference to non-participating branch (?<n>a)|(?<n>)\k<n>' do
+      expect(/(?<n>a)|(?<n>)\k<n>/).to\
+      become(/(a)|()(?:\1|\2)/)
+        .and keep_matching('a', '')
+    end
+
+    it 'handles backreferences to optional groups from branches' do
+      # this has zero-length matches on 'b' and ''
+      expect(/(a)?|b\1/).to stay_the_same.and keep_matching('a', 'b', '')
+    end
+
+    # TODO: https://github.com/jaynetics/js_regex/issues/26
+    # Handling this would require generating a lot of permutations.
+    # it 'handles backreferences to nested groups on branches' do
+    #   expect(/((a)|b)+\2/).to\
+    #   become(/((a)|b)+\2/) # TODO
+    #     .and keep_matching('aa', 'aba', 'baa')
+    #     .and keep_not_matching('a', 'b', 'ab', 'ba')
+    # end
+
+    it 'handles backreference to group that may capture empty string (a?)b\1' do
+      expect(/(a?)b\1/).to stay_the_same.and keep_matching('aba', 'b')
+    end
+  end
 end

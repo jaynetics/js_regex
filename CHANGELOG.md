@@ -12,7 +12,10 @@ and this project adheres to [Semantic Versioning](http://semver.org/spec/v2.0.0.
 
 ### Fixed
 
+- handling of backreference numbers in conjunction with conditionals
+  - e.g. `(a)?(b)(?(1)c|d)\2` expanded with a wrong number for the false branch
 - thanks to https://github.com/slevithan for reporting all of the following:
+- handling of backreferences to non-participating groups, e.g. `\1()` (#26)
 - handling of backreference multiplexing, e.g. `(?<n>a)(?<n>b)\k<n>` (#28)
 - handling of backreferences to subexp calls, e.g. `(?<a>[ab])\g<a>\k<a>` (#29)
 - handling of indirect recursion, e.g. `(a\g<2>?b)(c\g<1>?d)` (#35)
