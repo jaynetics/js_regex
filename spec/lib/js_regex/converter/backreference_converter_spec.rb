@@ -250,6 +250,28 @@ describe JsRegex::Converter::BackreferenceConverter do
         .with_warning(["Recursion for '\\g<2>?' curtailed at 5 levels",
                        "Recursion for '\\g<1>?' curtailed at 5 levels"])
     end
+
+    it 'handles numbered recursive groups followed by backreferences correctly' do
+      expect(/([ab])\g<-1>\k<1>/).to\
+      become(/([ab])([ab])\2/)
+        .and keep_matching('aaa', 'bbb')
+        .and keep_not_matching('aba', 'bab', 'ab', 'a')
+    end
+
+    it 'handles named recursive groups followed by backreferences correctly' do
+      # Same behavior but with named groups
+      expect(/(?<a>[ab])\g<a>\k<a>/).to\
+      become(/([ab])([ab])\2/)
+        .and keep_matching('aaa', 'bbb')
+        .and keep_not_matching('aba', 'bab', 'ab', 'a')
+    end
+
+    it 'handles nested group backreferences after parent group recursion' do
+      expect(/(a([bc]))\g<1>\k<2>/).to\
+      become(/(a([bc]))(a([bc]))\4/)
+        .and keep_matching('ababb', 'acabb')
+        .and keep_not_matching('ababc', 'acabc')
+    end
   end
 
   context 'when handling multiplexed named groups' do
