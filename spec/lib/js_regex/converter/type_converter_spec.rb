@@ -75,11 +75,11 @@ describe JsRegex::Converter::TypeConverter do
   end
 
   it 'substitutes the extended grapheme type "\X"', targets: [ES2018] do
-    expect(/\X/).to\
-    become('(?:(?=([\P{M}\P{Lm}](?:(?:[\u035C\u0361]\P{M}\p{M}*)|\u200d|\p{M}|\p{Lm}|\p{Emoji_Modifier})*))\1)')
-      .with_options('u')
-      .and keep_matching("aaßßギギn\u0303n\u0303😃😃👍🏿👍🏿", with_results: [
-        "a", "a", "ß", "ß", "ギ", "ギ", "n\u0303", "n\u0303", "😃", "😃", "👍🏿", "👍🏿"
+    expect(/\X/)
+      .to keep_matching("aaßßギギn\u0303n\u0303\r\n\n\r😃😃👍🏿👍🏿🏳️‍🌈🏴󠁧󠁢󠁷󠁬󠁳󠁿👩🏻‍🏫", with_results: [
+        "a", "a", "ß", "ß", "ギ", "ギ", "n\u0303", "n\u0303",
+        "\r\n", "\n", "\r",
+        "😃", "😃", "👍🏿", "👍🏿", '🏳️‍🌈', '🏴󠁧󠁢󠁷󠁬󠁳󠁿', '👩🏻‍🏫'
       ])
   end
 
