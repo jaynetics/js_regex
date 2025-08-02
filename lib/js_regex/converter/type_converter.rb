@@ -12,10 +12,37 @@ class JsRegex
       NONHEX_EXPANSION           = '[^0-9A-Fa-f]'
       I_MODE_HEX_EXPANSION       = '[0-9A-F]'
       I_MODE_NONHEX_EXPANSION    = '[^0-9A-F]'
+      LINEBREAK_EXPANSION        = '(?:\r\n|[\n\v\f\r\u0085\u2028\u2029])'
       ES2018_HEX_EXPANSION       = '\p{AHex}'
       ES2018_NONHEX_EXPANSION    = '\P{AHex}'
-      ES2018_XGRAPHEME_EXPANSION = '[\P{M}\P{Lm}](?:(?:[\u035C\u0361]\P{M}\p{M}*)|\u200d|\p{M}|\p{Lm}|\p{Emoji_Modifier})*'
-      LINEBREAK_EXPANSION        = '(?:\r\n|[\n\v\f\r\u0085\u2028\u2029])'
+      # partially taken from https://unicode.org/reports/tr51/#EBNF_and_Regex
+      ES2018_XGRAPHEME_EXPANSION = <<-'REGEXP'.gsub(/\s+/, '')
+        (?:
+          \r\n
+        |
+          \p{RI}\p{RI}
+        |
+          \p{Emoji}
+          (?:
+            \p{EMod}
+          |
+            \uFE0F\u20E3?
+          |
+            [\u{E0020}-\u{E007E}]+\u{E007F}
+          )?
+          (?:
+            \u200D
+            (?:
+              \p{RI}\p{RI}
+            |
+              \p{Emoji}(?:\p{EMod}|\uFE0F\u20E3?|[\u{E0020}-\u{E007E}]+\u{E007F})?
+            )
+          )*
+        |
+          [\P{M}\P{Lm}](?:\u200d|\p{M}|\p{Lm}|\p{Emoji_Modifier})*
+        )
+      REGEXP
+
 
       def self.directly_compatible?(expression, _context = nil)
         case expression.token

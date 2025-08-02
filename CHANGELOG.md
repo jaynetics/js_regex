@@ -20,6 +20,7 @@ and this project adheres to [Semantic Versioning](http://semver.org/spec/v2.0.0.
 - handling of backreferences to subexp calls, e.g. `(?<a>[ab])\g<a>\k<a>` (#29)
 - handling of indirect recursion, e.g. `(a\g<2>?b)(c\g<1>?d)` (#35)
 - handling of UTF-8 hex escapes, e.g. `\xEF\xC0\xBB` (#37)
+- improved extended grapheme type handling (`\X`) (#38)
 
 ## [3.13.0] - 2025-01-27
 
