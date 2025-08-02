@@ -272,6 +272,13 @@ describe JsRegex::Converter::BackreferenceConverter do
         .and keep_matching('ababb', 'acabb')
         .and keep_not_matching('ababc', 'acabc')
     end
+
+    it 'uses the correct local flags / options (those that apply to the target)' do
+      expect(/(a)(?i)\g<1>/).to\
+      become(/(a)(a)/)
+        .and keep_matching('aa')
+        .and keep_not_matching('aA')
+    end
   end
 
   context 'when handling multiplexed named groups' do
