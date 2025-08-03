@@ -1,8 +1,6 @@
 # frozen_string_literal: true
 
 require_relative 'base'
-require_relative 'escape_converter'
-require_relative 'type_converter'
 require 'character_set'
 
 class JsRegex
@@ -50,37 +48,36 @@ class JsRegex
             simple_convert_child(op) or return false
           end.join('-')
         when :type
-          TypeConverter.directly_compatible?(exp, context) &&
-            exp.text
+          Utils::CharTypes.directly_compatible?(exp) && exp.text
         when :escape
           return exp.text if SET_SPECIFIC_ESCAPES_PATTERN.match?(exp.text)
 
           case exp.token
           when *CONVERTIBLE_ESCAPE_TOKENS
-            EscapeConverter.new.convert(exp, context)
+            JsRegex::Converter.convert(exp, context)
           when :literal
             exp.char.ord <= 0xFFFF &&
-              LiteralConverter.escape_incompatible_bmp_literals(exp.char)
+              Utils::Literals.escape_incompatible_bmp_literals(exp.char)
           end
         end
       end
 
       def simple_convert_literal_child(exp)
         if !context.u? &&
-           exp.text =~ LiteralConverter::ASTRAL_PLANE_CODEPOINT_PATTERN &&
+           exp.text =~ Utils::Literals::ASTRAL_PLANE_CODEPOINT_PATTERN &&
            !context.enable_u_option
           false
         elsif SET_LITERALS_REQUIRING_ESCAPE_PATTERN.match?(exp.text)
           "\\#{exp.text}"
         else
-          LiteralConverter.escape_incompatible_bmp_literals(exp.text)
+          Utils::Literals.escape_incompatible_bmp_literals(exp.text)
         end
       end
 
       SET_LITERALS_REQUIRING_ESCAPE_PATTERN = Regexp.union(%w<( ) [ ] { } / - |>)
       SET_SPECIFIC_ESCAPES_PATTERN = /[\^\-]/.freeze
       CONVERTIBLE_ESCAPE_TOKENS = %i[control meta_sequence bell escape octal] +
-        EscapeConverter::ESCAPES_SHARED_BY_RUBY_AND_JS
+        Utils::Escapes::ESCAPES_SHARED_BY_RUBY_AND_JS
 
       def full_recalculation
         # Fetch codepoints as if the set was case-sensitive, then re-add

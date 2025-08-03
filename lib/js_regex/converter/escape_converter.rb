@@ -1,7 +1,6 @@
 # frozen_string_literal: true
 
 require_relative 'base'
-require_relative 'literal_converter'
 
 class JsRegex
   module Converter
@@ -9,31 +8,6 @@ class JsRegex
     # Template class implementation.
     #
     class EscapeConverter < JsRegex::Converter::Base
-      ESCAPES_SHARED_BY_RUBY_AND_JS = %i[
-        alternation
-        backslash
-        backspace
-        bol
-        carriage
-        codepoint
-        dot
-        eol
-        form_feed
-        group_close
-        group_open
-        hex
-        interval_close
-        interval_open
-        newline
-        one_or_more
-        set_close
-        set_open
-        tab
-        vertical_tab
-        zero_or_more
-        zero_or_one
-      ].freeze
-
       private
 
       def convert_data
@@ -43,10 +17,10 @@ class JsRegex
         when :control, :meta_sequence, :utf8_hex
           unicode_escape_codepoint
         when :literal
-          LiteralConverter.convert_data(expression.char, context)
+          Utils::Literals.convert_data(expression.char, context)
         when :bell, :escape, :hex, :octal
           hex_escape_codepoint
-        when *ESCAPES_SHARED_BY_RUBY_AND_JS
+        when *Utils::Escapes::ESCAPES_SHARED_BY_RUBY_AND_JS
           pass_through
         else
           warn_of_unsupported_feature
@@ -58,7 +32,7 @@ class JsRegex
           split_codepoint_list
         else
           expression.chars.each_with_object(Node.new) do |char, node|
-            node << LiteralConverter.convert_data(Regexp.escape(char), context)
+            node << Utils::Literals.convert_data(Regexp.escape(char), context)
           end
         end
       end

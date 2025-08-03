@@ -12,16 +12,11 @@ class JsRegex
     # codepoints matched by the property and build a set string from them.
     #
     class PropertyConverter < JsRegex::Converter::Base
-      # A map of normalized Ruby property names to names supported by ES2018+.
-      def self.map
-        @map ||= File.read("#{__dir__}/property_map.csv").scan(/(.+),(.+)/).to_h
-      end
-
       private
 
       def convert_data
         if context.es_2018_or_higher? &&
-            (prop_name_in_js = self.class.map[subtype.to_s.tr('_', '')])
+            (prop_name_in_js = Utils::Properties.name_in_js(subtype))
           context.enable_u_option
           "\\#{expression.negative? ? 'P' : 'p'}{#{prop_name_in_js}}"
         else

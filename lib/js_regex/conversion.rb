@@ -10,7 +10,6 @@ class JsRegex
     require 'regexp_parser'
     require_relative 'converter'
     require_relative 'error'
-    require_relative 'node'
     require_relative 'second_pass'
     require_relative 'target'
 
