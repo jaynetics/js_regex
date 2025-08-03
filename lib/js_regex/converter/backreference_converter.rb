@@ -36,7 +36,7 @@ class JsRegex
 
         # Check if this backreference refers to a group that was recursively called
         original_group = target_position
-        if recursive_position = context.get_recursive_group_position(original_group)
+        if (recursive_position = context.get_recursive_group_position(original_group))
           # Use the position of the group created by the recursive call
           position = recursive_position
         end
