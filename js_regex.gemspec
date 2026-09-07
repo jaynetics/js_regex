@@ -1,7 +1,6 @@
 # frozen_string_literal: true
 
-dir = File.expand_path(__dir__)
-require File.join(dir, 'lib', 'js_regex', 'version')
+require_relative 'lib/js_regex/version'
 
 Gem::Specification.new do |s|
   s.platform      = Gem::Platform::RUBY
@@ -18,7 +17,7 @@ Gem::Specification.new do |s|
   s.email         = ['janosch84@gmail.com']
   s.homepage      = 'https://github.com/jaynetics/js_regex'
 
-  s.files         = Dir[File.join('lib', '**', '*.{csv,rb}')]
+  s.files         = Dir['lib/**/*.{csv,rb}']
 
   s.required_ruby_version = '>= 2.1.0'
 

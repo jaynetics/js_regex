@@ -9,9 +9,9 @@
 # js_regex.to_s  # for direct injection into JavaScript
 #
 class JsRegex
-  require_relative File.join('js_regex', 'conversion')
-  require_relative File.join('js_regex', 'error')
-  require_relative File.join('js_regex', 'version')
+  require_relative 'js_regex/conversion'
+  require_relative 'js_regex/error'
+  require_relative 'js_regex/version'
   require 'json'
 
   attr_reader :source, :options, :warnings, :target
