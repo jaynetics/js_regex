@@ -190,7 +190,7 @@ When converting a Regexp that contains unsupported features, corresponding parts
 
 JsRegex uses the gem [regexp_parser](https://github.com/ammar/regexp_parser) to parse a Ruby Regexp.
 
-It traverses the AST returned by `regexp_parser` depth-first, and converts it to its own tree of equivalent JavaScript RegExp tokens, marking some nodes for treatment in a second pass.
+It traverses the AST returned by `regexp_parser` depth-first, and converts it to its own tree of equivalent JavaScript RegExp tokens, marking some nodes for treatment in a [second pass](lib/js_regex/second_pass.rb).
 
 The second pass then carries out all modifications that require knowledge of the complete tree.
 
@@ -200,7 +200,7 @@ Many Regexp tokens work in JavaScript just as they do in Ruby, or allow for a st
 
 **Atomic groups and possessive quantifiers** are missing in JavaScript, so the only way to emulate their behavior is by substituting them with [backreferenced lookahead groups](http://instanceof.me/post/52245507631/regex-emulate-atomic-grouping-with-lookahead).
 
-**Astral plane characters** convert to ranges of [surrogate pairs](https://dmitripavlutin.com/what-every-javascript-developer-should-know-about-unicode/#24surrogatepairs) when targetting ES2009 (which doesn't support astral plane chars).
+**Astral plane characters** convert to ranges of [surrogate pairs](https://dmitripavlutin.com/what-every-javascript-developer-should-know-about-unicode/#24surrogatepairs) when targetting ES2009 (which doesn't support astral plane literals).
 
 **Properties and posix classes** expand to equivalent character sets, or surrogate pair alternations if necessary. The gem [regexp_property_values](https://github.com/jaynetics/regexp_property_values) helps by reading out their codepoints from Onigmo.
 
