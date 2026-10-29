@@ -58,7 +58,7 @@ class JsRegex
       ES2018_NONHEX_EXPANSION = '\P{AHex}'
 
       def linebreak_expansion
-        wrap_in_backrefed_lookahead(LINEBREAK_EXPANSION)
+        wrap_in_backrefed_lookahead { LINEBREAK_EXPANSION }
       end
 
       LINEBREAK_EXPANSION = '(?:\r\n|[\n\v\f\r\u0085\u2028\u2029])'
@@ -79,7 +79,7 @@ class JsRegex
 
       def xgrapheme
         if context.es_2018_or_higher? && context.enable_u_option
-          wrap_in_backrefed_lookahead(ES2018_XGRAPHEME_EXPANSION)
+          wrap_in_backrefed_lookahead { ES2018_XGRAPHEME_EXPANSION }
         else
           warn_of_unsupported_feature
         end

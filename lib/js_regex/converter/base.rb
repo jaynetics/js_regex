@@ -15,9 +15,11 @@ class JsRegex
         self.context    = context
         self.expression = expression
 
-        node = convert_data
-        node = Node.new(node) if node.instance_of?(String)
-        quantified ? apply_quantifier(node) : node
+        if quantified && expression.quantifier && expression.quantifier.possessive?
+          wrap_in_backrefed_lookahead { convert_node(quantified) }
+        else
+          convert_node(quantified)
+        end
       end
 
       private
@@ -33,12 +35,17 @@ class JsRegex
       end
       alias pass_through data
 
+      def convert_node(quantified)
+        node = convert_data
+        node = Node.new(node) if node.instance_of?(String)
+        quantified ? apply_quantifier(node) : node
+      end
+
       def apply_quantifier(node)
         return node if node.dropped? || (qtf = expression.quantifier).nil?
 
         if qtf.possessive?
           node.update(quantifier: qtf.dup.tap { |q| q.text = q.text[0..-2] })
-          return wrap_in_backrefed_lookahead(node)
         elsif qtf.token == :interval && qtf.text[0..1] == "{,"
           node.update(quantifier: qtf.dup.tap { |q| q.text = "{0,#{q.max}}" })
         else
@@ -82,11 +89,16 @@ class JsRegex
       end
       alias drop_without_warning drop
 
-      def wrap_in_backrefed_lookahead(content)
+      def wrap_in_backrefed_lookahead
         number = context.capturing_group_count + 1
+        context.increment_local_capturing_group_count
+        content = yield
+        if content.is_a?(Node) && content.dropped?
+          context.cancel_local_capturing_group
+          return content
+        end
         backref_node = Node.new("\\#{number}", reference: number, type: :backref)
         backrefed_group = Node.new('(', *content, ')', reference: number, type: :captured_group)
-        context.increment_local_capturing_group_count
         # The surrounding group is added so that quantifiers apply to the whole.
         # Without it, `(?:)` would need to be appended as literal digits may follow.
         Node.new('(?:(?=', backrefed_group, ')', backref_node, ')')

@@ -116,6 +116,15 @@ describe JsRegex::Converter::GroupConverter do
         .and keep_not_matching('ab_1337')
     end
 
+    it 'numbers the wrapper before its nested captures and backreferences' do
+      expect(/\A(?>a(b))\1\z/)
+        .to keep_matching('abb')
+        .and keep_not_matching('ab', 'abab')
+      expect(/\A(?>a(b)\1)\z/)
+        .to keep_matching('abb')
+        .and keep_not_matching('ab')
+    end
+
     it 'isnt confused by preceding passive groups' do
       expect(/(?:c)_1(?>33|3)37/).to\
       become(/(?:c)_1(?:(?=(33|3))\1)37/)
