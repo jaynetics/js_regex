@@ -61,13 +61,13 @@ describe JsRegex::Converter::Context do
     end
   end
 
-  describe '#increment_local_capturing_group_count' do
+  describe '#capture_group(added: true)' do
     it 'adds to added_capturing_groups_after_group based on current position' do
       context.capture_group
-      context.increment_local_capturing_group_count
+      context.capture_group(added: true)
       context.capture_group
-      context.increment_local_capturing_group_count
-      context.increment_local_capturing_group_count
+      context.capture_group(added: true)
+      context.capture_group(added: true)
       expect(context.send(:added_capturing_groups_after_group))
         .to eq(1 => 1, 2 => 2)
     end

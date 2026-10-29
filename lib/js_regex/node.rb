@@ -63,6 +63,7 @@ class JsRegex
       self.children   = attrs.fetch(:children)   if attrs.key?(:children)
       self.quantifier = attrs.fetch(:quantifier) if attrs.key?(:quantifier)
       self.type       = attrs.fetch(:type)       if attrs.key?(:type)
+      self.reference  = attrs.fetch(:reference)  if attrs.key?(:reference)
       self
     end
 
