@@ -78,6 +78,7 @@ class JsRegex
 
         condition_permutations(conds).map.with_index do |truthy_conds, i|
           tree_permutation = tree.clone
+          truthy_conds.each { |reference| require_group_participation(tree_permutation, reference) }
           # find referenced groups and conditionals and make one-sided
           crawl(tree_permutation) do |node|
             build_permutation(node, conds, truthy_conds, caps_per_branch, i)
@@ -138,7 +139,36 @@ class JsRegex
       end
 
       def adapt_referenced_group_to_permutation(group_node, truthy)
-        truthy ? min_quantify(group_node) : null_quantify(group_node)
+        if truthy
+          min_quantify(group_node)
+        elsif group_node.optional?
+          null_quantify(group_node)
+        else
+          # Keep mandatory captures mandatory. An enclosing optional group or
+          # another alternative may still allow this capture not to participate.
+          group_node.children.insert(1, Node.new('(?!)'))
+        end
+      end
+
+      # Make sure the referenced group actually matches by preventing optional
+      # groups and alternative branches from skipping it. Returns true if the
+      # referenced group is anywhere inside this node, including the node itself.
+      def require_group_participation(node, reference)
+        return false if node.instance_of?(String)
+
+        children_with_group = node.children.map do |child|
+          require_group_participation(child, reference)
+        end
+        found = node.type == :captured_group && node.reference == reference
+        return false unless found || children_with_group.any?
+
+        min_quantify(node)
+        if node.children.length > 1 && node.children.all? { |child| child.is_a?(Node) && child.type == :branch }
+          node.children.each.with_index do |branch, i|
+            branch << Node.new('(?!)') unless children_with_group[i]
+          end
+        end
+        true
       end
 
       def adapt_conditional_to_permutation(conditional_node, truthy)
