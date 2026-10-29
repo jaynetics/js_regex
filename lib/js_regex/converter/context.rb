@@ -57,7 +57,10 @@ class JsRegex
 
       # group context
 
-      def capture_group
+      def capture_group(added: false)
+        if added
+          added_capturing_groups_after_group[original_capturing_group_count] += 1
+        end
         self.capturing_group_count = capturing_group_count + 1
       end
 
@@ -69,12 +72,7 @@ class JsRegex
         self.in_atomic_group = false
       end
 
-      def increment_local_capturing_group_count
-        added_capturing_groups_after_group[original_capturing_group_count] += 1
-        capture_group
-      end
-
-      def cancel_local_capturing_group
+      def cancel_added_capturing_group
         added_capturing_groups_after_group[original_capturing_group_count] -= 1
         self.capturing_group_count = capturing_group_count - 1
       end
@@ -98,14 +96,14 @@ class JsRegex
       end
 
       def end_subexp_recursion
-        self.in_subexp_recursion = false
         # Pop the last recursion from stack when exiting
         recursion_stack.pop if recursion_stack.any?
+        self.in_subexp_recursion = recursion_stack.any?
       end
 
       # Get the number of groups at the start of the current recursion
       def recursion_start_group_count
-        self.recursion_start_group_count || 0
+        @recursion_start_group_count || 0
       end
 
       # takes and returns 1-indexed group positions.

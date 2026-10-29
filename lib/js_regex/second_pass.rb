@@ -30,7 +30,6 @@ class JsRegex
       end
 
       def handle_non_participating_backrefs(tree)
-        level = 0
         completed_group_numbers = {}
         group_branches = {}
         branch_stack = []
@@ -41,16 +40,11 @@ class JsRegex
             branch_stack.push(node)
           when [:branch, :exit]
             branch_stack.pop
-          when [:captured_group, :enter]
-            level += 1
           when [:captured_group, :exit]
             unless node.optional? # ignore optional groups
               group_branches[node.reference] = branch_stack.last
             end
-            number = level
-            number += 1 while completed_group_numbers[number]
-            completed_group_numbers[number] = true
-            level -= 1
+            completed_group_numbers[node.reference] = true
           when [:backref, :exit]
             ref_branch = group_branches[node.reference]
             current_branch = branch_stack.last
@@ -137,6 +131,7 @@ class JsRegex
           if conds.include?(node.reference)
             adapt_referenced_group_to_permutation(node, truthy)
           end
+          node.update(reference: node.reference + caps_per_branch * i)
         when :conditional
           adapt_conditional_to_permutation(node, truthy)
         end
@@ -158,7 +153,7 @@ class JsRegex
 
       def adapt_backref_to_permutation(backref_node, caps_per_branch, i)
         new_num = backref_node.reference + caps_per_branch * i
-        backref_node.update(children: ["\\#{new_num}"])
+        backref_node.update(children: ["\\#{new_num}"], reference: new_num)
       end
 
       def min_quantify(node)

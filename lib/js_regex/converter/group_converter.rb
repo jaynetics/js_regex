@@ -80,9 +80,11 @@ class JsRegex
         tail = opts[:tail] || ')'
         return Node.new(*wrap(head, tail)) if opts[:capturing].equal?(false)
 
-        context.capture_group unless context.in_subexp_recursion
-        ref = context.new_capturing_group_position(expression.number)
-        Node.new(*wrap(head, tail), reference: ref, type: :captured_group)
+        ref = context.capture_group(added: context.in_subexp_recursion)
+        context.track_recursive_group_call(expression.number, ref)
+        node = Node.new(*wrap(head, tail), reference: ref, type: :captured_group)
+        context.track_recursive_group_call(expression.number, ref)
+        node
       end
 
       def wrap(head, tail)

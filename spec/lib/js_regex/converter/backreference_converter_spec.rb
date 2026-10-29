@@ -236,6 +236,31 @@ describe JsRegex::Converter::BackreferenceConverter do
       become('(foo)(foo)(bar)\3')
     end
 
+    it 'counts every nested capture inserted by a call' do
+      expect(/\A(a(b))\g<1>(c)\3\z/)
+        .to become('^(a(b))(a(b))(c)\\5$')
+        .and keep_matching('ababcc')
+        .and keep_not_matching('ababcb')
+      expect(/\A(a(b))\g<1>(?>c)\z/)
+        .to keep_matching('ababc')
+        .and keep_not_matching('ababb')
+    end
+
+    it 'updates references inside copied groups and repeated calls' do
+      expect(/\A(a(b)\2)\g<1>\g<1>(c)\3\z/)
+        .to keep_matching('abbabbabbcc')
+        .and keep_not_matching('abbabbabbcb')
+    end
+
+    it 'restores counting after nested calls and forward calls' do
+      expect(/\A\g<1>(a(b))(c)\3\z/)
+        .to keep_matching('ababcc')
+        .and keep_not_matching('ababcb')
+      expect(/\A(a)(b\g<1>)\g<2>(c)\3\z/)
+        .to keep_matching('ababacc')
+        .and keep_not_matching('ababaca')
+    end
+
     it 'keeps 5 levels of recursive calls with warning' do
       expect(/a|b\g<0>/).to\
       become(/a|b(?:a|b(?:a|b(?:a|b(?:a|b(?:a|b)))))/)

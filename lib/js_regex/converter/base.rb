@@ -90,11 +90,10 @@ class JsRegex
       alias drop_without_warning drop
 
       def wrap_in_backrefed_lookahead
-        number = context.capturing_group_count + 1
-        context.increment_local_capturing_group_count
+        number = context.capture_group(added: true)
         content = yield
         if content.is_a?(Node) && content.dropped?
-          context.cancel_local_capturing_group
+          context.cancel_added_capturing_group
           return content
         end
         backref_node = Node.new("\\#{number}", reference: number, type: :backref)

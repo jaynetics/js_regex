@@ -72,46 +72,15 @@ class JsRegex
 
         context.count_recursion(expression)
 
-        # Track groups before the wrapper group is added
-        groups_before_wrapper = context.capturing_group_count
-
-        context.increment_local_capturing_group_count
         context.start_subexp_recursion
         ref = expression.referenced_expression
         result = Converter.for(ref).convert(ref, context, quantified: false)
         context.end_subexp_recursion
 
-        # Track all groups created during this recursive call
-        # This handles both the directly called group and any nested groups within it
-        # Get all group numbers from the referenced expression
-        original_groups = collect_group_numbers(expression.referenced_expression)
-
-        # The first new group number is groups_before_wrapper + 1
-        # (the wrapper group from increment_local_capturing_group_count doesn't appear in output)
-        first_new_group = groups_before_wrapper + 1
-
-        # Map each original group to its corresponding new group
-        # For example, if we recursively called group 1 which contains group 2,
-        # and this created groups 3 and 4, then:
-        # - group 1 -> group 3
-        # - group 2 -> group 4
-        original_groups.each_with_index do |old_group_num, index|
-          new_group_num = first_new_group + index
-          context.track_recursive_group_call(old_group_num, new_group_num)
-        end
-
         # wrap in passive group if it is a full-pattern recursion
         expression.reference == 0 ? Node.new('(?:', result, ')') : result
       end
 
-      def collect_group_numbers(exp)
-        return [] if exp.terminal?
-
-        numbers = []
-        numbers << exp.number if exp.capturing?
-        exp.each_expression { |sub| numbers += collect_group_numbers(sub) }
-        numbers
-      end
     end
   end
 end
