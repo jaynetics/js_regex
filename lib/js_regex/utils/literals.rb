@@ -27,11 +27,12 @@ class JsRegex
 
         private
 
-        LITERAL_REQUIRING_ESCAPE_PATTERN = /[\/\f\n\r\t\v]/.freeze
+        LITERAL_REQUIRING_ESCAPE_PATTERN = /[\/\f\n\r\t\v\u2028\u2029]/.freeze
 
         ESCAPES = Hash.new { |h, k| raise KeyError, "#{h}[#{k.inspect}]" }
           .merge("\f\n\r\t\v".chars.to_h { |c| [c, Regexp.escape(c)] })
           .merge('/' => '\\/')
+          .merge("\u2028" => '\\u2028', "\u2029" => '\\u2029')
 
         def convert_astral_data(data)
           data.each_char.each_with_object(JsRegex::Node.new) do |char, node|

@@ -38,6 +38,11 @@ describe JsRegex::Converter::LiteralConverter do
     become(/\t/).and keep_matching('	', with_results: ['	'])
   end
 
+  it 'escapes Unicode line and paragraph separators in JavaScript literals' do
+    expect(Regexp.new("\u2028\u2029")).to become('\\u2028\\u2029')
+      .and keep_matching("a\u2028\u2029b", with_results: ["\u2028\u2029"])
+  end
+
   it 'converts literal forward slashes to forward slash escapes' do
     expect(%r{//}).to\
     become('\\/\\/').and keep_matching('a//b', with_results: %w[//])
@@ -93,6 +98,13 @@ describe JsRegex::Converter::LiteralConverter do
     expect_any_instance_of(described_class).not_to receive(:case_insensitivize)
     expect(/1(?i:2)3(?i)4/).to\
     become(/1(?:2)34/).and keep_matching('1234', with_results: %w[1234])
+  end
+
+  it 'keeps generated Unicode escapes intact in locally case-insensitive runs' do
+    expect(Regexp.new("(?i:a\u2028\u2029)")).to become('(?:[aA]\\u2028\\u2029)')
+      .and keep_matching("A\u2028\u2029", "a\u2028\u2029")
+    expect(Regexp.new("(?i:\u2028)")).to become('(?:\\u2028)')
+      .and keep_matching("\u2028")
   end
 
   it 'warns for case-sensitive literals in case-insensitive regexes' do
