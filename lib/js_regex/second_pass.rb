@@ -9,12 +9,45 @@ class JsRegex
     class << self
       def call(tree)
         substitute_root_level_keep_mark(tree)
+        guard_multiplexed_backrefs(tree)
         alternate_conditional_permutations(tree)
         handle_non_participating_backrefs(tree)
         tree
       end
 
       private
+
+      def guard_multiplexed_backrefs(tree)
+        optional_groups = potentially_absent_groups(tree)
+        crawl(tree) do |node|
+          next unless node.type == :multiplex_backref
+
+          alternatives = node.children.map do |backref|
+            if optional_groups.include?(backref.reference)
+              Node.new('(?:', Node.new('(?:', backref, ')'), Node.new('(?:(?!))'), ')',
+                       reference: backref.reference, type: :conditional)
+            else
+              backref
+            end
+          end
+          children = ['(?:']
+          alternatives.each.with_index { |branch, i| children.concat(i.zero? ? [branch] : ['|', branch]) }
+          node.update(type: :plain, children: children + [')'])
+        end
+      end
+
+      def potentially_absent_groups(node, optional = false)
+        return [] if node.instance_of?(String)
+
+        optional ||= node.optional? || node.type == :conditional
+        groups = optional && node.type == :captured_group ? [node.reference] : []
+        alternatives = node.children.length > 1 &&
+          node.children.all? { |child| child.is_a?(Node) && child.type == :branch }
+        node.children.each do |child|
+          groups.concat(potentially_absent_groups(child, optional || alternatives))
+        end
+        groups
+      end
 
       def substitute_root_level_keep_mark(tree)
         keep_mark_index = nil
@@ -33,6 +66,12 @@ class JsRegex
         completed_group_numbers = {}
         group_branches = {}
         branch_stack = []
+        branch_owners = {}
+        crawl(tree) do |parent|
+          parent.children.each do |child|
+            branch_owners[child] = parent if child.is_a?(Node) && child.type == :branch
+          end
+        end
 
         crawl(tree, true) do |node, event|
           case [node.type, event]
@@ -42,16 +81,17 @@ class JsRegex
             branch_stack.pop
           when [:captured_group, :exit]
             unless node.optional? # ignore optional groups
-              group_branches[node.reference] = branch_stack.last
+              group_branches[node.reference] = branch_stack.dup
             end
             completed_group_numbers[node.reference] = true
           when [:backref, :exit]
-            ref_branch = group_branches[node.reference]
-            current_branch = branch_stack.last
-
             # make bad backrefs non-matchable
-            references_other_branch =
-              ref_branch && current_branch && ref_branch != current_branch
+            references_other_branch = Array(group_branches[node.reference]).any? do |ref_branch|
+              branch_stack.any? do |current_branch|
+                branch_owners[ref_branch].equal?(branch_owners[current_branch]) &&
+                  !ref_branch.equal?(current_branch)
+              end
+            end
             forward_reference = !completed_group_numbers[node.reference]
             if references_other_branch || forward_reference
               node.update(type: :plain, children: ['(?!)'])
@@ -78,10 +118,12 @@ class JsRegex
 
         condition_permutations(conds).map.with_index do |truthy_conds, i|
           tree_permutation = tree.clone
-          truthy_conds.each { |reference| require_group_participation(tree_permutation, reference) }
           # find referenced groups and conditionals and make one-sided
           crawl(tree_permutation) do |node|
             build_permutation(node, conds, truthy_conds, caps_per_branch, i)
+          end
+          truthy_conds.each do |reference|
+            require_group_participation(tree_permutation, reference + caps_per_branch * i)
           end
           tree_permutation
         end
@@ -100,7 +142,7 @@ class JsRegex
         crawl(tree) do |node|
           conditions << node.reference if node.type.equal?(:conditional)
         end
-        conditions
+        conditions.uniq
       end
 
       def captured_group_count(tree)

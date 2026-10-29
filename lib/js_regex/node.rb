@@ -17,6 +17,7 @@ class JsRegex
       conditional
       dropped
       keep_mark
+      multiplex_backref
       plain
     ].freeze
 
