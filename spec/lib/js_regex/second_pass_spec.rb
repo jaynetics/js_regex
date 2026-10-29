@@ -18,6 +18,20 @@ describe JsRegex::SecondPass do
         .and keep_not_matching('-<a-', '-<<a-', '-a>-')
     end
 
+    it 'keeps unbounded and reluctant quantifiers of the target group' do
+      [/\A(a)*(?(1)b|c)\z/, /\A(a)*?(?(1)b|c)\z/,
+       /\A(a){0,}(?(1)b|c)\z/].each do |regexp|
+        expect(regexp).to keep_matching('c', 'ab', 'aab')
+          .and keep_not_matching('b', 'ac', 'aac')
+      end
+    end
+
+    it 'keeps zero-only conditional captures unmatchable in true permutations' do
+      expect(/\A(a){0}(?(1)b|c)\z/)
+        .to keep_matching('c')
+        .and keep_not_matching('ab', 'b', 'ac')
+    end
+
     it 'keeps possessive quantifiers of the target group' do
       expect(/-(<)?+a(?(1)>)/).to\
       become(/(?:-(?:(?=((<){0}))\1)a(?:(?:>){0}))|(?:-(?:(?=((<)))\3)a(?:(?:>)))/)
