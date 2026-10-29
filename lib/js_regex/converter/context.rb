@@ -24,6 +24,7 @@ class JsRegex
         self.required_options_hash = {}
         self.warnings = []
         self.recursive_group_map = {}
+        self.recursive_group_history = Hash.new { |hash, key| hash[key] = [] }
 
         self.case_insensitive_root = case_insensitive_root
         self.target = target
@@ -131,11 +132,18 @@ class JsRegex
       # Track that a group was created by a recursive call
       def track_recursive_group_call(original_group_num, new_group_num)
         recursive_group_map[original_group_num] = new_group_num
+        history = recursive_group_history[original_group_num]
+        history.delete(new_group_num)
+        history.unshift(new_group_num)
       end
 
       # Get the group number created by a recursive call
       def get_recursive_group_position(original_group_num)
         recursive_group_map[original_group_num]
+      end
+
+      def get_recursive_group_positions(original_group_num)
+        recursive_group_history[original_group_num].dup
       end
 
       private
@@ -145,6 +153,7 @@ class JsRegex
                     :recursion_stack,
                     :required_options_hash,
                     :recursive_group_map,
+                    :recursive_group_history,
                     :target
 
       attr_writer :capturing_group_count,

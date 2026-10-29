@@ -9,6 +9,7 @@ class JsRegex
     class << self
       def call(tree)
         substitute_root_level_keep_mark(tree)
+        resolve_capture_backrefs(tree)
         guard_multiplexed_backrefs(tree)
         alternate_conditional_permutations(tree)
         handle_non_participating_backrefs(tree)
@@ -17,6 +18,41 @@ class JsRegex
       end
 
       private
+
+      # At the end of the input, only an empty/unmatched backreference can
+      # succeed. Negating that test detects a participating nonempty capture.
+      def capture_check(reference, present)
+        backref = Node.new("\\#{reference}", reference: reference, type: :capture_check)
+        test = present ? Node.new('(?!', backref, ')') : backref
+        Node.new('(?=[\\s\\S]*(?![\\s\\S])', test, ')')
+      end
+
+      def resolve_capture_backrefs(tree)
+        optional_groups = potentially_absent_groups(tree)
+        completed = {}
+        crawl(tree, true) do |node, event|
+          if node.type == :captured_group && event == :exit
+            completed[node.reference] = true
+          elsif node.type == :capture_backref && event == :enter
+            references = node.children.select { |backref| completed[backref.reference] }
+            if references.empty?
+              node.update(type: :plain, children: ['(?!)'])
+            elsif !optional_groups.include?(references.first.reference)
+              node.update(type: :plain, children: [references.first])
+            else
+              branches = []
+              absent_checks = []
+              references.each do |backref|
+                branches << '|' unless branches.empty?
+                branches << Node.new(*absent_checks, capture_check(backref.reference, true), backref)
+                absent_checks = absent_checks + [capture_check(backref.reference, false)]
+                break unless optional_groups.include?(backref.reference)
+              end
+              node.update(type: :plain, children: ['(?:', *branches, ')'])
+            end
+          end
+        end
+      end
 
       def delimit_backrefs(node, following = '')
         following = node.quantifier.to_s[0] || following
@@ -178,7 +214,7 @@ class JsRegex
         truthy = truthy_conds.include?(node.reference)
 
         case node.type
-        when :backref
+        when :backref, :capture_check
           # We cannot use named groups or backrefs in the conditional expansion,
           # their repetition would cause a "Duplicate capture group name" error in JS.
           node.update(children: [
