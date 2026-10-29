@@ -53,7 +53,7 @@ class JsRegex
       # https://github.com/ruby/ruby/blob/08476c45/tool/enc-unicode.rb#L130
       W                     = '\d\p{L}\p{M}\p{Pc}'
       BOUNDARY_EXPANSION    = "(?:(?<=[#{W}])(?=[^#{W}]|$)|(?<=[^#{W}]|^)(?=[#{W}]))"
-      NONBOUNDARY_EXPANSION = "(?<=[#{W}])(?=[#{W}])"
+      NONBOUNDARY_EXPANSION = "(?:(?<=[#{W}])(?=[#{W}])|(?<=[^#{W}]|^)(?=[^#{W}]|$))"
 
       def pass_boundary_with_warning
         warn_of("The anchor '#{data}' at index #{expression.ts} only works "\

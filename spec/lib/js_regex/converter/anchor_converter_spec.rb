@@ -60,10 +60,20 @@ describe JsRegex::Converter::AnchorConverter do
 
   it 'uses a unicode-awary replacement for "\B" on ES2018+', targets: [ES2018] do
     expect(/\w\B/).to\
-    become(/\w(?<=[\d\p{L}\p{M}\p{Pc}])(?=[\d\p{L}\p{M}\p{Pc}])/)
+    become('\\w(?:(?<=[\\d\\p{L}\\p{M}\\p{Pc}])(?=[\\d\\p{L}\\p{M}\\p{Pc}])'\
+           '|(?<=[^\\d\\p{L}\\p{M}\\p{Pc}]|^)(?=[^\\d\\p{L}\\p{M}\\p{Pc}]|$))')
       .with_options('u')
       .and keep_matching('abc tür', with_results: %w[a b t])
       # ^ this is correct; both in Ruby and JS, \w is is ascii-only by default
+  end
+
+  it 'matches non-boundaries between nonword characters and string edges', targets: [ES2018] do
+    expect(/\B/).to keep_matching('', '!', '!!', ' ')
+      .and keep_not_matching('a')
+    expect(/\A\B!\B\z/).to keep_matching('!')
+      .and keep_not_matching('a', '!!')
+    expect(/!\B!/).to keep_matching('!!')
+      .and keep_not_matching('!a!')
   end
 
   it 'drops the previous match anchor "\G" with warning' do
