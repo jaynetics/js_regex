@@ -173,6 +173,14 @@ describe JsRegex::Converter::GroupConverter do
         .and keep_not_matching('12345')
     end
 
+    it 'handles zero-width forbidden expressions without negative quantifier bounds' do
+      expect(/\A(?~(?=a))\z/).to become('^(?:(?:(?!(?=a))(?:.|\n))*)$')
+        .and keep_matching('', 'b', 'bbb')
+        .and keep_not_matching('a', 'ab', 'ba')
+      expect(/\A(?~(?=a))😋\z/).to keep_matching('😋', 'b😋')
+        .and keep_not_matching('a😋', 'ba😋')
+    end
+
     it 'supports absence groups when another token enables the u flag', targets: [ES2015, ES2018] do
       expect(/\A(?~ab)😋\z/)
         .to keep_matching('😋', 'x😋', 'xyz😋')

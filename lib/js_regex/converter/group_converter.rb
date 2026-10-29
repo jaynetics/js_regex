@@ -71,7 +71,9 @@ class JsRegex
 
       def build_absence_group
         head = '(?:(?:(?!'
-        tail = ")(?:.|\\n))*(?:.|\\n){0,#{expression.inner_match_length.min - 1}})"
+        maximum = expression.inner_match_length.min - 1
+        suffix = maximum > 0 ? "(?:.|\\n){0,#{maximum}}" : ''
+        tail = ")(?:.|\\n))*#{suffix})"
         build_group(head: head, tail: tail, capturing: false)
       end
 
