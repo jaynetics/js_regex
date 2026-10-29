@@ -46,6 +46,21 @@ describe JsRegex::SecondPass do
         .and keep_not_matching('-<a>-')
     end
 
+    it 'does not remove mandatory captures in false permutations' do
+      expect(/\Aa(b)(?(1)c|d)\z/)
+        .to keep_matching('abc')
+        .and keep_not_matching('ad', 'abd', 'ac')
+      expect(/\A(a)+(?(1)b|c)\z/)
+        .to keep_matching('ab', 'aab')
+        .and keep_not_matching('c', 'ac')
+    end
+
+    it 'requires enclosing optional groups and alternatives for true conditions' do
+      expect(/\A(?:(a)|b)?(?(1)c|d)\z/)
+        .to keep_matching('ac', 'bd', 'd')
+        .and keep_not_matching('c', 'bc', 'ad')
+    end
+
     it 'replaces successive conditionals with equivalent alternations' do
       # resulting source is not speced because it is very long
       expect(/(<)?a(?(1)>)(<)?b(?(2)>)/)
@@ -71,9 +86,9 @@ describe JsRegex::SecondPass do
 
     it 'adapts backref numbers in the created alternations branches' do
       expect(/()(?(1))\1/).to\
-      become(/(?:(){0}(?:(?:){0})\1)|(?:()(?:(?:))\2)/)
+      become(/(?:((?!))(?:(?:){0})\1)|(?:()(?:(?:))\2)/)
       expect(/(a)(b)(?(1)c)(d)\2/).to\
-      become(/(?:(a){0}(b)(?:(?:c){0})(d)\2)|(?:(a)(b)(?:(?:c))(d)\5)/)
+      become(/(?:((?!)a)(b)(?:(?:c){0})(d)\2)|(?:(a)(b)(?:(?:c))(d)\5)/)
     end
 
     it 'does nothing if passed a tree that does not need further processing' do

@@ -20,7 +20,7 @@ describe JsRegex::Converter::ConditionalConverter do
 
   it 'drops the condition part without warning' do
     expect(/(a)(?(1)b|c)/).to\
-    become(/(?:(a){0}(?:(?:b){0}(?:c)))|(?:(a)(?:(?:b)(?:c){0}))/)
+    become(/(?:((?!)a)(?:(?:b){0}(?:c)))|(?:(a)(?:(?:b)(?:c){0}))/)
   end
 
   it 'drops unknown conditional expressions with warning' do
