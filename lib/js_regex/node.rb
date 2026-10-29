@@ -13,6 +13,8 @@ class JsRegex
     TYPES = %i[
       backref
       branch
+      capture_backref
+      capture_check
       captured_group
       conditional
       dropped
@@ -51,7 +53,7 @@ class JsRegex
       case type
       when :dropped
         ''
-      when :backref, :branch, :captured_group, :plain
+      when :backref, :branch, :capture_check, :captured_group, :plain
         children.join << quantifier.to_s
       else
         raise TypeError.new(

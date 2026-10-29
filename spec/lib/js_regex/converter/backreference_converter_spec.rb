@@ -312,6 +312,19 @@ describe JsRegex::Converter::BackreferenceConverter do
         .and keep_not_matching('ababc', 'acabc')
     end
 
+    it 'retains a forward call capture when the original optional group is skipped' do
+      expect(/\A\g<1>(a)?\1\z/).to keep_matching('aa', 'aaa')
+        .and keep_not_matching('a', '')
+      expect(/\A\g<1>([ab])?\1\z/).to keep_matching('aa', 'bb', 'abb', 'baa')
+        .and keep_not_matching('a', 'b', 'aba', 'bab')
+    end
+
+    it 'preserves greedy optional captures after forward calls' do
+      conversions(/\A\g<1>(a)?\1/).each_value do |converted|
+        expect(eval_js("#{converted}.exec('aaa')[0]")).to eq('aaa')
+      end
+    end
+
     it 'uses the correct local flags / options (those that apply to the target)' do
       expect(/(a)(?i)\g<1>/).to\
       become(/(a)(a)/)

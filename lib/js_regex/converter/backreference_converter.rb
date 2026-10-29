@@ -32,16 +32,16 @@ class JsRegex
       end
 
       def convert_to_plain_num_ref
-        position = new_position
-
-        # Check if this backreference refers to a group that was recursively called
-        original_group = target_position
-        if (recursive_position = context.get_recursive_group_position(original_group))
-          # Use the position of the group created by the recursive call
-          position = recursive_position
+        positions = context.get_recursive_group_positions(target_position)
+        positions = [new_position] if positions.empty?
+        references = positions.map do |position|
+          Node.new("\\#{position}", reference: position, type: :backref)
         end
-
-        Node.new("\\#{position}", reference: position, type: :backref)
+        if references.length > 1 && Utils::Captures.nonempty?(expression.referenced_expression)
+          Node.new(*references, type: :capture_backref)
+        else
+          references.first
+        end
       end
 
       def convert_multiplexed_name_ref
