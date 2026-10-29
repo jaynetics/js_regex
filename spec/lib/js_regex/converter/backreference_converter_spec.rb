@@ -72,6 +72,20 @@ describe JsRegex::Converter::BackreferenceConverter do
       .and keep_not_matching('abc')
   end
 
+  it 'delimits converted numeric references before literal digits' do
+    expect(/\A(a)\k<1>0\z/).to become('^(a)\\1(?:)0$')
+      .and keep_matching('aa0')
+      .and keep_not_matching("a\b", 'aa')
+    expect(/\A(a)\k<-1>2\z/).to keep_matching('aa2')
+    expect(/\A(?<a>a)\k<a>0\z/).to keep_matching('aa0')
+  end
+
+  it 'delimits references after conditional renumbering' do
+    expect(/\A(a)(?(1)b)\k<1>0\z/)
+      .to keep_matching('aba0')
+      .and keep_not_matching('ab0', "ab\b")
+  end
+
   it 'marks backrefs for SecondPass conversion' do
     backref = Regexp::Parser.parse(/(a)\1/).last
 
