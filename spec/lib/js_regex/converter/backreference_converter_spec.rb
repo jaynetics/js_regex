@@ -391,6 +391,23 @@ describe JsRegex::Converter::BackreferenceConverter do
         .and keep_not_matching('a')
     end
 
+    it 'preserves greedy and lazy matching with optional duplicate names' do
+      [/\A(?<x>a)?(?<x>a)?\k<x>/, /\A(?<x>a)??(?<x>a)?\k<x>/,
+       /\A(?<x>a)*(?<x>aa)?\k<x>/].each do |regexp|
+        conversions(regexp).each_value do |converted|
+          %w[aa aaa aaaaaaa].each do |input|
+            expected = regexp.match(input).to_a
+            expect(eval_js("#{converted}.exec('#{input}')")).to eq(expected)
+          end
+        end
+      end
+    end
+
+    it 'rejects absent duplicate captures from successful negative assertions' do
+      expect(/\A(?!(?<x>a))(?<x>b)\k<x>\z/).to keep_matching('bb')
+        .and keep_not_matching('b', 'a', 'ab')
+    end
+
 
     it 'handles multiplexed groups in x-mode', targets: [ES2009, ES2015] do
       expect(/(?<a> a ) (?<a> b ) \k<a> /x).to\
