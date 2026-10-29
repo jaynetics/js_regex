@@ -41,8 +41,7 @@ class JsRegex
           position = recursive_position
         end
 
-        text = "\\#{position}#{'(?:)' if expression.x?}"
-        Node.new(text, reference: position, type: :backref)
+        Node.new("\\#{position}", reference: position, type: :backref)
       end
 
       def convert_multiplexed_name_ref

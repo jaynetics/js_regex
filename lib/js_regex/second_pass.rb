@@ -12,10 +12,25 @@ class JsRegex
         guard_multiplexed_backrefs(tree)
         alternate_conditional_permutations(tree)
         handle_non_participating_backrefs(tree)
+        delimit_backrefs(tree)
         tree
       end
 
       private
+
+      def delimit_backrefs(node, following = '')
+        following = node.quantifier.to_s[0] || following
+        if node.type == :backref && /\A[0-9]/.match(following) &&
+            /\\[0-9]+\z/.match(node.children.last.to_s)
+          node << '(?:)'
+        end
+
+        node.children.reverse_each do |child|
+          delimit_backrefs(child, following) if child.is_a?(Node)
+          first = child.to_s[0]
+          following = first if first
+        end
+      end
 
       def guard_multiplexed_backrefs(tree)
         optional_groups = potentially_absent_groups(tree)

@@ -94,8 +94,7 @@ class JsRegex
         end
         backref_node = Node.new("\\#{number}", reference: number, type: :backref)
         backrefed_group = Node.new('(', *content, ')', reference: number, type: :captured_group)
-        # The surrounding group is added so that quantifiers apply to the whole.
-        # Without it, `(?:)` would need to be appended as literal digits may follow.
+        # The surrounding group makes quantifiers apply to the whole expansion.
         Node.new('(?:(?=', backrefed_group, ')', backref_node, ')')
       end
 
