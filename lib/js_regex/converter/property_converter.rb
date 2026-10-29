@@ -33,7 +33,12 @@ class JsRegex
           warn_of_unsupported_feature('nested case-sensitive property')
         end
 
-        content.to_s_with_surrogate_ranges
+        if context.es_2015_or_higher?
+          context.enable_u_option if content.astral_part?
+          content.to_s(format: 'es6', in_brackets: true)
+        else
+          content.to_s_with_surrogate_ranges
+        end
       end
     end
   end
