@@ -105,6 +105,25 @@ describe JsRegex::SecondPass do
       become(/(?:((?!)a)(b)(?:(?:c){0})(d)\2)|(?:(a)(b)(?:(?:c))(d)\5)/)
     end
 
+    it 'checks captures made by subexpression calls in conditions' do
+      expect(/\A(a)?\g<1>(?(1)b|c)\z/).to keep_matching('ab', 'aab')
+        .and keep_not_matching('ac', 'aac')
+      expect(/\A(?<x>a)?\g<x>(?(<x>)b|c)\z/).to keep_matching('ab', 'aab')
+        .and keep_not_matching('ac', 'aac')
+    end
+
+    it 'retains earlier participating captures when checking conditions' do
+      expect(/\A\g<1>(a)?(?(1)b|c)\z/).to keep_matching('ab', 'aab')
+        .and keep_not_matching('ac', 'aac')
+      expect(/\A(a)\g<1>?(?(1)b|c)\z/).to keep_matching('ab', 'aab')
+        .and keep_not_matching('ac', 'aac')
+    end
+
+    it 'recognizes participating empty captures made by required calls' do
+      expect(/\A(a?)?\g<1>(?(1)b|c)\z/).to keep_matching('b', 'ab', 'aab')
+        .and keep_not_matching('c', 'ac', 'aac')
+    end
+
     it 'does nothing if passed a tree that does not need further processing' do
       expect(/foo/).to stay_the_same
     end

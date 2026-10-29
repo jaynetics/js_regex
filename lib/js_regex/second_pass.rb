@@ -9,6 +9,7 @@ class JsRegex
     class << self
       def call(tree)
         substitute_root_level_keep_mark(tree)
+        resolve_capture_conditionals(tree)
         resolve_capture_backrefs(tree)
         guard_multiplexed_backrefs(tree)
         alternate_conditional_permutations(tree)
@@ -25,6 +26,25 @@ class JsRegex
         backref = Node.new("\\#{reference}", reference: reference, type: :capture_check)
         test = present ? Node.new('(?!', backref, ')') : backref
         Node.new('(?=[\\s\\S]*(?![\\s\\S])', test, ')')
+      end
+
+      def resolve_capture_conditionals(tree)
+        crawl(tree) do |node|
+          next unless node.type == :capture_conditional
+
+          references = node.children.first.children.map(&:reference)
+          present_checks = []
+          references.each do |reference|
+            present_checks << '|' unless present_checks.empty?
+            present_checks << capture_check(reference, true)
+          end
+          absent_checks = references.map { |reference| capture_check(reference, false) }
+          true_branch, false_branch = node.children[1..-1]
+          node.update(type: :plain, children: [
+            '(?:(?:', Node.new('(?:', *present_checks, ')'), true_branch,
+            ')|(?:', *absent_checks, false_branch || Node.new, '))'
+          ])
+        end
       end
 
       def resolve_capture_backrefs(tree)
