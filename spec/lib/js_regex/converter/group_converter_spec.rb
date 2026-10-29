@@ -149,18 +149,34 @@ describe JsRegex::Converter::GroupConverter do
   context 'when dealing with absence groups',
     if: (Gem::Version.new(RUBY_VERSION.dup) >= Gem::Version.new('2.4.1')) do
 
-    it 'converts simple cases to complimentary alternations' do
+    it 'converts simple cases to a guarded repetition followed by a short tail' do
       expect(Regexp.new('1(?~23)4')).to\
-      become(/1(?:(?:.|\n){,1}|(?:(?!23)(?:.|\n))*)4/)
+      become(/1(?:(?:(?!23)(?:.|\n))*(?:.|\n){0,1})4/)
         .and keep_matching('14', '124', '134', '12224', '13334')
         .and keep_not_matching('1234', '12234')
     end
 
     it 'can handle fixed quantifications' do
       expect(Regexp.new('A(?~\d{4})Z')).to\
-      become(/A(?:(?:.|\n){,3}|(?:(?!\d{4})(?:.|\n))*)Z/)
+      become(/A(?:(?:(?!\d{4})(?:.|\n))*(?:.|\n){0,3})Z/)
         .and keep_matching('AZ', 'A123Z', 'A12X34Z')
         .and keep_not_matching('A1234Z')
+    end
+
+    it 'matches the longest prefix without a complete forbidden pattern' do
+      expect(/\A(?~\d{4})/).to keep_matching('abcd', with_results: ['abcd'])
+      expect(/\A(?~\d{4})/).to keep_matching('X1234', with_results: ['X123'])
+    end
+
+    it 'allows the forbidden pattern to overlap what follows the absence group' do
+      expect(/\A(?~\d{4})\d\z/).to keep_matching('1234', 'X1234')
+        .and keep_not_matching('12345')
+    end
+
+    it 'supports absence groups when another token enables the u flag', targets: [ES2015, ES2018] do
+      expect(/\A(?~ab)😋\z/)
+        .to keep_matching('😋', 'x😋', 'xyz😋')
+        .and keep_not_matching('ab😋', 'xab😋')
     end
 
     it 'drops variably quantified cases with warning' do

@@ -70,8 +70,8 @@ class JsRegex
       end
 
       def build_absence_group
-        head = "(?:(?:.|\\n){,#{expression.inner_match_length.min - 1}}|(?:(?!"
-        tail = ')(?:.|\n))*)'
+        head = '(?:(?:(?!'
+        tail = ")(?:.|\\n))*(?:.|\\n){0,#{expression.inner_match_length.min - 1}})"
         build_group(head: head, tail: tail, capturing: false)
       end
 
