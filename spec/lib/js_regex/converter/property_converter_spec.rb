@@ -18,10 +18,16 @@ describe JsRegex::Converter::PropertyConverter do
     become('[0-9A-Fa-f]').and keep_matching('añB', with_results: %w[a B])
   end
 
-  it 'substitutes the negated \p{^...} property style', targets: [ES2009, ES2015] do
+  it 'substitutes the negated \p{^...} property style', targets: [ES2009] do
     expect(/\p{^ascii}/).to\
     become('(?:[\x80-\uD7FF\uE000-\uFFFF]|[\uD800-\uDBFF][\uDC00-\uDFFF])')
       .and keep_matching('añB😁', with_results: %w[ñ 😁])
+  end
+
+  it 'uses unicode ranges for expanded astral properties', targets: [ES2015] do
+    expect(/\p{^ascii}/).to become('[\x80-\uD7FF\uE000-\u{10FFFF}]').with_options('u')
+      .and keep_matching('ñ😁', with_results: %w[ñ 😁])
+      .and keep_not_matching('aB')
   end
 
   it 'keeps supported negated properties on ES2018+', targets: [ES2018] do
@@ -49,6 +55,13 @@ describe JsRegex::Converter::PropertyConverter do
     expect(/\p{cc}/).to\
     become(/\p{Control}/)
       .and keep_matching('A B', with_results: %w[ ])
+  end
+
+  it 'keeps astral expansions compatible with other unicode tokens', targets: [ES2015, ES2018] do
+    expect(/\A\p{Lu}😋\z/).to keep_matching('𐐀😋', 'A😋')
+      .and keep_not_matching('a😋')
+    expect(/\A😋\p{Lu}\z/).to keep_matching('😋𐐀', '😋A')
+      .and keep_not_matching('😋a')
   end
 
   it 'uses case-insensitive substitutions if needed' do
