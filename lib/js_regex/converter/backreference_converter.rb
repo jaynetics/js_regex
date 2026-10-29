@@ -46,13 +46,11 @@ class JsRegex
 
       def convert_multiplexed_name_ref
         # Create alternation of all groups with the same name
-        positions = expression.referenced_expressions.map do |ref_exp|
-          context.new_capturing_group_position(ref_exp.number)
-        end
-
         # Ruby tries groups with the same name from last to first.
-        references = positions.reverse.map do |pos|
-          Node.new("\\#{pos}", reference: pos, type: :backref)
+        references = expression.referenced_expressions.reverse.map do |ref_exp|
+          position = context.new_capturing_group_position(ref_exp.number)
+          Node.new("\\#{position}", reference: position, type: :backref,
+                   nonempty: Utils::Captures.nonempty?(ref_exp))
         end
         Node.new(*references, type: :multiplex_backref)
       end

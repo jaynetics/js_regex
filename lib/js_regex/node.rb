@@ -24,10 +24,11 @@ class JsRegex
       plain
     ].freeze
 
-    def initialize(*children, reference: nil, type: :plain)
+    def initialize(*children, reference: nil, type: :plain, nonempty: false)
       self.children = children
       self.reference = reference
       self.type = type
+      @nonempty = nonempty
     end
 
     def initialize_copy(*)
@@ -73,6 +74,10 @@ class JsRegex
 
     def optional?
       quantifier && quantifier.min == 0
+    end
+
+    def nonempty?
+      @nonempty
     end
 
     private

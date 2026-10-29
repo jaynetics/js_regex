@@ -95,8 +95,12 @@ class JsRegex
 
           alternatives = node.children.map do |backref|
             if optional_groups.include?(backref.reference)
-              Node.new('(?:', Node.new('(?:', backref, ')'), Node.new('(?:(?!))'), ')',
-                       reference: backref.reference, type: :conditional)
+              if backref.nonempty?
+                Node.new(capture_check(backref.reference, true), backref)
+              else
+                Node.new('(?:', Node.new('(?:', backref, ')'), Node.new('(?:(?!))'), ')',
+                         reference: backref.reference, type: :conditional)
+              end
             else
               backref
             end
@@ -110,7 +114,8 @@ class JsRegex
       def potentially_absent_groups(node, optional = false)
         return [] if node.instance_of?(String)
 
-        optional ||= node.optional? || node.type == :conditional
+        optional ||= node.optional? || node.type == :conditional ||
+          ['(?!', '(?<!'].include?(node.children.first)
         groups = optional && node.type == :captured_group ? [node.reference] : []
         alternatives = node.children.length > 1 &&
           node.children.all? { |child| child.is_a?(Node) && child.type == :branch }
