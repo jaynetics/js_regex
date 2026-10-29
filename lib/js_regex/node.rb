@@ -15,6 +15,7 @@ class JsRegex
       branch
       capture_backref
       capture_check
+      capture_conditional
       captured_group
       conditional
       dropped
