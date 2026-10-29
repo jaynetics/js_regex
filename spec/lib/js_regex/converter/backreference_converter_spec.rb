@@ -309,7 +309,7 @@ describe JsRegex::Converter::BackreferenceConverter do
   context 'when handling multiplexed named groups' do
     it 'converts named backreferences to multiplexed groups as alternations', targets: [ES2009, ES2015] do
       expect(/(?<a>a)(?<a>b)\k<a>/).to\
-      become(/(a)(b)(?:\1|\2)/)
+      become(/(a)(b)(?:\2|\1)/)
         .and keep_matching('aba', 'abb')
         .and keep_not_matching('abc', 'ab')
     end
@@ -317,16 +317,22 @@ describe JsRegex::Converter::BackreferenceConverter do
     it 'converts multiplexed named groups to numbered groups on ES2018+', targets: [ES2018] do
       # All named groups are converted to numbered groups, even on ES2018+
       expect(/(?<a>a)(?<a>b)\k<a>/).to\
-      become(/(a)(b)(?:\1|\2)/)
+      become(/(a)(b)(?:\2|\1)/)
         .and keep_matching('aba', 'abb')
         .and keep_not_matching('abc', 'ab')
     end
 
     it 'handles multiple multiplexed groups', targets: [ES2009, ES2015] do
       expect(/(?<x>a)(?<y>b)(?<x>c)\k<x>/).to\
-      become(/(a)(b)(c)(?:\1|\3)/)
+      become(/(a)(b)(c)(?:\3|\1)/)
         .and keep_matching('abca', 'abcc')
         .and keep_not_matching('abcb', 'abcd')
+    end
+
+    it 'tries later duplicate names before earlier names' do
+      conversions(/(?<x>a)(?<x>aa)\k<x>/).each_value do |converted|
+        expect(eval_js("#{converted}.exec('aaaaa')[0]")).to eq('aaaaa')
+      end
     end
 
     it 'handles multiplexed groups with alternation', targets: [ES2009, ES2015] do
@@ -343,12 +349,39 @@ describe JsRegex::Converter::BackreferenceConverter do
         .and keep_not_matching('ab')
     end
 
+    it 'rejects references to captures that did not participate' do
+      expect(/\A(?:(?<x>a)|(?<x>b))\k<x>\z/)
+        .to keep_matching('aa', 'bb')
+        .and keep_not_matching('a', 'b', 'ab', 'ba', '')
+    end
+
+    it 'distinguishes absent captures from participating empty captures' do
+      expect(/\A(?<x>a)?(?<x>b)?\k<x>\z/)
+        .to keep_matching('aa', 'bb', 'aba', 'abb')
+        .and keep_not_matching('', 'a', 'b', 'ab')
+      expect(/\A(?:(?<x>)|(?<x>a))\k<x>\z/)
+        .to keep_matching('', 'aa')
+        .and keep_not_matching('a')
+    end
+
 
     it 'handles multiplexed groups in x-mode', targets: [ES2009, ES2015] do
       expect(/(?<a> a ) (?<a> b ) \k<a> /x).to\
-      become(/(a)(b)(?:\1|\2)/)
+      become(/(a)(b)(?:\2|\1)/)
         .and keep_matching('aba', 'abb')
         .and keep_not_matching('abc')
+    end
+
+    it 'renumbers multiplexed references when expanding conditionals' do
+      expect(/\A(?<x>a)(?<x>b)(?<y>c)?(?(<y>)d|e)\k<x>\z/)
+        .to keep_matching('abcda', 'abcdb', 'abea', 'abeb')
+        .and keep_not_matching('abcd', 'abe', 'abec')
+    end
+
+    it 'guards multiplexed captures inside conditional branches' do
+      expect(/\A(?<y>a)?(?(<y>)(?<x>b)|(?<x>c))\k<x>\z/)
+        .to keep_matching('abb', 'cc')
+        .and keep_not_matching('ab', 'c', 'abc', 'ac')
     end
   end
 
@@ -374,8 +407,7 @@ describe JsRegex::Converter::BackreferenceConverter do
 
     it 'handles named backreference to non-participating branch (?<n>a)|(?<n>)\k<n>' do
       expect(/(?<n>a)|(?<n>)\k<n>/).to\
-      become(/(a)|()(?:\1|\2)/)
-        .and keep_matching('a', '')
+      keep_matching('a', '')
     end
 
     it 'handles backreferences to optional groups from branches' do

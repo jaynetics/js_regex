@@ -51,9 +51,11 @@ class JsRegex
           context.new_capturing_group_position(ref_exp.number)
         end
 
-        # Build alternation like (?:\1|\2)
-        alternation = positions.map { |pos| "\\#{pos}" }.join('|')
-        Node.new("(?:#{alternation})")
+        # Ruby tries groups with the same name from last to first.
+        references = positions.reverse.map do |pos|
+          Node.new("\\#{pos}", reference: pos, type: :backref)
+        end
+        Node.new(*references, type: :multiplex_backref)
       end
 
       def new_position
