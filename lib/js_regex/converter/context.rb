@@ -29,6 +29,14 @@ class JsRegex
         self.target = target
       end
 
+      def warn_of(text)
+        if fail_fast
+          raise ConversionError, text.sub(/^Dropped /, '')
+        else
+          warnings << text
+        end
+      end
+
       # target context
 
       def es_2015_or_higher?

@@ -190,7 +190,7 @@ b
 
   it 'warns for locally case-sensitive sets' do
     expect(/(?-i:[a])/i).to\
-    become(/(?:[a])/i).with_warning('nested case-sensitive set')
+    become(/(?:[a])/i).with_warning('nested case-sensitive character set')
   end
 
   it 'does not add duplicates for literal members that cant be swapped' do

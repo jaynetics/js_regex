@@ -16,14 +16,10 @@ class JsRegex
         when :nonhex then nonhex_expansion
         when :linebreak then linebreak_expansion
         when :xgrapheme then xgrapheme
-        when :digit, :space, :word
+        when :digit, :space, :word, :nondigit, :nonspace, :nonword
           return pass_through if Utils::CharTypes.directly_compatible?(expression)
 
-          set_substitution
-        when :nondigit, :nonspace, :nonword
-          return pass_through if Utils::CharTypes.directly_compatible?(expression)
-
-          negative_set_substitution
+          Utils::CharSets.convert(expression, context)
         else
           warn_of_unsupported_feature
         end
@@ -62,20 +58,6 @@ class JsRegex
       end
 
       LINEBREAK_EXPANSION = '(?:\r\n|[\n\v\f\r\u0085\u2028\u2029])'
-
-      def negative_set_substitution
-        # ::of_expression returns an inverted set for negative expressions,
-        # so we need to un-invert before wrapping in [^ and ]. Kinda lame.
-        "[^#{character_set.inversion.bmp_part}]"
-      end
-
-      def set_substitution
-        character_set.bmp_part.to_s(in_brackets: true)
-      end
-
-      def character_set
-        CharacterSet.of_expression(expression)
-      end
 
       def xgrapheme
         if context.es_2018_or_higher? && context.enable_u_option

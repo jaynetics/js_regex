@@ -30,6 +30,22 @@ describe JsRegex::Converter::TypeConverter do
       .to keep_matching(" ").and keep_not_matching(' ')
   end
 
+  it 'preserves astral letters and digits in unicode types' do
+    expect(/\A(?u:\w)\z/).to keep_matching('𐐀')
+      .and keep_not_matching('😋')
+    expect(/\A(?u:\d)\z/).to keep_matching('𝟡')
+      .and keep_not_matching('𐐀')
+    expect(/\A(?u:\w{2})\z/).to keep_matching('𐐀𝟡')
+      .and keep_not_matching('𐐀', '𐐀𝟡a')
+  end
+
+  it 'matches whole astral characters in negated unicode types' do
+    expect(/\A(?u:\W)\z/).to keep_matching('😋')
+      .and keep_not_matching('𐐀', '𝟡')
+    expect(/\A(?u:\D)\z/).to keep_matching('😋', '𐐀')
+      .and keep_not_matching('𝟡')
+  end
+
   it 'substitutes the hex type "\h" with an equivalent set', targets: [ES2009, ES2015] do
     expect(/\h+/).to\
     become(/[0-9A-Fa-f]+/).and keep_matching('f').and keep_not_matching('x')
