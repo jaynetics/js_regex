@@ -45,8 +45,8 @@ describe JsRegex::Converter::AnchorConverter do
 
   it 'uses a unicode-awary replacement for "\b" on ES2018+', targets: [ES2018] do
     expect(/\w\b/).to\
-    become('\w(?:(?<=[\d\p{L}\p{M}\p{Pc}])(?=[^\d\p{L}\p{M}\p{Pc}]|$)'\
-           '|(?<=[^\d\p{L}\p{M}\p{Pc}]|^)(?=[\d\p{L}\p{M}\p{Pc}]))')
+    become('\w(?:(?<=[\p{N}\p{L}\p{M}\p{Pc}])(?=[^\p{N}\p{L}\p{M}\p{Pc}]|$)'\
+           '|(?<=[^\p{N}\p{L}\p{M}\p{Pc}]|^)(?=[\p{N}\p{L}\p{M}\p{Pc}]))')
       .with_options('u')
       .and keep_matching('abc tür', with_results: %w[c r])
   end
@@ -60,8 +60,8 @@ describe JsRegex::Converter::AnchorConverter do
 
   it 'uses a unicode-awary replacement for "\B" on ES2018+', targets: [ES2018] do
     expect(/\w\B/).to\
-    become('\\w(?:(?<=[\\d\\p{L}\\p{M}\\p{Pc}])(?=[\\d\\p{L}\\p{M}\\p{Pc}])'\
-           '|(?<=[^\\d\\p{L}\\p{M}\\p{Pc}]|^)(?=[^\\d\\p{L}\\p{M}\\p{Pc}]|$))')
+    become('\\w(?:(?<=[\\p{N}\\p{L}\\p{M}\\p{Pc}])(?=[\\p{N}\\p{L}\\p{M}\\p{Pc}])'\
+           '|(?<=[^\\p{N}\\p{L}\\p{M}\\p{Pc}]|^)(?=[^\\p{N}\\p{L}\\p{M}\\p{Pc}]|$))')
       .with_options('u')
       .and keep_matching('abc tür', with_results: %w[a b t])
       # ^ this is correct; both in Ruby and JS, \w is is ascii-only by default
@@ -74,6 +74,14 @@ describe JsRegex::Converter::AnchorConverter do
       .and keep_not_matching('a', '!!')
     expect(/!\B!/).to keep_matching('!!')
       .and keep_not_matching('!a!')
+  end
+
+  it 'treats Unicode numbers as word characters at boundaries', targets: [ES2018] do
+    %w[١ ９ 𝟡 Ⅻ ½].each do |char|
+      expect(/\A\b#{char}\b\z/).to keep_matching(char)
+      expect(/\A\B#{char}\z/).to keep_not_matching(char)
+      expect(/#{char}\B#{char}/).to keep_matching(char * 2)
+    end
   end
 
   it 'drops the previous match anchor "\G" with warning' do
