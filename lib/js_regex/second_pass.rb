@@ -190,11 +190,15 @@ class JsRegex
         return unless node.optional?
 
         qtf = node.quantifier
-        if qtf.max.equal?(1) # any zero_or_one quantifier (?, ??, ?+)
+        case qtf.max
+        when 0
+          node.update(children: ['(?!)', *node.children], quantifier: nil)
+        when 1 # any zero_or_one quantifier (?, ??, ?+)
           node.update(quantifier: nil)
         else
           min_quantifier = qtf.dup
-          min_quantifier.text = "{1,#{qtf.max}}#{'?' if qtf.reluctant?}"
+          maximum = qtf.max < 0 ? '' : qtf.max
+          min_quantifier.text = "{1,#{maximum}}#{'?' if qtf.reluctant?}"
           node.update(quantifier: min_quantifier)
         end
       end
