@@ -77,11 +77,7 @@ class JsRegex
       end
 
       def warn_of(text)
-        if context.fail_fast
-          raise ConversionError, text.sub(/^Dropped /, '')
-        else
-          context.warnings << text
-        end
+        context.warn_of(text)
       end
 
       def drop

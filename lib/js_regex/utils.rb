@@ -1,3 +1,4 @@
+require_relative 'utils/char_sets'
 require_relative 'utils/char_types'
 require_relative 'utils/escapes'
 require_relative 'utils/literals'

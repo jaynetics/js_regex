@@ -77,6 +77,6 @@ describe JsRegex::Converter::PropertyConverter do
 
   it 'warns for nested case-sensitive properties' do
     expect(/(?-i:\p{upper})/i)
-      .to generate_warning('nested case-sensitive property')
+      .to generate_warning('nested case-sensitive character set')
   end
 end

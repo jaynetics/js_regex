@@ -1,7 +1,6 @@
 # frozen_string_literal: true
 
 require_relative 'base'
-require 'character_set'
 
 class JsRegex
   module Converter
@@ -20,24 +19,7 @@ class JsRegex
           context.enable_u_option
           "\\#{expression.negative? ? 'P' : 'p'}{#{prop_name_in_js}}"
         else
-          build_character_set
-        end
-      end
-
-      def build_character_set
-        content = CharacterSet.of_expression(expression)
-
-        if expression.case_insensitive? && !context.case_insensitive_root
-          content = content.case_insensitive
-        elsif !expression.case_insensitive? && context.case_insensitive_root
-          warn_of_unsupported_feature('nested case-sensitive property')
-        end
-
-        if context.es_2015_or_higher?
-          context.enable_u_option if content.astral_part?
-          content.to_s(format: 'es6', in_brackets: true)
-        else
-          content.to_s_with_surrogate_ranges
+          Utils::CharSets.convert(expression, context)
         end
       end
     end
