@@ -50,16 +50,18 @@ class JsRegex
       end
 
       def substitute_root_level_keep_mark(tree)
-        keep_mark_index = nil
-        tree.children.each.with_index do |child, i|
-          break keep_mark_index = i if child.type == :keep_mark
+        tree.children.each do |child|
+          substitute_root_level_keep_mark(child) if child.is_a?(Node)
         end
+
+        keep_mark_index = tree.children.rindex { |child| child.is_a?(Node) && child.type == :keep_mark }
         return unless keep_mark_index
 
-        pre = tree.children[0...keep_mark_index]
+        pre = tree.children[0...keep_mark_index].reject { |child| child.is_a?(Node) && child.type == :keep_mark }
+        separator = pre.first == '|' ? [pre.shift] : []
         post = tree.children[(keep_mark_index + 1)..-1]
         lookbehind = Node.new('(?<=', *pre, ')')
-        tree.update(children: [lookbehind, *post])
+        tree.update(children: [*separator, lookbehind, *post])
       end
 
       def handle_non_participating_backrefs(tree)

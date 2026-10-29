@@ -13,6 +13,21 @@ describe JsRegex::Converter::KeepConverter do
     become(/(?<=a)b/)
   end
 
+  it 'uses the last keep mark in a sequence', targets: [ES2018] do
+    expect(/a\Kb\Kc/).to become(/(?<=ab)c/)
+      .and keep_matching('abc', with_results: ['c'])
+      .and keep_not_matching('bc', 'ac')
+  end
+
+  it 'converts keep marks on every root alternative', targets: [ES2018] do
+    expect(/a\Kb|c/).to become(/(?<=a)b|c/)
+      .and keep_matching('abc', with_results: %w[b c])
+    expect(/c|a\Kb\Kc/).to become(/c|(?<=ab)c/)
+      .and keep_matching('abc c', with_results: %w[c c])
+    expect(/a\Kb|c\Kd/).to become(/(?<=a)b|(?<=c)d/)
+      .and keep_matching('ab cd', with_results: %w[b d])
+  end
+
   it 'drops nested keep marks on ES2018+', targets: [ES2018] do
     # This special case that can't be reproduced with a normal lookbehind
     # because the keep mark works across group boundaries.
