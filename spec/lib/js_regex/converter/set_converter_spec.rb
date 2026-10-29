@@ -177,6 +177,13 @@ b
     expect(/[a\nb]/).to stay_the_same.and keep_matching("x\ny", with_results: %W[\n])
   end
 
+  it 'escapes literal Unicode line separators in sets and ranges' do
+    expect(Regexp.new("[\u2028\u2029]")).to become('[\\u2028\\u2029]')
+      .and keep_matching("a\u2028\u2029b", with_results: ["\u2028", "\u2029"])
+    expect(Regexp.new("[\u2028-\u2029]")).to become('[\\u2028-\\u2029]')
+      .and keep_matching("\u2028\u2029", with_results: ["\u2028", "\u2029"])
+  end
+
   it 'adds case-swapped literal member dupes if subject to a local i-option' do
     expect(/[a](?i)[a[b]](?-i:[a](?i:[^a-fG-Y]))/)
       .to  keep_matching('aAaZ', with_results: %w[aAaZ])
