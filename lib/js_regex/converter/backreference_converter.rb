@@ -76,11 +76,9 @@ class JsRegex
         groups_before_wrapper = context.capturing_group_count
 
         context.increment_local_capturing_group_count
-        target_copy = expression.referenced_expression.unquantified_clone
-        # avoid "Duplicate capture group name" error in JS
-        target_copy.token = :capture if target_copy.is?(:named, :group)
         context.start_subexp_recursion
-        result = convert_expression(target_copy)
+        ref = expression.referenced_expression
+        result = Converter.for(ref).convert(ref, context, quantified: false)
         context.end_subexp_recursion
 
         # Track all groups created during this recursive call

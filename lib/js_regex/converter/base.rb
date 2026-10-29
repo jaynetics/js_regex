@@ -11,13 +11,13 @@ class JsRegex
     #
     class Base
       # returns instance of Node with #quantifier attached.
-      def convert(expression, context)
+      def convert(expression, context, quantified: true)
         self.context    = context
         self.expression = expression
 
         node = convert_data
         node = Node.new(node) if node.instance_of?(String)
-        apply_quantifier(node)
+        quantified ? apply_quantifier(node) : node
       end
 
       private
