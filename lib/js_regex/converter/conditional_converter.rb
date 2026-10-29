@@ -18,7 +18,7 @@ class JsRegex
       end
 
       def mark_conditional_for_second_pass
-        reference = expression.referenced_expression.number
+        reference = context.new_capturing_group_position(expression.referenced_expression.number)
         node = Node.new('(?:', reference: reference, type: :conditional)
         expression.branches.each do |branch|
           node << Node.new('(?:', convert_expression(branch), ')')

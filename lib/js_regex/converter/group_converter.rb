@@ -36,7 +36,7 @@ class JsRegex
           build_passive_group
         else
           context.start_atomic_group
-          result = wrap_in_backrefed_lookahead(convert_subexpressions)
+          result = wrap_in_backrefed_lookahead { convert_subexpressions }
           context.end_atomic_group
           result
         end
@@ -81,7 +81,7 @@ class JsRegex
         return Node.new(*wrap(head, tail)) if opts[:capturing].equal?(false)
 
         context.capture_group unless context.in_subexp_recursion
-        ref = expression.number
+        ref = context.new_capturing_group_position(expression.number)
         Node.new(*wrap(head, tail), reference: ref, type: :captured_group)
       end
 

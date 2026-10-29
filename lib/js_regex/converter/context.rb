@@ -74,6 +74,11 @@ class JsRegex
         capture_group
       end
 
+      def cancel_local_capturing_group
+        added_capturing_groups_after_group[original_capturing_group_count] -= 1
+        self.capturing_group_count = capturing_group_count - 1
+      end
+
       def recursions(exp)
         # Count recursions in the current stack path only
         recursion_stack.count { |e| recursion_id(e) == recursion_id(exp) }
