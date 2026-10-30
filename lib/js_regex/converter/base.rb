@@ -47,7 +47,7 @@ class JsRegex
         if qtf.possessive?
           node.update(quantifier: qtf.dup.tap { |q| q.text = q.text[0..-2] })
         elsif qtf.token == :interval && qtf.text[0..1] == "{,"
-          node.update(quantifier: qtf.dup.tap { |q| q.text = "{0,#{q.max}}" })
+          node.update(quantifier: qtf.dup.tap { |q| q.text = q.text.sub('{,', '{0,') })
         else
           node.update(quantifier: qtf)
         end
