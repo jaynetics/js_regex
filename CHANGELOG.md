@@ -6,6 +6,10 @@ and this project adheres to [Semantic Versioning](http://semver.org/spec/v2.0.0.
 
 ## Unreleased
 
+### Added
+
+- up-to-date unicode properties map, e.g. for `\p{Dash}`
+
 ## [3.14.0] - 2025-08-03
 
 ### Added
