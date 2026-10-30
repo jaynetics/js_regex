@@ -9,8 +9,6 @@
 #
 #
 
-require 'spec_helper'
-
 describe JsRegex::Converter::EscapeConverter do
   it 'lets backslashes pass through' do
     expect(/\\/).to stay_the_same.and keep_matching('\\', with_results: %w[\\])

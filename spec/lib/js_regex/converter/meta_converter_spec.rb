@@ -1,7 +1,5 @@
 # frozen_string_literal: true
 
-require 'spec_helper'
-
 describe JsRegex::Converter::MetaConverter do
   it 'replaces the dot meta char so that it keeps matching astral stuff, too' do
     expect(/a.a/).to\

@@ -1,7 +1,5 @@
 # frozen_string_literal: true
 
-require 'spec_helper'
-
 describe JsRegex::Conversion do
   describe '::of' do
     let(:return_value) { described_class.of(/foo/i) }

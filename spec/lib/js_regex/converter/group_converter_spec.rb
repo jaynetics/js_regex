@@ -1,7 +1,5 @@
 # frozen_string_literal: true
 
-require 'spec_helper'
-
 describe JsRegex::Converter::GroupConverter do
   it 'preserves capturing groups' do
     expect(/(abc)/).to stay_the_same.and keep_matching('abc', with_results: %w[abc])

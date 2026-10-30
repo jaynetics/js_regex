@@ -42,7 +42,7 @@ $js_regex_cache = {}
 # This method should be used for all JsRegex initializations in syntax specs.
 def conversions(rb_regex)
   active_targets.to_h do |target|
-    output = $js_regex_cache[[rb_regex, target]] ||=
+    output = $js_regex_cache[[rb_regex, target, JsRegex::SecondPass::STEPS]] ||=
       JsRegex.new(rb_regex, target: target)
     [target, output]
   end
