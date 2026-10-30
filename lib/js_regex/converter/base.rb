@@ -15,7 +15,7 @@ class JsRegex
         self.context    = context
         self.expression = expression
 
-        if quantified && expression.quantifier && expression.quantifier.possessive?
+        if quantified && expression.quantifier&.possessive?
           wrap_in_backrefed_lookahead { convert_node(quantified) }
         else
           convert_node(quantified)
@@ -42,17 +42,10 @@ class JsRegex
       end
 
       def apply_quantifier(node)
-        return node if node.dropped? || (qtf = expression.quantifier).nil?
+        return node if node.dropped? ||
+               (qtf = Node::Quantifier.from_expression(expression)).nil?
 
-        if qtf.possessive?
-          node.update(quantifier: qtf.dup.tap { |q| q.text = q.text[0..-2] })
-        elsif qtf.token == :interval && qtf.text[0..1] == "{,"
-          node.update(quantifier: qtf.dup.tap { |q| q.text = q.text.sub('{,', '{0,') })
-        else
-          node.update(quantifier: qtf)
-        end
-
-        node
+        node.update(quantifier: qtf)
       end
 
       def convert_subexpressions

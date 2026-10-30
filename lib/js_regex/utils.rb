@@ -1,3 +1,5 @@
+# Utilities for analyzing Regexp::Expression::* instances emitted by regexp_parser
+
 require_relative 'utils/captures'
 require_relative 'utils/char_sets'
 require_relative 'utils/char_types'

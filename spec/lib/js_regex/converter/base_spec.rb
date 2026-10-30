@@ -88,7 +88,8 @@ describe JsRegex::Converter::Base do
         expect(/a+?/).to stay_the_same
       end
 
-      it 'preserves lazy intervals that contain a comma' do
+      it 'preserves lazy intervals that contain a comma',
+         if: Gem::Version.new(Regexp::Parser::VERSION) > Gem::Version.new('2.13.1') do
         expect(/a{1,3}?/).to stay_the_same
           .and keep_matching('aaa', with_results: %w[a a a])
         expect(/a{2,}?/).to stay_the_same
@@ -96,7 +97,8 @@ describe JsRegex::Converter::Base do
         expect(/a{,3}?/).to become(/a{0,3}?/)
       end
 
-      it 'keeps nonempty lazy intervals from introducing empty captures' do
+      it 'keeps nonempty lazy intervals from introducing empty captures',
+         if: Gem::Version.new(Regexp::Parser::VERSION) > Gem::Version.new('2.13.1') do
         expect(/\A(a{1,3}?)*\1\z/).to keep_matching('aa', 'aaa', 'aaaa')
           .and keep_not_matching('', 'a')
       end

@@ -10,7 +10,7 @@ class JsRegex
 
       class << self
         def convert_data(data, context)
-          if !context.u? && data =~ ASTRAL_PLANE_CODEPOINT_PATTERN
+          if !context.u? && data.match?(ASTRAL_PLANE_CODEPOINT_PATTERN)
             if context.enable_u_option
               escape_incompatible_bmp_literals(data)
             else

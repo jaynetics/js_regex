@@ -6,7 +6,7 @@ class JsRegex
       # Unlike assertions and backreferences, these expressions can match an
       # empty string at every input position, regardless of surrounding text.
       def self.nullable?(expression, quantified = false)
-        return true if quantified && expression.quantifier && expression.quantifier.min.zero?
+        return true if quantified && JsRegex::Node::Quantifier.from_expression(expression)&.optional?
 
         case expression.type
         when :literal
@@ -24,7 +24,7 @@ class JsRegex
       # A participating capture ignores its own quantifier. Treat backreferences
       # conservatively rather than following potentially recursive references.
       def self.nonempty?(expression, quantified = false)
-        return false if quantified && expression.quantifier && expression.quantifier.min.zero?
+        return false if quantified && JsRegex::Node::Quantifier.from_expression(expression)&.optional?
 
         case expression.type
         when :literal

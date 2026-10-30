@@ -23,12 +23,12 @@ class JsRegex
       HAS_CASE_PATTERN = /[\p{lower}\p{upper}]/.freeze
 
       def handle_locally_case_insensitive_literal(literal)
-        literal =~ HAS_CASE_PATTERN ? case_insensitivize(literal) : Utils::Literals.convert_data(literal, context)
+        literal.match?(HAS_CASE_PATTERN) ? case_insensitivize(literal) : Utils::Literals.convert_data(literal, context)
       end
 
       def case_insensitivize(literal)
         literal.each_char.each_with_object(Node.new) do |chr, node|
-          if chr =~ HAS_CASE_PATTERN
+          if chr.match?(HAS_CASE_PATTERN)
             if chr.ord > 0xFFFF && !context.enable_u_option
               node << Node.new('(?:', Utils::Literals.convert_data(chr, context), '|',
                                Utils::Literals.convert_data(chr.swapcase, context), ')')

@@ -7,44 +7,47 @@ class JsRegex
   #
   class Node
     require_relative 'error'
+    Dir[File.join(__dir__, 'node', '*.rb')].sort.each { |f| require f }
 
-    attr_reader :children, :quantifier, :reference, :type
+    ATTRIBUTES = %i[
+      children
+      marked_nonempty
+      nullable
+      quantifier
+      reference
+      type
+    ].freeze
 
-    TYPES = %i[
+    attr_reader(*ATTRIBUTES)
+
+    REFERENCE_TYPES = %i[
       backref
-      branch
       capture_backref
       capture_check
       capture_conditional
-      captured_group
       conditional
-      dropped
-      keep_mark
       multiplex_backref
-      plain
     ].freeze
 
-    def initialize(*children, reference: nil, type: :plain, nonempty: false, nullable: false)
+    REFERENCE_TYPES_MAP = REFERENCE_TYPES.to_h { |k| [k, true] }.freeze
+
+    TYPES = (REFERENCE_TYPES + %i[
+      branch
+      captured_group
+      dropped
+      keep_mark
+      plain
+    ]).freeze
+
+    TYPES_MAP = TYPES.to_h { |k| [k, true] }.freeze
+
+    def initialize(*children, reference: nil, type: :plain, marked_nonempty: false, nullable: false, quantifier: nil)
       self.children = children
       self.reference = reference
       self.type = type
-      @nonempty = nonempty
-      @nullable = nullable
-    end
-
-    def initialize_copy(*)
-      self.children = children.map(&:clone)
-    end
-
-    # Copy the metadata without cloning children that the caller will replace.
-    def copy_with_children(*replacements)
-      self.class.new(*replacements, reference: reference, type: type,
-                     nonempty: nonempty?, nullable: nullable?).update(quantifier: quantifier)
-    end
-
-    def transform(&block)
-      children.map!(&block)
-      self
+      self.marked_nonempty = marked_nonempty
+      self.nullable = nullable
+      self.quantifier = quantifier
     end
 
     def <<(node)
@@ -52,43 +55,9 @@ class JsRegex
       self
     end
 
-    def dropped?
-      # keep everything else, including empty or depleted capturing groups
-      # so as not to not mess with reference numbers (e.g. backrefs)
-      type.equal?(:dropped)
-    end
-
-    def to_s
-      case type
-      when :dropped
-        ''
-      when :backref, :branch, :capture_check, :captured_group, :plain
-        children.join << quantifier.to_s
-      else
-        raise TypeError.new(
-          "#{type} must be substituted before stringification"
-        ).extend(JsRegex::Error)
-      end
-    end
-
-    def update(attrs)
-      self.children   = attrs.fetch(:children)   if attrs.key?(:children)
-      self.quantifier = attrs.fetch(:quantifier) if attrs.key?(:quantifier)
-      self.type       = attrs.fetch(:type)       if attrs.key?(:type)
-      self.reference  = attrs.fetch(:reference)  if attrs.key?(:reference)
-      self
-    end
-
-    def optional?
-      quantifier && quantifier.min == 0
-    end
-
-    def nonempty?
-      @nonempty
-    end
-
-    def nullable?
-      @nullable
+    def initialize_copy(*)
+      super
+      self.children = children.map(&:clone)
     end
 
     private
@@ -96,7 +65,7 @@ class JsRegex
     TypeError = Class.new(::TypeError).extend(JsRegex::Error)
 
     def type=(arg)
-      arg.nil? || TYPES.include?(arg) ||
+      arg.nil? || TYPES_MAP[arg] ||
         raise(TypeError, "unsupported type #{arg.class} for #{__method__}")
       @type = arg
     end
@@ -108,7 +77,7 @@ class JsRegex
     end
 
     def quantifier=(arg)
-      arg.nil? || arg.class == Regexp::Expression::Quantifier ||
+      arg.nil? || arg.class == Quantifier ||
         raise(TypeError, "unsupported type #{arg.class} for #{__method__}")
       @quantifier = arg
     end
@@ -117,6 +86,18 @@ class JsRegex
       arg.nil? || arg.is_a?(Numeric) ||
         raise(TypeError, "unsupported type #{arg.class} for #{__method__}")
       @reference = arg
+    end
+
+    def marked_nonempty=(arg)
+      arg == true || arg == false ||
+        raise(TypeError, "unsupported type #{arg.class} for #{__method__}")
+      @marked_nonempty = arg
+    end
+
+    def nullable=(arg)
+      arg == true || arg == false ||
+        raise(TypeError, "unsupported type #{arg.class} for #{__method__}")
+      @nullable = arg
     end
   end
 end
