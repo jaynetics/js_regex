@@ -8,31 +8,31 @@ describe JsRegex::SecondPass::AlternateConditionalPermutations do
   end
 
   it 'replaces one-branch conditionals with equivalent alternations' do
-    expect(/-(<)?a(?(1)>)-/).to become('(?:-(<){0}a(?:(?:>){0})-)|(?:-(<)a(?:(?:>))-)')
+    expect(/-(<)?a(?(1)>)-/).to become('(?:-(){0}a(?:)-)|(?:-(<)a(?:(?:>))-)')
       .and keep_matching('-a-', '-<a>-')
       .and keep_not_matching('-<a-', '-a>-')
   end
 
   it 'replaces two-branch conditionals with equivalent alternations' do
-    expect(/-(<)?a(?(1)>|b)-/).to become('(?:-(<){0}a(?:(?:>){0}(?:b))-)|(?:-(<)a(?:(?:>)(?:b){0})-)')
+    expect(/-(<)?a(?(1)>|b)-/).to become('(?:-(){0}a(?:(?:b))-)|(?:-(<)a(?:(?:>))-)')
       .and keep_matching('-ab-', '-<a>-')
       .and keep_not_matching('-a>-', '-<ab-', '-<ab>-')
   end
 
   it 'replaces named conditionals with equivalent alternations' do
-    expect(/-(?<bar><)?a(?(<bar>)>)-/).to become('(?:-(<){0}a(?:(?:>){0})-)|(?:-(<)a(?:(?:>))-)')
+    expect(/-(?<bar><)?a(?(<bar>)>)-/).to become('(?:-(){0}a(?:)-)|(?:-(<)a(?:(?:>))-)')
       .and keep_matching('-a-', '-<a>-')
       .and keep_not_matching('-<a-', '-a>-')
   end
 
   it 'replaces quantified conditionals with equivalent alternations' do
-    expect(/-(<)?a(?(1)>){3}-/).to become('(?:-(<){0}a(?:(?:>){0}){3}-)|(?:-(<)a(?:(?:>)){3}-)')
+    expect(/-(<)?a(?(1)>){3}-/).to become('(?:-(){0}a(?:){3}-)|(?:-(<)a(?:(?:>)){3}-)')
       .and keep_matching('-a-', '-<a>>>-')
       .and keep_not_matching('-<a>-')
   end
 
   it 'keeps 0..(n>1) quantifiers of the target group' do
-    expect(/-(<){,2}a(?(1)>)-/).to become('(?:-(<){0}a(?:(?:>){0})-)|(?:-(<){1,2}a(?:(?:>))-)')
+    expect(/-(<){,2}a(?(1)>)-/).to become('(?:-(){0}a(?:)-)|(?:-(<){1,2}a(?:(?:>))-)')
       .and keep_matching('-<a>-', '-<<a>-')
       .and keep_not_matching('-<a-', '-<<a-', '-a>-')
   end
@@ -72,9 +72,21 @@ describe JsRegex::SecondPass::AlternateConditionalPermutations do
       .and keep_not_matching('-<ab-', '-<ab>>-', '--b>>-')
   end
 
+  it 'keeps nested capture slots unmatched when discarding their parent' do
+    expect(/\A(a(b))?(?(1)c|d)(?(2)e|f)(g)\3\z/)
+      .to keep_matching('abcegg', 'dfgg')
+      .and keep_not_matching('degg', 'abcfgg', 'dfg', 'abceg')
+  end
+
+  it 'keeps later reference numbers when discarding nested conditional branches' do
+    expect(/\A(a)?(?(1)(?(1)b|(c))|(d))(e)\4\z/)
+      .to keep_matching('abee', 'dee')
+      .and keep_not_matching('acee', 'abed', 'de', 'ee')
+  end
+
   it 'adapts backref numbers in the created alternation branches' do
-    expect(/()(?(1))\1/).to become('(?:((?!))(?:(?:){0})\\1)|(?:()(?:(?:))\\2)')
+    expect(/()(?(1))\1/).to become('(?:((?!))(?:)\\1)|(?:()(?:(?:))\\2)')
     expect(/(a)(b)(?(1)c)(d)\2/)
-      .to become('(?:((?!)a)(b)(?:(?:c){0})(d)\\2)|(?:(a)(b)(?:(?:c))(d)\\5)')
+      .to become('(?:((?!)a)(b)(?:)(d)\\2)|(?:(a)(b)(?:(?:c))(d)\\5)')
   end
 end

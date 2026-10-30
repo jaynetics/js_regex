@@ -318,9 +318,7 @@ describe JsRegex::Converter::BackreferenceConverter do
     end
 
     it 'preserves greedy optional captures after forward calls' do
-      conversions(/\A\g<1>(a)?\1/).each_value do |converted|
-        expect(eval_js("#{converted}.exec('aaa')[0]")).to eq('aaa')
-      end
+      expect(/\A\g<1>(a)?\1/).to keep_capturing('aaa' => 'aaa')
     end
 
     it 'uses the correct local flags / options (those that apply to the target)' do
@@ -334,7 +332,7 @@ describe JsRegex::Converter::BackreferenceConverter do
   context 'when handling multiplexed named groups' do
     it 'converts named backreferences to multiplexed groups as alternations', targets: [ES2009, ES2015] do
       expect(/(?<a>a)(?<a>b)\k<a>/).to\
-      become(/(a)(b)(?:\2|\1)/)
+      become(/(a)(b)(?:\2|(?!\2)\1)/)
         .and keep_matching('aba', 'abb')
         .and keep_not_matching('abc', 'ab')
     end
@@ -342,22 +340,20 @@ describe JsRegex::Converter::BackreferenceConverter do
     it 'converts multiplexed named groups to numbered groups on ES2018+', targets: [ES2018] do
       # All named groups are converted to numbered groups, even on ES2018+
       expect(/(?<a>a)(?<a>b)\k<a>/).to\
-      become(/(a)(b)(?:\2|\1)/)
+      become(/(a)(b)(?:\2|(?!\2)\1)/)
         .and keep_matching('aba', 'abb')
         .and keep_not_matching('abc', 'ab')
     end
 
     it 'handles multiple multiplexed groups', targets: [ES2009, ES2015] do
       expect(/(?<x>a)(?<y>b)(?<x>c)\k<x>/).to\
-      become(/(a)(b)(c)(?:\3|\1)/)
+      become(/(a)(b)(c)(?:\3|(?!\3)\1)/)
         .and keep_matching('abca', 'abcc')
         .and keep_not_matching('abcb', 'abcd')
     end
 
     it 'tries later duplicate names before earlier names' do
-      conversions(/(?<x>a)(?<x>aa)\k<x>/).each_value do |converted|
-        expect(eval_js("#{converted}.exec('aaaaa')[0]")).to eq('aaaaa')
-      end
+      expect(/(?<x>a)(?<x>aa)\k<x>/).to keep_capturing('aaaaa' => 'aaaaa')
     end
 
     it 'handles multiplexed groups with alternation', targets: [ES2009, ES2015] do
@@ -392,12 +388,8 @@ describe JsRegex::Converter::BackreferenceConverter do
     it 'preserves greedy and lazy matching with optional duplicate names' do
       [/\A(?<x>a)?(?<x>a)?\k<x>/, /\A(?<x>a)??(?<x>a)?\k<x>/,
        /\A(?<x>a)*(?<x>aa)?\k<x>/].each do |regexp|
-        conversions(regexp).each_value do |converted|
-          %w[aa aaa aaaaaaa].each do |input|
-            expected = regexp.match(input).to_a
-            expect(eval_js("#{converted}.exec('#{input}')")).to eq(expected)
-          end
-        end
+        examples = %w[aa aaa aaaaaaa].to_h { |str| [str, regexp.match(str).to_a] }
+        expect(regexp).to keep_capturing(examples)
       end
     end
 
@@ -409,7 +401,7 @@ describe JsRegex::Converter::BackreferenceConverter do
 
     it 'handles multiplexed groups in x-mode', targets: [ES2009, ES2015] do
       expect(/(?<a> a ) (?<a> b ) \k<a> /x).to\
-      become(/(a)(b)(?:\2|\1)/)
+      become(/(a)(b)(?:\2|(?!\2)\1)/)
         .and keep_matching('aba', 'abb')
         .and keep_not_matching('abc')
     end
@@ -464,9 +456,7 @@ describe JsRegex::Converter::BackreferenceConverter do
     it 'retains nested captures skipped by later iterations' do
       expect(/((a)|b)+\2/).to keep_matching('aa', 'aba', 'baa')
         .and keep_not_matching('a', 'b', 'bb', 'ab', 'ba')
-      conversions(/((a)|b)+\2/).each_value do |converted|
-        expect(eval_js("#{converted}.exec('aba')[0]")).to eq('aba')
-      end
+        .and keep_capturing('aba' => 'aba')
     end
 
     it 'requires a referenced capture among several repeated alternatives' do

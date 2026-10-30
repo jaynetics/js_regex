@@ -19,7 +19,7 @@ Gem::Specification.new do |s|
 
   s.files         = Dir['lib/**/*.{csv,rb}']
 
-  s.required_ruby_version = '>= 2.1.0'
+  s.required_ruby_version = '>= 2.6.0'
 
   s.add_dependency 'character_set', '~> 1.4'
   s.add_dependency 'regexp_parser', '~> 2.11'

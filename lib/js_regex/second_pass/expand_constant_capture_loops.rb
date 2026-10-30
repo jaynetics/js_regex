@@ -1,13 +1,16 @@
 # frozen_string_literal: true
 
-# When a capture always has the same value, its loop only needs to remember
-# whether it has participated. Expand those states in the original branch order
-# instead of relying on JavaScript to retain captures between iterations.
+# Rewrite unbounded loops whose backreferences can be replaced by fixed strings.
+# Track which captures have participated, then substitute their known values
+# in backreferences and select conditional branches in the original choice order.
+# Captures used only by conditions may vary: only their participation matters.
+# Example: /(?:(a)|\1)+/ => /(a)(?:(a)|a)*/
+# with redundant noncapturing groups omitted: once set, \1 is always a.
 class JsRegex::SecondPass::ExpandConstantCaptureLoops < JsRegex::SecondPass
   def call
     loop do
       @counts = reference_counts(tree)
-      break unless expand(tree)
+      break if @counts.empty? || !expand(tree)
 
       renumber_captures
     end
@@ -15,6 +18,8 @@ class JsRegex::SecondPass::ExpandConstantCaptureLoops < JsRegex::SecondPass
 
   private
 
+  # In /x(?:(a)|\1)+y/, compile the loop together with its tail y, then
+  # replace that suffix; return true after one such replacement.
   def expand(node)
     return false unless node.is_a?(Node)
     return false if repeated?(node)
@@ -35,6 +40,8 @@ class JsRegex::SecondPass::ExpandConstantCaptureLoops < JsRegex::SecondPass
     node.children.any? { |child| expand(child) }
   end
 
+  # For /(?:(a)|\1)+/, state 0 has no capture and must choose (a) first;
+  # state 1 can then repeat either (a) or the known value a.
   def compile(node, following)
     groups = []
     walk(node) { |part| groups << part if part.type == :captured_group && @counts[part.reference] > 0 }
@@ -42,14 +49,17 @@ class JsRegex::SecondPass::ExpandConstantCaptureLoops < JsRegex::SecondPass
 
     references = groups.map(&:reference)
     internal = reference_counts(node)
-    return unless groups.length > 1 || references.any? { |reference| internal[reference] > 0 }
+    return unless groups.length > 1 || references.any? { |reference| internal[reference] > 0 } ||
+      (node.quantifier.reluctant? && conditional_reference?(following, references))
 
-    local = reference_counts(Node.new(node, following))
-    return unless references.all? { |reference| local[reference] == @counts[reference] }
+    following_counts = reference_counts(following)
+    return unless references.all? do |reference|
+      internal[reference] + following_counts[reference] == @counts[reference]
+    end
 
     @values = constant_capture_values(groups)
     # One bit per capture records whether it has participated in the loop.
-    @capture_bits = references.each.with_index.map { |reference, index| [reference, 1 << index] }.to_h
+    @capture_bits = references.each.with_index.to_h { |ref, idx| [ref, 1 << idx] }
     @all_captures = (1 << references.length) - 1
     @iteration = node.clone.update(quantifier: nil)
     @following = following
@@ -64,10 +74,27 @@ class JsRegex::SecondPass::ExpandConstantCaptureLoops < JsRegex::SecondPass
     nil
   end
 
+  # In /(?:(a)|ab)+?(?(1)c|a)/, the trailing condition needs capture 1's state
+  # even after a later ab iteration skips it.
+  def conditional_reference?(node, references)
+    any_node?(node) do |part|
+      if part.type == :conditional
+        references.include?(part.reference)
+      elsif part.type == :capture_conditional
+        part.children.first.children.any? { |check| references.include?(check.reference) }
+      end
+    end
+  end
+
+  # Capture 1 containing /(ab)/ => {1 => /(?:ab)/}; /(a+)/ is allowed only
+  # when conditions need its participation but no reference reads its value.
   def constant_capture_values(groups)
     groups.each_with_object({}) do |group, values|
       expression = Regexp::Parser.parse(group.children.join)
-      throw :unsupported_capture_loop unless constant_word(expression)
+      unless constant_word(expression)
+        throw :unsupported_capture_loop if capture_value_referenced?(group.reference)
+        next
+      end
 
       value = group.clone.update(quantifier: nil)
       walk(value) do |part|
@@ -79,6 +106,15 @@ class JsRegex::SecondPass::ExpandConstantCaptureLoops < JsRegex::SecondPass
     end
   end
 
+  # /(a+)(?(1)b|c)/ => false for capture 1; /(a+)\1/ => true.
+  def capture_value_referenced?(reference)
+    any_node? do |node|
+      [:backref, :capture_check].include?(node.type) && node.reference == reference
+    end
+  end
+
+  # Once capture 1 is set to a, the remaining /(?:(a)|\1)*/ iterations can
+  # use /(?:(a)|a)*/ (redundant noncapturing groups omitted).
   def remaining_iterations(state)
     return @expanded_states[state].clone if @expanded_states.key?(state)
 
@@ -87,19 +123,28 @@ class JsRegex::SecondPass::ExpandConstantCaptureLoops < JsRegex::SecondPass
       tail = substitute_known_captures(@following, state)
       result = Node.new(repeat(body, @reluctant), tail)
     else
-      options = iteration_paths(state).map do |part, next_state|
-        next_state == state ? [part, nil] : [nil, Node.new(part, remaining_iterations(next_state))]
-      end
-      ending = [nil, substitute_known_captures(@following, state)]
-      @reluctant ? options.unshift(ending) : options.push(ending)
-      options.reject! { |_, continuation| continuation && unmatchable?(continuation) }
-      result = repeat_without_new_captures(options)
+      result = repeat_without_new_captures(continuation_options(state))
     end
     @expanded_states[state] = result
   end
 
+  # Each option either repeats the current state or continues to a new one.
+  # Their order determines which choices backtracking tries first.
+  # For /(?:(a)|b)*/ in state 0, (a) advances to state 1, b repeats state 0,
+  # and stopping comes last; for *?, stopping comes first.
+  def continuation_options(state)
+    options = iteration_paths(state).map do |part, next_state|
+      next_state == state ? [part, nil] : [nil, Node.new(part, remaining_iterations(next_state))]
+    end
+    ending = [nil, substitute_known_captures(@following, state)]
+    @reluctant ? options.unshift(ending) : options.push(ending)
+    options.reject! { |_, continuation| continuation && unmatchable?(continuation) }
+    options
+  end
+
+  # Options [[/b/, nil], [nil, /c/]] => /(?:b)*c/: repeat b, then continue at c.
   def repeat_without_new_captures(options)
-    loops = options.select { |part, _| part }.map(&:first)
+    loops = options.map(&:first).compact
     return alternate(options.map(&:last)) if loops.empty?
 
     first_loop = options.index { |part, _| part }
@@ -120,35 +165,35 @@ class JsRegex::SecondPass::ExpandConstantCaptureLoops < JsRegex::SecondPass
     alternate(branches)
   end
 
+  # [/a/, /b/] => true; [/a/, /ab/] => false because one word prefixes another.
   def unique_iteration_boundaries?(loops)
     words = loops.map { |part| constant_word(Regexp::Parser.parse(part.to_s)) }
     return false if words.any? { |word| !word || word.empty? }
 
+    words.map!(&:downcase)
     words.combination(2).none? do |left, right|
-      left.downcase.start_with?(right.downcase) || right.downcase.start_with?(left.downcase)
+      left.start_with?(right) || right.start_with?(left)
     end
   end
 
+  # For /(?:(a)|\1)/ in state 0, keep only [(a), state 1]; \1 cannot yet match.
   def iteration_paths(state)
     expand_iteration(@iteration, state).reject { |part, _| unmatchable?(part) }.each do |part, _|
       throw :unsupported_capture_loop if Regexp::Parser.parse(part.to_s).match_length.min.zero?
     end
   end
 
+  # With bit 1 assigned to capture 1, /(?:(a)|b)/ in state 0 yields
+  # [(a), state 1] and [b, state 0].
   def expand_iteration(node, state)
     return [[node.clone, state]] if node.is_a?(String)
 
-    updates = false
-    walk(node) { |part| updates ||= part.type == :captured_group && @capture_bits.key?(part.reference) }
+    updates = any_node?(node) do |part|
+      part.type == :captured_group && @capture_bits.key?(part.reference)
+    end
     return [[substitute_known_captures(node, state), state]] unless updates
 
-    if node.quantifier
-      throw :unsupported_capture_loop unless node.optional? && node.quantifier.max == 1
-
-      present = expand_iteration(node.clone.update(quantifier: nil), state)
-      absent = [[Node.new, state]]
-      return node.quantifier.reluctant? ? absent + present : present + absent
-    end
+    return optional_iteration_paths(node, state) if node.quantifier
     if node.type == :conditional || node.type == :capture_conditional
       selected = conditional_branch(node, state)
       throw :unsupported_capture_loop unless selected
@@ -168,6 +213,17 @@ class JsRegex::SecondPass::ExpandConstantCaptureLoops < JsRegex::SecondPass
     sequence_paths(node, state)
   end
 
+  # /(a)?/ in state 0 => [(a), state 1], ['', state 0]; ?? reverses the order.
+  def optional_iteration_paths(node, state)
+    throw :unsupported_capture_loop unless node.optional? && node.quantifier.max == 1
+
+    present = expand_iteration(node.clone.update(quantifier: nil), state)
+    absent = [[Node.new, state]]
+    node.quantifier.reluctant? ? absent + present : present + absent
+  end
+
+  # /(a)\1/ starting in state 0 => /(a)(?:(?:a))/ in state 1:
+  # the first child sets the capture before the second child reads it.
   def sequence_paths(node, state)
     results = [[[], state]]
     node.children.each do |child|
@@ -185,6 +241,8 @@ class JsRegex::SecondPass::ExpandConstantCaptureLoops < JsRegex::SecondPass
     end
   end
 
+  # If capture 1 holds a, \1 => /(?:(?:a))/; if it has not participated,
+  # \1 => /(?:(?!))/ instead.
   def substitute_known_captures(node, state)
     return node.clone if node.is_a?(String)
 
@@ -207,6 +265,7 @@ class JsRegex::SecondPass::ExpandConstantCaptureLoops < JsRegex::SecondPass
     node.copy_with_children(*node.children.map { |child| substitute_known_captures(child, state) })
   end
 
+  # (?(1)b|c) selects b when bit 1 is set, and c when it is clear.
   def conditional_branch(node, state)
     references = node.type == :conditional ? [node.reference] : node.children.first.children.map(&:reference)
     return unless references.any? { |reference| @capture_bits.key?(reference) }
@@ -217,10 +276,11 @@ class JsRegex::SecondPass::ExpandConstantCaptureLoops < JsRegex::SecondPass
     (present ? branches[0] : branches[1]) || Node.new
   end
 
+  # /(?:ab){2}/ => 'abab'; /a?/ => nil because its value can vary.
   def constant_word(expression)
     quantifier = expression.quantifier
     return unless !quantifier || quantifier.min == quantifier.max
-    return '' if quantifier && quantifier.max.zero?
+    return '' if quantifier&.max&.zero?
 
     word = case expression.type
            when :literal then expression.text
@@ -234,6 +294,7 @@ class JsRegex::SecondPass::ExpandConstantCaptureLoops < JsRegex::SecondPass
     word * (quantifier ? quantifier.min : 1) if word
   end
 
+  # /a+/ => true; /a{2}/ => false.
   def can_backtrack?(node)
     return false if node.is_a?(String)
     return true if node.quantifier && node.quantifier.min != node.quantifier.max
@@ -243,6 +304,7 @@ class JsRegex::SecondPass::ExpandConstantCaptureLoops < JsRegex::SecondPass
     node.children.any? { |child| can_backtrack?(child) }
   end
 
+  # (/a/, false) => /(?:a)*/; (/a/, true) => /(?:a)*?/.
   def repeat(node, reluctant)
     Node.new('(?:', node, ')').update(quantifier: Regexp::Expression::Quantifier.construct(text: "*#{'?' if reluctant}"))
   end

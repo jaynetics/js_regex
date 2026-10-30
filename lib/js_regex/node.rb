@@ -80,13 +80,40 @@ class JsRegex
     end
 
     def optional?
-      quantifier && quantifier.min == 0
+      quantifier&.min == 0
+    end
+
+    # Keep numeric reference text in sync with its annotation. Captures and
+    # unresolved conditions only store the number in their annotation.
+    def renumber(number)
+      self.reference = number
+      case type
+      when :backref, :capture_check then children[0] = "\\#{number}"
+      end
+      self
+    end
+
+    def negative_assertion?
+      head = children.first
+      head == '(?!' || head == '(?<!'
+    end
+
+    def positive_assertion?
+      head = children.first
+      head.is_a?(String) && (head.start_with?('(?=') || head == '(?<=')
+    end
+
+    def atomic?
+      # Atomic groups are emitted as a lookahead followed by a backreference.
+      children.first == '(?:(?='
     end
 
     def nonempty?
       @nonempty
     end
 
+    # The body can match empty at any position, without relying on assertions
+    # or backreferences. Neither flag being set means the body is uncertain.
     def nullable?
       @nullable
     end

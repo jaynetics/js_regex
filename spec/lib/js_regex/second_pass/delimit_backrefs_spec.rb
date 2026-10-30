@@ -20,6 +20,15 @@ describe JsRegex::SecondPass::DelimitBackrefs do
     expect(tree.to_s).to eq('\\12(?:)3')
   end
 
+  it 'finds digits through nested containers and dropped nodes' do
+    reference = JsRegex::Node.new('\\12', reference: 12, type: :backref)
+    dropped = JsRegex::Node.new('x', type: :dropped)
+    following = JsRegex::Node.new(JsRegex::Node.new(dropped, JsRegex::Node.new('3')))
+    tree = JsRegex::Node.new(reference, following)
+    described_class.call(tree)
+    expect(tree.to_s).to eq('\\12(?:)3')
+  end
+
   it 'does not separate a reference from its quantifier' do
     expect(/(a)\1{2}0/).to stay_the_same
   end

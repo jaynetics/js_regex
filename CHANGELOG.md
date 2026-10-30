@@ -6,9 +6,24 @@ and this project adheres to [Semantic Versioning](http://semver.org/spec/v2.0.0.
 
 ## Unreleased
 
+The minimum ruby version is now 2.6.
+
 ### Added
 
 - up-to-date unicode properties map, e.g. for `\p{Dash}`
+
+### Fixed
+
+- capture numbering in atomic and possessive groups
+- backreferences and conditionals after optional or repeated captures
+- handling of backreference numbers followed by space and digits in x-mode
+- capture choices and repeat limits when expanding conditionals
+- greedy and lazy matching order when expanding repeated groups
+- handling of repeated keep marks (`\K`) and root alternatives
+- repeat limits and zero-width patterns in absence groups
+- handling of astral characters in some Unicode types and properties
+- handling of Unicode numbers in word boundaries
+- missing escaping of Unicode line separators in regex literal output
 
 ## [3.14.0] - 2025-08-03
 

@@ -1,10 +1,14 @@
 # frozen_string_literal: true
 
+# Replace supported \K marks with lookbehind for the preceding part of the branch.
+# That text must still match, but is excluded from the returned match.
+# Example: /a\Kb/ => /(?<=a)b/.
 class JsRegex::SecondPass::SubstituteRootLevelKeepMark < JsRegex::SecondPass
   def call
     substitute_in(tree)
   end
 
+  # /a\Kb\Kc/ => /(?<=ab)c/: only the last mark sets the match start.
   def substitute_in(node)
     node.children.each do |child|
       substitute_in(child) if child.is_a?(Node)

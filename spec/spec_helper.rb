@@ -164,6 +164,31 @@ RSpec::Matchers.define(:keep_matching) do |*test_strings, with_results: nil|
   failure_message { @msg + " for #{@target}" }
 end
 
+# Check the first match: a String checks its text, an Array also checks groups.
+RSpec::Matchers.define(:keep_capturing) do |examples|
+  match do |rb_regex|
+    conversions(rb_regex).all? do |target, js_regex|
+      @target = target
+      examples.all? do |string, expected|
+        groups = expected.is_a?(Array)
+        rb_match = rb_regex.match(string)
+        rb_capture = rb_match && (groups ? rb_match.to_a : rb_match[0])
+        js_match = captures_in_js(js_regex, string)
+        js_capture = js_match && (groups ? js_match : js_match[0])
+
+        @msg = if rb_capture != expected
+                 "expected Ruby to capture #{expected.inspect} from #{string.inspect}, got #{rb_capture.inspect}"
+               elsif js_capture != expected
+                 "expected JS to capture #{expected.inspect} from #{string.inspect}, got #{js_capture.inspect}"
+               end
+        @msg.nil?
+      end
+    end
+  end
+
+  failure_message { @msg + " for #{@target}" }
+end
+
 RSpec::Matchers.define(:keep_not_matching) do |*test_strings|
   match do |rb_regex|
     @errors = []
@@ -215,6 +240,10 @@ end
 def matches_in_js(js_regex, string)
   # the g-option is appended to get multiple matches at once
   eval_js("'#{js_escape(string)}'.match(#{js_regex}g);").to_a
+end
+
+def captures_in_js(js_regex, string)
+  eval_js("#{js_regex}.exec(#{string.to_json})")
 end
 
 def test_in_js(js_regex, string)
