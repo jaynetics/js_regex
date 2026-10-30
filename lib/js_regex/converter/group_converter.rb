@@ -84,7 +84,9 @@ class JsRegex
 
         ref = context.capture_group(added: context.in_subexp_recursion)
         context.track_recursive_group_call(expression.number, ref)
-        node = Node.new(*wrap(head, tail), reference: ref, type: :captured_group)
+        node = Node.new(*wrap(head, tail), reference: ref, type: :captured_group,
+                        nonempty: Utils::Captures.nonempty?(expression),
+                        nullable: Utils::Captures.nullable?(expression))
         context.track_recursive_group_call(expression.number, ref)
         node
       end

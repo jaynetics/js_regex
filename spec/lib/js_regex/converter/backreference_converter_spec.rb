@@ -454,20 +454,30 @@ describe JsRegex::Converter::BackreferenceConverter do
 
     it 'handles backreferences to optional groups from branches' do
       # this has zero-length matches on 'b' and ''
-      expect(/(a)?|b\1/).to stay_the_same.and keep_matching('a', 'b', '')
+      expect(/(a)?|b\1/).to keep_matching('a', 'b', '')
     end
-
-    # TODO: https://github.com/jaynetics/js_regex/issues/26
-    # Handling this would require generating a lot of permutations.
-    # it 'handles backreferences to nested groups on branches' do
-    #   expect(/((a)|b)+\2/).to\
-    #   become(/((a)|b)+\2/) # TODO
-    #     .and keep_matching('aa', 'aba', 'baa')
-    #     .and keep_not_matching('a', 'b', 'ab', 'ba')
-    # end
 
     it 'handles backreference to group that may capture empty string (a?)b\1' do
       expect(/(a?)b\1/).to stay_the_same.and keep_matching('aba', 'b')
+    end
+
+    it 'retains nested captures skipped by later iterations' do
+      expect(/((a)|b)+\2/).to keep_matching('aa', 'aba', 'baa')
+        .and keep_not_matching('a', 'b', 'bb', 'ab', 'ba')
+      conversions(/((a)|b)+\2/).each_value do |converted|
+        expect(eval_js("#{converted}.exec('aba')[0]")).to eq('aba')
+      end
+    end
+
+    it 'requires a referenced capture among several repeated alternatives' do
+      expect(/((a)|(b)|c|d)+\3/).to keep_matching('bb', 'bcb', 'bdb')
+        .and keep_not_matching('c', 'd', 'bc')
+    end
+
+    it 'allows branches or optional backreferences to skip a retained capture' do
+      expect(/((a)|(b)|c|d)+(?:e|\3)/).to keep_matching('bb', 'be', 'ce', 'bcb')
+        .and keep_not_matching('c', 'd', 'bc')
+      expect(/\A((a)|b)+\2?\z/).to keep_matching('a', 'b', 'ab', 'aba')
     end
   end
 end

@@ -90,31 +90,6 @@ class JsRegex::SecondPass::AlternateConditionalPermutations < JsRegex::SecondPas
     end
   end
 
-  # Make sure the referenced group actually matches by preventing optional
-  # groups and alternative branches from skipping it. Returns true if the
-  # referenced group is anywhere inside this node, including the node itself.
-  def require_group_participation(node, reference)
-    return false if node.instance_of?(String)
-
-    children_with_group = node.children.map do |child|
-      require_group_participation(child, reference)
-    end
-    found = node.type == :captured_group && node.reference == reference
-    return false unless found || children_with_group.any?
-
-    min_quantify(node)
-    if node.children.length > 1 && node.children.all? { |child| branch?(child) }
-      node.children.each.with_index do |branch, i|
-        branch << Node.new('(?!)') unless children_with_group[i]
-      end
-    end
-    true
-  end
-
-  def branch?(node)
-    node.is_a?(Node) && node.type == :branch
-  end
-
   def adapt_conditional_to_permutation(conditional_node, truthy)
     branches = conditional_node.children[1...-1]
     if branches.count == 1
@@ -128,27 +103,5 @@ class JsRegex::SecondPass::AlternateConditionalPermutations < JsRegex::SecondPas
   def adapt_backref_to_permutation(backref_node, caps_per_branch, i)
     new_num = backref_node.reference + caps_per_branch * i
     backref_node.update(children: ["\\#{new_num}"], reference: new_num)
-  end
-
-  def min_quantify(node)
-    return unless node.optional?
-
-    qtf = node.quantifier
-    case qtf.max
-    when 0
-      node.update(children: ['(?!)', *node.children], quantifier: nil)
-    when 1 # any zero_or_one quantifier (?, ??, ?+)
-      node.update(quantifier: nil)
-    else
-      min_quantifier = qtf.dup
-      maximum = qtf.max < 0 ? '' : qtf.max
-      min_quantifier.text = "{1,#{maximum}}#{'?' if qtf.reluctant?}"
-      node.update(quantifier: min_quantifier)
-    end
-  end
-
-  def null_quantify(node)
-    null_quantifier = Regexp::Expression::Quantifier.construct(text: '{0}')
-    node.update(quantifier: null_quantifier)
   end
 end
