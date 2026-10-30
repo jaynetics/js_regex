@@ -15,9 +15,9 @@ describe JsRegex::SecondPass::GuardMultiplexedBackrefs do
     end
   end
 
-  it 'marks nullable optional captures for conditional expansion' do
+  it 'marks lazy nullable optional captures for conditional expansion' do
     context = JsRegex::Converter::Context.new(target: ES2009)
-    tree = JsRegex::Converter.convert(Regexp::Parser.parse(/(?<x>a*)(?<x>b*)?\k<x>/), context)
+    tree = JsRegex::Converter.convert(Regexp::Parser.parse(/(?<x>a*)(?<x>b*)??\k<x>/), context)
     described_class.call(tree)
     expect(tree.children.last.children[1].type).to eq(:conditional)
     expect(tree.children.last.children[1].reference).to eq(2)
@@ -27,4 +27,5 @@ describe JsRegex::SecondPass::GuardMultiplexedBackrefs do
     expect(/\A(?!(?<x>a))(?<x>b)\k<x>\z/).to keep_matching('bb')
       .and keep_not_matching('b', 'a', 'ab')
   end
+
 end

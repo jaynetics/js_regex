@@ -24,15 +24,22 @@ class JsRegex
       plain
     ].freeze
 
-    def initialize(*children, reference: nil, type: :plain, nonempty: false)
+    def initialize(*children, reference: nil, type: :plain, nonempty: false, nullable: false)
       self.children = children
       self.reference = reference
       self.type = type
       @nonempty = nonempty
+      @nullable = nullable
     end
 
     def initialize_copy(*)
       self.children = children.map(&:clone)
+    end
+
+    # Copy the metadata without cloning children that the caller will replace.
+    def copy_with_children(*replacements)
+      self.class.new(*replacements, reference: reference, type: type,
+                     nonempty: nonempty?, nullable: nullable?).update(quantifier: quantifier)
     end
 
     def transform(&block)
@@ -78,6 +85,10 @@ class JsRegex
 
     def nonempty?
       @nonempty
+    end
+
+    def nullable?
+      @nullable
     end
 
     private

@@ -49,8 +49,7 @@ class JsRegex
         # Ruby tries groups with the same name from last to first.
         references = expression.referenced_expressions.reverse.map do |ref_exp|
           position = context.new_capturing_group_position(ref_exp.number)
-          Node.new("\\#{position}", reference: position, type: :backref,
-                   nonempty: Utils::Captures.nonempty?(ref_exp))
+          Node.new("\\#{position}", reference: position, type: :backref)
         end
         Node.new(*references, type: :multiplex_backref)
       end
