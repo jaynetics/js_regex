@@ -1,7 +1,5 @@
 # frozen_string_literal: true
 
-require 'spec_helper'
-
 describe JsRegex::Converter::Context do
   let(:context) { described_class.new }
 

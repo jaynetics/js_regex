@@ -1,7 +1,5 @@
 # frozen_string_literal: true
 
-require 'spec_helper'
-
 describe JsRegex::Converter::AnchorConverter do
   it 'translates the beginning-of-string anchor "\A"' do
     expect(/\A\w/).to\

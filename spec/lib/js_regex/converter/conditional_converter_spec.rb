@@ -1,9 +1,7 @@
 # frozen_string_literal: true
 
-require 'spec_helper'
-
 describe JsRegex::Converter::ConditionalConverter do
-  # see second_pass_spec.rb for tests of the final results
+  # See second_pass/alternate_conditional_permutations_spec.rb for expansion details.
   it 'marks conditionals for SecondPass conversion' do
     conditional = Regexp::Parser.parse(/(a)(?(1)b|c)/)[1]
 

@@ -1,7 +1,5 @@
 # frozen_string_literal: true
 
-require 'spec_helper'
-
 describe JsRegex do
   it 'has a semantic version number' do
     expect(JsRegex::VERSION).to match(/\A\d+\.\d+\.\d+\z/)

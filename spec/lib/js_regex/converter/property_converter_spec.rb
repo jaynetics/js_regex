@@ -1,7 +1,5 @@
 # frozen_string_literal: true
 
-require 'spec_helper'
-
 describe JsRegex::Converter::PropertyConverter do
   it 'substitutes the \p{...} property style', targets: [ES2009, ES2015] do
     expect(/\p{ascii}/).to\

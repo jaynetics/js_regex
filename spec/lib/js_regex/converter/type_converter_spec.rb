@@ -1,7 +1,5 @@
 # frozen_string_literal: true
 
-require 'spec_helper'
-
 describe JsRegex::Converter::TypeConverter do
   it 'preserves all types supported by JS in regular mode' do
     expect(/\d\D\s\S\w\W/).to stay_the_same

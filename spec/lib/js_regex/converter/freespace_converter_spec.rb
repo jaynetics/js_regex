@@ -9,8 +9,6 @@
 #
 #
 
-require 'spec_helper'
-
 describe JsRegex::Converter::FreespaceConverter do
   context 'when extended mode is set' do
     it 'drops comments and whitespace' do

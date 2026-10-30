@@ -1,332 +1,71 @@
 # frozen_string_literal: true
 
 class JsRegex
-  #
-  # After conversion of a full Regexp::Expression tree, this
-  # checks for Node instances that need further processing.
-  #
-  module SecondPass
-    class << self
-      def call(tree)
-        substitute_root_level_keep_mark(tree)
-        resolve_capture_conditionals(tree)
-        resolve_capture_backrefs(tree)
-        guard_multiplexed_backrefs(tree)
-        alternate_conditional_permutations(tree)
-        handle_non_participating_backrefs(tree)
-        delimit_backrefs(tree)
-        tree
+  # Processes converted Nodes in order, sharing tree traversal and capture checks
+  # with the individual second-pass steps.
+  class SecondPass
+    Node = JsRegex::Node
+
+    Dir[File.join(__dir__, 'second_pass', '*.rb')].sort.each do |file|
+      require file
+    end
+
+    # `tree` is a JsRegex::Node. SecondPass and its subclasses mutate it.
+    def self.call(tree)
+      new(tree).call
+      tree
+    end
+
+    def initialize(tree)
+      self.tree = tree
+    end
+
+    def call
+      STEPS.each { |step| step.call(tree) }
+    end
+
+    STEPS = [
+      SubstituteRootLevelKeepMark,
+      ResolveCaptureConditionals,
+      ResolveCaptureBackrefs,
+      GuardMultiplexedBackrefs,
+      AlternateConditionalPermutations,
+      HandleNonParticipatingBackrefs,
+      DelimitBackrefs,
+    ]
+
+    private
+
+    attr_accessor :tree
+
+    def walk(node = tree, trace: false, &block)
+      return if node.instance_of?(String)
+
+      trace ? yield(node, :enter) : yield(node)
+      node.children.each { |child| walk(child, trace: trace, &block) }
+      trace && yield(node, :exit)
+    end
+
+    # At the end of the input, only an empty/unmatched backreference can
+    # succeed. Negating that test detects a participating nonempty capture.
+    def capture_check(reference, present)
+      backref = Node.new("\\#{reference}", reference: reference, type: :capture_check)
+      test = present ? Node.new('(?!', backref, ')') : backref
+      Node.new('(?=[\\s\\S]*(?![\\s\\S])', test, ')')
+    end
+
+    def potentially_absent_groups(node = tree, optional = false)
+      return [] if node.instance_of?(String)
+
+      optional ||= node.optional? || node.type == :conditional ||
+        ['(?!', '(?<!'].include?(node.children.first)
+      groups = optional && node.type == :captured_group ? [node.reference] : []
+      alternatives = node.children.length > 1 &&
+        node.children.all? { |child| child.is_a?(Node) && child.type == :branch }
+      node.children.each do |child|
+        groups.concat(potentially_absent_groups(child, optional || alternatives))
       end
-
-      private
-
-      # At the end of the input, only an empty/unmatched backreference can
-      # succeed. Negating that test detects a participating nonempty capture.
-      def capture_check(reference, present)
-        backref = Node.new("\\#{reference}", reference: reference, type: :capture_check)
-        test = present ? Node.new('(?!', backref, ')') : backref
-        Node.new('(?=[\\s\\S]*(?![\\s\\S])', test, ')')
-      end
-
-      def resolve_capture_conditionals(tree)
-        walk(tree) do |node|
-          next unless node.type == :capture_conditional
-
-          references = node.children.first.children.map(&:reference)
-          present_checks = []
-          references.each do |reference|
-            present_checks << '|' unless present_checks.empty?
-            present_checks << capture_check(reference, true)
-          end
-          absent_checks = references.map { |reference| capture_check(reference, false) }
-          true_branch, false_branch = node.children[1..-1]
-          node.update(type: :plain, children: [
-            '(?:(?:', Node.new('(?:', *present_checks, ')'), true_branch,
-            ')|(?:', *absent_checks, false_branch || Node.new, '))'
-          ])
-        end
-      end
-
-      def resolve_capture_backrefs(tree)
-        optional_groups = potentially_absent_groups(tree)
-        completed = {}
-        walk(tree, true) do |node, event|
-          if node.type == :captured_group && event == :exit
-            completed[node.reference] = true
-          elsif node.type == :capture_backref && event == :enter
-            references = node.children.select { |backref| completed[backref.reference] }
-            if references.empty?
-              node.update(type: :plain, children: ['(?!)'])
-            elsif !optional_groups.include?(references.first.reference)
-              node.update(type: :plain, children: [references.first])
-            else
-              branches = []
-              absent_checks = []
-              references.each do |backref|
-                branches << '|' unless branches.empty?
-                branches << Node.new(*absent_checks, capture_check(backref.reference, true), backref)
-                absent_checks = absent_checks + [capture_check(backref.reference, false)]
-                break unless optional_groups.include?(backref.reference)
-              end
-              node.update(type: :plain, children: ['(?:', *branches, ')'])
-            end
-          end
-        end
-      end
-
-      def delimit_backrefs(node, following = '')
-        following = node.quantifier.to_s[0] || following
-        if node.type == :backref && /\A[0-9]/.match(following) &&
-            /\\[0-9]+\z/.match(node.children.last.to_s)
-          node << '(?:)'
-        end
-
-        node.children.reverse_each do |child|
-          delimit_backrefs(child, following) if child.is_a?(Node)
-          first = child.to_s[0]
-          following = first if first
-        end
-      end
-
-      def guard_multiplexed_backrefs(tree)
-        optional_groups = potentially_absent_groups(tree)
-        walk(tree) do |node|
-          next unless node.type == :multiplex_backref
-
-          alternatives = node.children.map do |backref|
-            if optional_groups.include?(backref.reference)
-              if backref.nonempty?
-                Node.new(capture_check(backref.reference, true), backref)
-              else
-                Node.new('(?:', Node.new('(?:', backref, ')'), Node.new('(?:(?!))'), ')',
-                         reference: backref.reference, type: :conditional)
-              end
-            else
-              backref
-            end
-          end
-          children = ['(?:']
-          alternatives.each.with_index { |branch, i| children.concat(i.zero? ? [branch] : ['|', branch]) }
-          node.update(type: :plain, children: children + [')'])
-        end
-      end
-
-      def potentially_absent_groups(node, optional = false)
-        return [] if node.instance_of?(String)
-
-        optional ||= node.optional? || node.type == :conditional ||
-          ['(?!', '(?<!'].include?(node.children.first)
-        groups = optional && node.type == :captured_group ? [node.reference] : []
-        alternatives = node.children.length > 1 &&
-          node.children.all? { |child| child.is_a?(Node) && child.type == :branch }
-        node.children.each do |child|
-          groups.concat(potentially_absent_groups(child, optional || alternatives))
-        end
-        groups
-      end
-
-      def substitute_root_level_keep_mark(tree)
-        tree.children.each do |child|
-          substitute_root_level_keep_mark(child) if child.is_a?(Node)
-        end
-
-        keep_mark_index = tree.children.rindex { |child| child.is_a?(Node) && child.type == :keep_mark }
-        return unless keep_mark_index
-
-        pre = tree.children[0...keep_mark_index].reject { |child| child.is_a?(Node) && child.type == :keep_mark }
-        separator = pre.first == '|' ? [pre.shift] : []
-        post = tree.children[(keep_mark_index + 1)..-1]
-        lookbehind = Node.new('(?<=', *pre, ')')
-        tree.update(children: [*separator, lookbehind, *post])
-      end
-
-      def handle_non_participating_backrefs(tree)
-        completed_group_numbers = {}
-        group_branches = {}
-        branch_stack = []
-        branch_owners = {}
-        walk(tree) do |parent|
-          parent.children.each do |child|
-            branch_owners[child] = parent if child.is_a?(Node) && child.type == :branch
-          end
-        end
-
-        walk(tree, true) do |node, event|
-          case [node.type, event]
-          when [:branch, :enter]
-            branch_stack.push(node)
-          when [:branch, :exit]
-            branch_stack.pop
-          when [:captured_group, :exit]
-            unless node.optional? # ignore optional groups
-              group_branches[node.reference] = branch_stack.dup
-            end
-            completed_group_numbers[node.reference] = true
-          when [:backref, :exit]
-            # make bad backrefs non-matchable
-            references_other_branch = Array(group_branches[node.reference]).any? do |ref_branch|
-              branch_stack.any? do |current_branch|
-                branch_owners[ref_branch].equal?(branch_owners[current_branch]) &&
-                  !ref_branch.equal?(current_branch)
-              end
-            end
-            forward_reference = !completed_group_numbers[node.reference]
-            if references_other_branch || forward_reference
-              node.update(type: :plain, children: ['(?!)'])
-            end
-          end
-        end
-      end
-
-      def alternate_conditional_permutations(tree)
-        permutations = conditional_tree_permutations(tree)
-        return if permutations.empty?
-
-        alternatives = permutations.map.with_index do |variant, i|
-          Node.new((i.zero? ? '(?:' : '|(?:'), variant, ')', type: :branch)
-        end
-        tree.update(children: alternatives)
-      end
-
-      def conditional_tree_permutations(tree)
-        conds = conditions(tree)
-        return [] if conds.empty?
-
-        caps_per_branch = captured_group_count(tree)
-
-        condition_permutations(conds).map.with_index do |truthy_conds, i|
-          tree_permutation = tree.clone
-          # find referenced groups and conditionals and make one-sided
-          walk(tree_permutation) do |node|
-            build_permutation(node, conds, truthy_conds, caps_per_branch, i)
-          end
-          truthy_conds.each do |reference|
-            require_group_participation(tree_permutation, reference + caps_per_branch * i)
-          end
-          tree_permutation
-        end
-      end
-
-      def walk(node, trace = false, &block)
-        return if node.instance_of?(String)
-
-        trace ? yield(node, :enter) : yield(node)
-        node.children.each { |child| walk(child, trace, &block) }
-        trace && yield(node, :exit)
-      end
-
-      def conditions(tree)
-        conditions = []
-        walk(tree) do |node|
-          conditions << node.reference if node.type.equal?(:conditional)
-        end
-        conditions.uniq
-      end
-
-      def captured_group_count(tree)
-        count = 0
-        walk(tree) { |node| count += 1 if node.type.equal?(:captured_group) }
-        count
-      end
-
-      def condition_permutations(conditions)
-        (0..(conditions.length)).inject([]) do |arr, n|
-          arr + conditions.combination(n).to_a
-        end
-      end
-
-      def build_permutation(node, conds, truthy_conds, caps_per_branch, i)
-        truthy = truthy_conds.include?(node.reference)
-
-        case node.type
-        when :backref, :capture_check
-          # We cannot use named groups or backrefs in the conditional expansion,
-          # their repetition would cause a "Duplicate capture group name" error in JS.
-          node.update(children: [
-            node.children.first.sub(/k<.*>/, node.reference.to_s)
-          ])
-          # backref numbers need to be incremented for subsequent "branches"
-          adapt_backref_to_permutation(node, caps_per_branch, i)
-        when :captured_group
-          # if the group is referenced by any condition, modulate its quantity
-          if conds.include?(node.reference)
-            adapt_referenced_group_to_permutation(node, truthy)
-          end
-          node.update(reference: node.reference + caps_per_branch * i)
-        when :conditional
-          adapt_conditional_to_permutation(node, truthy)
-        end
-      end
-
-      def adapt_referenced_group_to_permutation(group_node, truthy)
-        if truthy
-          min_quantify(group_node)
-        elsif group_node.optional?
-          null_quantify(group_node)
-        else
-          # Keep mandatory captures mandatory. An enclosing optional group or
-          # another alternative may still allow this capture not to participate.
-          group_node.children.insert(1, Node.new('(?!)'))
-        end
-      end
-
-      # Make sure the referenced group actually matches by preventing optional
-      # groups and alternative branches from skipping it. Returns true if the
-      # referenced group is anywhere inside this node, including the node itself.
-      def require_group_participation(node, reference)
-        return false if node.instance_of?(String)
-
-        children_with_group = node.children.map do |child|
-          require_group_participation(child, reference)
-        end
-        found = node.type == :captured_group && node.reference == reference
-        return false unless found || children_with_group.any?
-
-        min_quantify(node)
-        if node.children.length > 1 && node.children.all? { |child| child.is_a?(Node) && child.type == :branch }
-          node.children.each.with_index do |branch, i|
-            branch << Node.new('(?!)') unless children_with_group[i]
-          end
-        end
-        true
-      end
-
-      def adapt_conditional_to_permutation(conditional_node, truthy)
-        branches = conditional_node.children[1...-1]
-        if branches.count == 1
-          truthy || null_quantify(branches.first)
-        else
-          null_quantify(truthy ? branches.last : branches.first)
-        end
-        conditional_node.update(type: :plain)
-      end
-
-      def adapt_backref_to_permutation(backref_node, caps_per_branch, i)
-        new_num = backref_node.reference + caps_per_branch * i
-        backref_node.update(children: ["\\#{new_num}"], reference: new_num)
-      end
-
-      def min_quantify(node)
-        return unless node.optional?
-
-        qtf = node.quantifier
-        case qtf.max
-        when 0
-          node.update(children: ['(?!)', *node.children], quantifier: nil)
-        when 1 # any zero_or_one quantifier (?, ??, ?+)
-          node.update(quantifier: nil)
-        else
-          min_quantifier = qtf.dup
-          maximum = qtf.max < 0 ? '' : qtf.max
-          min_quantifier.text = "{1,#{maximum}}#{'?' if qtf.reluctant?}"
-          node.update(quantifier: min_quantifier)
-        end
-      end
-
-      def null_quantify(node)
-        null_quantifier = Regexp::Expression::Quantifier.construct(text: '{0}')
-        node.update(quantifier: null_quantifier)
-      end
+      groups
     end
   end
 end

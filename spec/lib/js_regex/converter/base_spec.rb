@@ -1,7 +1,5 @@
 # frozen_string_literal: true
 
-require 'spec_helper'
-
 describe JsRegex::Converter::Base do
   describe '#warn_of_unsupported_feature' do
     it 'adds a warning with token class, subtype, data and index' do

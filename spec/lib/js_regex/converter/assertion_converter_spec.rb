@@ -1,7 +1,5 @@
 # frozen_string_literal: true
 
-require 'spec_helper'
-
 describe JsRegex::Converter::AssertionConverter do
   it 'preserves positive lookaheads' do
     expect(/a(?=b)/i).to stay_the_same.and keep_matching('aAb', with_results: %w[A])

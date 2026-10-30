@@ -1,7 +1,5 @@
 # frozen_string_literal: true
 
-require 'spec_helper'
-
 describe JsRegex::Converter::KeepConverter do
   it 'drops the keep mark "\K" with warning', targets: [ES2009, ES2015] do
     expect(/a\Kb/).to\

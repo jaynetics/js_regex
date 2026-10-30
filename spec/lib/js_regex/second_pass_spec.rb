@@ -1,131 +1,47 @@
 # frozen_string_literal: true
 
-require 'spec_helper'
-
+# Integration tests for the combined second pass. Individual steps are tested
+# in the specs under second_pass/.
 describe JsRegex::SecondPass do
-  describe '::alternate_conditional_permutations' do
-    it 'replaces one-branch conditionals with equivalent alternations' do
-      expect(/-(<)?a(?(1)>)-/).to\
-      become(/(?:-(<){0}a(?:(?:>){0})-)|(?:-(<)a(?:(?:>))-)/)
-        .and keep_matching('-a-', '-<a>-')
-        .and keep_not_matching('-<a-', '-a>-')
-    end
+  it 'leaves trees that do not need further processing unchanged' do
+    expect(/foo/).to stay_the_same
+  end
 
-    it 'keeps 0..(n>1) quantifiers of the target group' do
-      expect(/-(<){,2}a(?(1)>)-/).to\
-      become(/(?:-(<){0}a(?:(?:>){0})-)|(?:-(<){1,2}a(?:(?:>))-)/)
-        .and keep_matching('-<a>-', '-<<a>-')
-        .and keep_not_matching('-<a-', '-<<a-', '-a>-')
-    end
+  it 'keeps possessive quantifiers of the target group' do
+    expect(/-(<)?+a(?(1)>)/).to\
+    become(/(?:-(?:(?=((<){0}))\1)a(?:(?:>){0}))|(?:-(?:(?=((<)))\3)a(?:(?:>)))/)
+      .and keep_matching('-<a>', '-a')
+      .and keep_not_matching('-<a', '-<<a')
+  end
 
-    it 'keeps unbounded and reluctant quantifiers of the target group' do
-      [/\A(a)*(?(1)b|c)\z/, /\A(a)*?(?(1)b|c)\z/,
-       /\A(a){0,}(?(1)b|c)\z/].each do |regexp|
-        expect(regexp).to keep_matching('c', 'ab', 'aab')
-          .and keep_not_matching('b', 'ac', 'aac')
-      end
-    end
+  it 'checks captures made by subexpression calls in conditions' do
+    expect(/\A(a)?\g<1>(?(1)b|c)\z/).to keep_matching('ab', 'aab')
+      .and keep_not_matching('ac', 'aac')
+    expect(/\A(?<x>a)?\g<x>(?(<x>)b|c)\z/).to keep_matching('ab', 'aab')
+      .and keep_not_matching('ac', 'aac')
+  end
 
-    it 'keeps zero-only conditional captures unmatchable in true permutations' do
-      expect(/\A(a){0}(?(1)b|c)\z/)
-        .to keep_matching('c')
-        .and keep_not_matching('ab', 'b', 'ac')
-    end
+  it 'retains earlier participating captures when checking conditions' do
+    expect(/\A\g<1>(a)?(?(1)b|c)\z/).to keep_matching('ab', 'aab')
+      .and keep_not_matching('ac', 'aac')
+    expect(/\A(a)\g<1>?(?(1)b|c)\z/).to keep_matching('ab', 'aab')
+      .and keep_not_matching('ac', 'aac')
+  end
 
-    it 'keeps possessive quantifiers of the target group' do
-      expect(/-(<)?+a(?(1)>)/).to\
-      become(/(?:-(?:(?=((<){0}))\1)a(?:(?:>){0}))|(?:-(?:(?=((<)))\3)a(?:(?:>)))/)
-        .and keep_matching('-<a>', '-a')
-        .and keep_not_matching('-<a', '-<<a')
-    end
+  it 'recognizes participating empty captures made by required calls' do
+    expect(/\A(a?)?\g<1>(?(1)b|c)\z/).to keep_matching('b', 'ab', 'aab')
+      .and keep_not_matching('c', 'ac', 'aac')
+  end
 
-    it 'replaces two-branch conditionals with equivalent alternations' do
-      expect(/-(<)?a(?(1)>|b)-/).to\
-      become(/(?:-(<){0}a(?:(?:>){0}(?:b))-)|(?:-(<)a(?:(?:>)(?:b){0})-)/)
-        .and keep_matching('-ab-', '-<a>-')
-        .and keep_not_matching('-a>-', '-<ab-', '-<ab>-')
-    end
+  it 'delimits backreferences after conditional expansion renumbers them' do
+    expect(/\A(a)(?(1)b)\k<1>0\z/)
+      .to keep_matching('aba0')
+      .and keep_not_matching('ab0', "ab\b")
+  end
 
-    it 'replaces named conditionals with equivalent alternations' do
-      expect(/-(?<bar><)?a(?(<bar>)>)-/).to\
-      become(/(?:-(<){0}a(?:(?:>){0})-)|(?:-(<)a(?:(?:>))-)/)
-        .and keep_matching('-a-', '-<a>-')
-        .and keep_not_matching('-<a-', '-a>-')
-    end
-
-    it 'replaces quantified conditionals with equivalent alternations' do
-      expect(/-(<)?a(?(1)>){3}-/).to\
-      become(/(?:-(<){0}a(?:(?:>){0}){3}-)|(?:-(<)a(?:(?:>)){3}-)/)
-        .and keep_matching('-a-', '-<a>>>-')
-        .and keep_not_matching('-<a>-')
-    end
-
-    it 'does not remove mandatory captures in false permutations' do
-      expect(/\Aa(b)(?(1)c|d)\z/)
-        .to keep_matching('abc')
-        .and keep_not_matching('ad', 'abd', 'ac')
-      expect(/\A(a)+(?(1)b|c)\z/)
-        .to keep_matching('ab', 'aab')
-        .and keep_not_matching('c', 'ac')
-    end
-
-    it 'requires enclosing optional groups and alternatives for true conditions' do
-      expect(/\A(?:(a)|b)?(?(1)c|d)\z/)
-        .to keep_matching('ac', 'bd', 'd')
-        .and keep_not_matching('c', 'bc', 'ad')
-    end
-
-    it 'replaces successive conditionals with equivalent alternations' do
-      # resulting source is not speced because it is very long
-      expect(/(<)?a(?(1)>)(<)?b(?(2)>)/)
-        .to keep_matching('ab', 'a<b>', '<a>b', '<a><b>')
-        .and keep_not_matching('a>b', '<a><b')
-    end
-
-    it 'replaces nested conditionals with equivalent alternations' do
-      # resulting source is not speced because it is very long
-      expect(/-(<)?(a)?(b)(?(2)(?(1)->|>>))-/)
-      .to keep_matching(
-        '-<ab->-', # 1: true,  2: true
-        '-<b-',    # 1: true,  2: false
-        '-ab>>-',  # 1: false, 2: true
-        '--b-',    # 1: false, 2: false
-      ).and keep_not_matching(
-        '-<ab-',   # 1: true,  2: true
-        '-<ab>>-', # 1: true,  2: true
-        '-<ab>>-', # 1: true,  2: false
-        '--b>>-',  # 1: false, 2: false
-      )
-    end
-
-    it 'adapts backref numbers in the created alternations branches' do
-      expect(/()(?(1))\1/).to\
-      become(/(?:((?!))(?:(?:){0})\1)|(?:()(?:(?:))\2)/)
-      expect(/(a)(b)(?(1)c)(d)\2/).to\
-      become(/(?:((?!)a)(b)(?:(?:c){0})(d)\2)|(?:(a)(b)(?:(?:c))(d)\5)/)
-    end
-
-    it 'checks captures made by subexpression calls in conditions' do
-      expect(/\A(a)?\g<1>(?(1)b|c)\z/).to keep_matching('ab', 'aab')
-        .and keep_not_matching('ac', 'aac')
-      expect(/\A(?<x>a)?\g<x>(?(<x>)b|c)\z/).to keep_matching('ab', 'aab')
-        .and keep_not_matching('ac', 'aac')
-    end
-
-    it 'retains earlier participating captures when checking conditions' do
-      expect(/\A\g<1>(a)?(?(1)b|c)\z/).to keep_matching('ab', 'aab')
-        .and keep_not_matching('ac', 'aac')
-      expect(/\A(a)\g<1>?(?(1)b|c)\z/).to keep_matching('ab', 'aab')
-        .and keep_not_matching('ac', 'aac')
-    end
-
-    it 'recognizes participating empty captures made by required calls' do
-      expect(/\A(a?)?\g<1>(?(1)b|c)\z/).to keep_matching('b', 'ab', 'aab')
-        .and keep_not_matching('c', 'ac', 'aac')
-    end
-
-    it 'does nothing if passed a tree that does not need further processing' do
-      expect(/foo/).to stay_the_same
-    end
+  it 'expands nullable multiplexed references into guarded conditional permutations' do
+    expect(/\A(?<x>a)?(?<x>b*)?\k<x>\z/)
+      .to keep_matching('', 'a', 'aa', 'bb', 'abbbb')
+      .and keep_not_matching('b', 'ab')
   end
 end
