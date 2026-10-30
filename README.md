@@ -212,6 +212,8 @@ Many Regexp tokens work in JavaScript just as they do in Ruby, or allow for a st
 
 The tricky bit here is that these expressions may be nested, and that their expansions may increase the capturing group count. This means that any following backreferences need an update. E.g. <code>(.{3})\g<1>(.)<b>\2</b></code> (which matches strings like "FooBarXX") converts to <code>(.{3})(.{3})(.)<b>\3</b></code>.
 
+**Non-participating capturing groups** are another tricky case and require complex branching in the pattern. See #26 for details.
+
 ## Contributions
 
 Feel free to send suggestions, point out issues, or submit pull requests.

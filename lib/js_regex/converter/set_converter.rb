@@ -63,7 +63,7 @@ class JsRegex
 
       def simple_convert_literal_child(exp)
         if !context.u? &&
-           exp.text =~ Utils::Literals::ASTRAL_PLANE_CODEPOINT_PATTERN &&
+           exp.text.match?(Utils::Literals::ASTRAL_PLANE_CODEPOINT_PATTERN) &&
            !context.enable_u_option
           false
         elsif SET_LITERALS_REQUIRING_ESCAPE_PATTERN.match?(exp.text)

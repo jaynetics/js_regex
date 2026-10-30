@@ -18,7 +18,7 @@ describe JsRegex::SecondPass::PreserveRepeatedCaptures do
 
     expect(tree.children.last.type).to eq(:backref)
     expect(tree.children.last.reference).to eq(1)
-    expect(tree.to_s).to eq('(?:(?:(?:(?!)|b){0,}?(?:(a)|b(?!))){1,}(?:(?!)|b){0,}|(?:(?!)|b)+)\\1')
+    expect(tree.to_s).to eq('(?:(?:(?:(?!)|b)*?(?:(a)|b(?!)))+(?:(?!)|b)*|(?:(?!)|b)+)\\1')
   end
 
   it 'marks references to duplicated enclosing captures for history resolution' do

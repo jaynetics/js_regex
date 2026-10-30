@@ -152,12 +152,37 @@ RSpec::Matchers.define(:keep_matching) do |*test_strings, with_results: nil|
           # are not completely identical between Ruby and JS matching calls.
           # In that case, don't specify expected results and just check that
           # a valid string does produce a match.
-          rb_regex =~ string           || @msg = "rb did not match `#{string}`"
+          rb_regex.match?(string)      || @msg = "rb did not match `#{string}`"
           test_in_js(js_regex, string) || @msg = "js did not match `#{string}`"
         end
       end
 
       @msg.nil?
+    end
+  end
+
+  failure_message { @msg + " for #{@target}" }
+end
+
+# Check the first match: a String checks its text, an Array also checks groups.
+RSpec::Matchers.define(:keep_capturing) do |examples|
+  match do |rb_regex|
+    conversions(rb_regex).all? do |target, js_regex|
+      @target = target
+      examples.all? do |string, expected|
+        groups = expected.is_a?(Array)
+        rb_match = rb_regex.match(string)
+        rb_capture = rb_match && (groups ? rb_match.to_a : rb_match[0])
+        js_match = captures_in_js(js_regex, string)
+        js_capture = js_match && (groups ? js_match : js_match[0])
+
+        @msg = if rb_capture != expected
+                 "expected Ruby to capture #{expected.inspect} from #{string.inspect}, got #{rb_capture.inspect}"
+               elsif js_capture != expected
+                 "expected JS to capture #{expected.inspect} from #{string.inspect}, got #{js_capture.inspect}"
+               end
+        @msg.nil?
+      end
     end
   end
 
@@ -170,7 +195,7 @@ RSpec::Matchers.define(:keep_not_matching) do |*test_strings|
     conversions(rb_regex).all? do |target, js_regex|
       @target = target
       test_strings.each do |string|
-        rb_regex =~ string           && @errors.push("rb did match `#{string}`")
+        rb_regex.match?(string)      && @errors.push("rb did match `#{string}`")
         test_in_js(js_regex, string) && @errors.push("js did match `#{string}`")
       end
       @errors.empty?
@@ -215,6 +240,10 @@ end
 def matches_in_js(js_regex, string)
   # the g-option is appended to get multiple matches at once
   eval_js("'#{js_escape(string)}'.match(#{js_regex}g);").to_a
+end
+
+def captures_in_js(js_regex, string)
+  eval_js("#{js_regex}.exec(#{string.to_json})")
 end
 
 def test_in_js(js_regex, string)

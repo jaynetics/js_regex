@@ -32,10 +32,25 @@ describe JsRegex::SecondPass::ExpandConstantCaptureLoops do
   end
 
   it 'keeps lazy match order when two captures share a prefix' do
-    conversions(/(?:(aa)|(a))+?\1\2/).each_value do |converted|
-      expect(eval_js("#{converted}.exec('aaaaaa')[0]")).to eq('aaaaaa')
-      expect(eval_js("#{converted}.exec('aaaaaaa')[0]")).to eq('aaaaaa')
-      expect(eval_js("#{converted}.exec('aaaaaaaa')[0]")).to eq('aaaaaaaa')
-    end
+    expect(/(?:(aa)|(a))+?\1\2/).to keep_capturing(
+      'aaaaaa' => 'aaaaaa', 'aaaaaaa' => 'aaaaaa', 'aaaaaaaa' => 'aaaaaaaa'
+    )
+  end
+
+  it 'retains a single constant capture for a conditional after a lazy loop' do
+    expect(/(?:(a)|ab)+?(?(1)c|a)/).to keep_capturing('aabc' => 'aabc', 'aaba' => 'aba')
+    expect(/\A(?:(a)|ab)+?(?(1)c|a)\z/).to keep_matching('aabc', 'aba')
+      .and keep_not_matching('aaba', 'ab', 'a')
+    expect(/(?:(a)|ab)*?(?(1)c|a)/).to keep_capturing('aabc' => 'a', 'abc' => 'a')
+  end
+
+  it 'tracks participation without fixing the value of captures used only by conditions' do
+    expect(/(?:(a+)|ab)+?(?(1)c|a)/).to keep_capturing('aabc' => 'aabc', 'aaba' => 'aba')
+    expect(/(?:([ab]+)|b)+?(?(1)c|a)/).to keep_capturing('aba' => 'ba', 'aaba' => 'ba')
+    expect(/(?:(ab+)|ab)+?(?(1)c|a)/).to keep_capturing('ababa' => 'aba')
+  end
+
+  it 'still rejects variable capture values read by a backreference' do
+    expect(/(?:(a+)|ab)+?(?:c|\1)/).to stay_the_same
   end
 end
