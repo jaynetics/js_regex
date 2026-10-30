@@ -32,9 +32,15 @@ task :build_prop_map do
       }
     JS
 
+    utf8_matched_chars =
+      matched_chars
+      .to_a
+      .map { |chr| chr.encode('utf-8', invalid: :replace, undef: :replace, replace: '') }
+      .reject(&:empty?)
+
     if name_in_js.nil?
       puts "🟠 #{prop.name} (not supported by JS)"
-    elsif CharacterSet.of_property(prop) != CharacterSet.new(matched_chars)
+    elsif CharacterSet.of_property(prop) != CharacterSet.new(utf8_matched_chars)
       puts "🟡 #{prop.name} (different behavior in JS)"
     else
       hash[prop] = name_in_js
