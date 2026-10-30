@@ -88,6 +88,19 @@ describe JsRegex::Converter::Base do
         expect(/a+?/).to stay_the_same
       end
 
+      it 'preserves lazy intervals that contain a comma' do
+        expect(/a{1,3}?/).to stay_the_same
+          .and keep_matching('aaa', with_results: %w[a a a])
+        expect(/a{2,}?/).to stay_the_same
+          .and keep_matching('aaaa', with_results: %w[aa aa])
+        expect(/a{,3}?/).to become(/a{0,3}?/)
+      end
+
+      it 'keeps nonempty lazy intervals from introducing empty captures' do
+        expect(/\A(a{1,3}?)*\1\z/).to keep_matching('aa', 'aaa', 'aaaa')
+          .and keep_not_matching('', 'a')
+      end
+
       it 'preserves set quantifiers' do
         expect(/[a-z]+?/).to stay_the_same
       end
@@ -154,6 +167,11 @@ describe JsRegex::Converter::Base do
       it 'wraps adjacent/multiplicative fixes ({x}) in passive groups' do
         expect(/a{4}{6}/).to\
         become(/(?:a{4}){6}/)
+      end
+
+      it 'keeps a question mark after an exact count optional' do
+        expect(/a{3}?/).to become(/(?:a{3})?/).and keep_matching('')
+        expect(/(?:a{1,3})?/).to stay_the_same
       end
 
       it 'wraps adjacent/multiplicative ranges ({x,y}) in passive groups' do
