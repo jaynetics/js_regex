@@ -29,7 +29,7 @@ class JsRegex
       end
 
       def resolve_capture_conditionals(tree)
-        crawl(tree) do |node|
+        walk(tree) do |node|
           next unless node.type == :capture_conditional
 
           references = node.children.first.children.map(&:reference)
@@ -50,7 +50,7 @@ class JsRegex
       def resolve_capture_backrefs(tree)
         optional_groups = potentially_absent_groups(tree)
         completed = {}
-        crawl(tree, true) do |node, event|
+        walk(tree, true) do |node, event|
           if node.type == :captured_group && event == :exit
             completed[node.reference] = true
           elsif node.type == :capture_backref && event == :enter
@@ -90,7 +90,7 @@ class JsRegex
 
       def guard_multiplexed_backrefs(tree)
         optional_groups = potentially_absent_groups(tree)
-        crawl(tree) do |node|
+        walk(tree) do |node|
           next unless node.type == :multiplex_backref
 
           alternatives = node.children.map do |backref|
@@ -145,13 +145,13 @@ class JsRegex
         group_branches = {}
         branch_stack = []
         branch_owners = {}
-        crawl(tree) do |parent|
+        walk(tree) do |parent|
           parent.children.each do |child|
             branch_owners[child] = parent if child.is_a?(Node) && child.type == :branch
           end
         end
 
-        crawl(tree, true) do |node, event|
+        walk(tree, true) do |node, event|
           case [node.type, event]
           when [:branch, :enter]
             branch_stack.push(node)
@@ -197,7 +197,7 @@ class JsRegex
         condition_permutations(conds).map.with_index do |truthy_conds, i|
           tree_permutation = tree.clone
           # find referenced groups and conditionals and make one-sided
-          crawl(tree_permutation) do |node|
+          walk(tree_permutation) do |node|
             build_permutation(node, conds, truthy_conds, caps_per_branch, i)
           end
           truthy_conds.each do |reference|
@@ -207,17 +207,17 @@ class JsRegex
         end
       end
 
-      def crawl(node, trace = false, &block)
+      def walk(node, trace = false, &block)
         return if node.instance_of?(String)
 
         trace ? yield(node, :enter) : yield(node)
-        node.children.each { |child| crawl(child, trace, &block) }
+        node.children.each { |child| walk(child, trace, &block) }
         trace && yield(node, :exit)
       end
 
       def conditions(tree)
         conditions = []
-        crawl(tree) do |node|
+        walk(tree) do |node|
           conditions << node.reference if node.type.equal?(:conditional)
         end
         conditions.uniq
@@ -225,7 +225,7 @@ class JsRegex
 
       def captured_group_count(tree)
         count = 0
-        crawl(tree) { |node| count += 1 if node.type.equal?(:captured_group) }
+        walk(tree) { |node| count += 1 if node.type.equal?(:captured_group) }
         count
       end
 
