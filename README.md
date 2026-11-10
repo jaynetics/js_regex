@@ -164,7 +164,7 @@ When converting a Regexp that contains unsupported features, corresponding parts
 | capturing group names [4]   | (?&lt;a&gt;, (?'a'   | X      | X      | ✓      |
 | extended grapheme type      | \X                   | X      | X      | ✓      |
 | lookbehinds                 | (?<=a), (?<!a)       | X      | X      | ✓      |
-| keep marks                  | \K                   | X      | X      | ✓      |
+| keep marks [7]              | \K                   | X      | X      | ✓      |
 | sane word boundaries        | \b, \B               | X [5]  | X [5]  | ✓      |
 | nested keep mark            | /a(b\Kc)d/           | X      | X      | X      |
 | backref by recursion level  | \k<1+1>              | X      | X      | X      |
@@ -184,6 +184,8 @@ When converting a Regexp that contains unsupported features, corresponding parts
 [5] When targetting ES2018, \b and \B are replaced with a lookbehind/lookahead solution. For other targets, they are carried over as is, but generate a warning. They only recognize ASCII word chars in JavaScript, and neither the `u` nor the `v` flag makes them behave correctly.
 
 [6] `^` only matches at the beginning of the string for the targets ES2009 and ES2015. See https://github.com/jaynetics/js_regex/issues/30
+
+[7] Keep marks are emulated with lookbehind. General prefix backtracking, alternative priority, and searches starting at a nonzero offset can differ from Ruby. Global scans can reuse a prefix consumed by an earlier match: `/a\Ka/` finds one match in `aaa` in Ruby, while the converted `/(?<=a)a/g` finds two.
 
 <a name='EX'></a>
 ## How it Works
@@ -211,6 +213,8 @@ Many Regexp tokens work in JavaScript just as they do in Ruby, or allow for a st
 **Subexpression calls** are replaced with the conversion result of their target, e.g. `(.{3})\g<1>` expands to `(.{3})(.{3})`.
 
 The tricky bit here is that these expressions may be nested, and that their expansions may increase the capturing group count. This means that any following backreferences need an update. E.g. <code>(.{3})\g<1>(.)<b>\2</b></code> (which matches strings like "FooBarXX") converts to <code>(.{3})(.{3})(.)<b>\3</b></code>.
+
+Converted patterns can therefore have different capture counts and numbering. JsRegex updates references within the pattern, but callers inspecting JavaScript `RegExp.exec` results should not assume that group indices match the original Ruby regexp.
 
 **Non-participating capturing groups** are another tricky case and require complex branching in the pattern. See #26 for details.
 

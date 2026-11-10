@@ -420,6 +420,12 @@ describe JsRegex::Converter::BackreferenceConverter do
   end
 
   context 'when backreferences point to non-participating groups' do
+    it 'retains nullable values skipped by a later subexpression call' do
+      expect(/\A(?<x>a*(?<y>b*)?)\g<x>?\k<x>\k<y>?\z/)
+        .to keep_capturing('baab' => 'baab', 'aab' => 'aab', '' => '')
+        .and keep_not_matching('baabb', 'aba')
+    end
+
     it 'handles forward references' do
       expect(/\1()/).to\
       become(/(?!)()/)

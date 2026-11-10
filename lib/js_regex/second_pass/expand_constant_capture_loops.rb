@@ -186,7 +186,7 @@ class JsRegex::SecondPass::ExpandConstantCaptureLoops < JsRegex::SecondPass
   # With bit 1 assigned to capture 1, /(?:(a)|b)/ in state 0 yields
   # [(a), state 1] and [b, state 0].
   def expand_iteration(node, state)
-    return [[node.clone, state]] if node.is_a?(String)
+    return [[node.clone, state]] if node.instance_of?(String)
 
     updates = any_node?(node) do |part|
       part.type == :captured_group && @capture_bits.key?(part.reference)
@@ -201,7 +201,7 @@ class JsRegex::SecondPass::ExpandConstantCaptureLoops < JsRegex::SecondPass
       return expand_iteration(selected, state)
     end
     head = node.children.first
-    throw :unsupported_capture_loop if head.is_a?(String) && head.start_with?('(') && !['(', '(?:'].include?(head)
+    throw :unsupported_capture_loop if head.instance_of?(String) && head.start_with?('(') && !['(', '(?:'].include?(head)
 
     if alternation?(node)
       return node.children.flat_map do |branch|
@@ -244,7 +244,7 @@ class JsRegex::SecondPass::ExpandConstantCaptureLoops < JsRegex::SecondPass
   # If capture 1 holds a, \1 => /(?:(?:a))/; if it has not participated,
   # \1 => /(?:(?!))/ instead.
   def substitute_known_captures(node, state)
-    return node.clone if node.is_a?(String)
+    return node.clone if node.instance_of?(String)
 
     case node.type
     when :backref, :capture_backref, :multiplex_backref
@@ -296,7 +296,7 @@ class JsRegex::SecondPass::ExpandConstantCaptureLoops < JsRegex::SecondPass
 
   # /a+/ => true; /a{2}/ => false.
   def can_backtrack?(node)
-    return false if node.is_a?(String)
+    return false if node.instance_of?(String)
     return true if node.quantifier && node.quantifier.min != node.quantifier.max
     return true if [:backref, :capture_backref, :multiplex_backref, :conditional, :capture_conditional].include?(node.type)
     return true if node.children.any? { |child| branch?(child) }

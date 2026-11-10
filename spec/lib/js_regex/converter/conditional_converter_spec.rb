@@ -16,9 +16,10 @@ describe JsRegex::Converter::ConditionalConverter do
     expect(result.children[3].to_s).to eq ')'
   end
 
-  it 'drops the condition part without warning' do
-    expect(/(a)(?(1)b|c)/).to\
-    become(/(?:((?!)a)(?:(?:c)))|(?:(a)(?:(?:b)))/)
+  it 'compiles conditionals without warnings' do
+    regexp = /(a)(?(1)b|c)/
+    expect(regexp).not_to generate_warning
+    expect(regexp).to keep_capturing('ab' => 'ab', 'zab' => 'ab', 'ac' => nil, 'c' => nil, 'a' => nil)
   end
 
   it 'drops unknown conditional expressions with warning' do

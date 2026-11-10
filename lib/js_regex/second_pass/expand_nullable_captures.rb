@@ -175,7 +175,7 @@ class JsRegex::SecondPass::ExpandNullableCaptures < JsRegex::SecondPass
 
   # For capture 1, /(?:(a*))/ => true; /(?:b(a*))/ => false.
   def capture_only?(node, reference)
-    return ['(', '(?:', ')', ''].include?(node) if node.is_a?(String)
+    return ['(', '(?:', ')', ''].include?(node) if node.instance_of?(String)
     return !node.quantifier if node.type == :captured_group && node.reference == reference
     return false if node.quantifier
 
@@ -186,7 +186,7 @@ class JsRegex::SecondPass::ExpandNullableCaptures < JsRegex::SecondPass
   # its nonempty annotation from false to true.
   def mark_nonempty_capture(node, reference)
     node.children.map! do |child|
-      next child if child.is_a?(String)
+      next child if child.instance_of?(String)
 
       if child.type == :captured_group && child.reference == reference
         Node.new(*child.children, reference: reference, type: :captured_group, nonempty: true)
@@ -208,7 +208,7 @@ class JsRegex::SecondPass::ExpandNullableCaptures < JsRegex::SecondPass
   def passive_sequence?(node)
     return false unless node.type == :plain && !node.quantifier && node.children.any? { |child| child.is_a?(Node) }
 
-    node.children.first == '(?:' || !node.children.any? { |child| child.is_a?(String) }
+    node.children.first == '(?:' || !node.children.any? { |child| child.instance_of?(String) }
   end
 
   # /(a*)?/ => [/(a*)/, /(a*){0}/]; /(a*)??/ gives the reverse order.

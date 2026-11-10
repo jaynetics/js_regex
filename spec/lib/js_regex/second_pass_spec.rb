@@ -14,10 +14,9 @@ describe JsRegex::SecondPass do
   end
 
   it 'keeps possessive quantifiers of the target group' do
-    expect(/-(<)?+a(?(1)>)/).to\
-    become(/(?:-(?:(?=((){0}))\1)a(?:))|(?:-(?:(?=((<)))\3)a(?:(?:>)))/)
-      .and keep_matching('-<a>', '-a')
-      .and keep_not_matching('-<a', '-<<a')
+    regexp = /-(<)?+a(?(1)>)/
+    expect(regexp).not_to generate_warning
+    expect(regexp).to keep_capturing('-<a>' => '-<a>', '-a' => '-a', '-<a' => nil, '-<<a' => nil)
   end
 
   it 'checks captures made by subexpression calls in conditions' do

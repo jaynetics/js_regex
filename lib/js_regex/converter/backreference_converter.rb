@@ -37,7 +37,9 @@ class JsRegex
         references = positions.map do |position|
           Node.new("\\#{position}", reference: position, type: :backref)
         end
-        if references.length > 1 && Utils::Captures.nonempty?(expression.referenced_expression)
+        # An absent call must fall back to an earlier capture even if that
+        # capture can be empty. SecondPass resolves participation separately.
+        if references.length > 1
           Node.new(*references, type: :capture_backref)
         else
           references.first

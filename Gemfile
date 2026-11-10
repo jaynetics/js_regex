@@ -5,6 +5,8 @@ source 'https://rubygems.org'
 # Specify your gem's dependencies in js_regex.gemspec
 gemspec
 
+gem 'regexp_parser', path: '../regexp_parser'
+
 gem 'debug'
 gem 'gouteur', '~> 1.0'
 gem 'mini_racer', '~> 0.22'

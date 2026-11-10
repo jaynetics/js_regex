@@ -55,7 +55,7 @@ class JsRegex::SecondPass::PreserveRepeatedCaptures < JsRegex::SecondPass
   # /(?:(a)|b)/ => [1]; after disabling b with a generated (?!) node,
   # /(?:(a)|b(?!))/ => [] since only the capturing branch can match.
   def skipped_captures(node = tree, optional = false)
-    return [] if node.is_a?(String) || unmatchable?(node)
+    return [] if node.instance_of?(String) || unmatchable?(node)
 
     optional ||= node.optional? || node.type == :conditional || node.negative_assertion?
     children = node.children
@@ -211,7 +211,7 @@ class JsRegex::SecondPass::PreserveRepeatedCaptures < JsRegex::SecondPass
   # the order in which a loop explores its iteration boundaries.
   # /(a+)/ => true; /(a+?)/ => false; /(ab+)/ => nil (also ineligible).
   def capture_run?(node, capture)
-    return ['(', '(?:', ')', ''].include?(node) if node.is_a?(String)
+    return ['(', '(?:', ')', ''].include?(node) if node.instance_of?(String)
     if node.equal?(capture)
       return false if node.quantifier || any_node?(node) { |part| part.quantifier && part.quantifier.reluctant? }
 
@@ -316,7 +316,7 @@ class JsRegex::SecondPass::PreserveRepeatedCaptures < JsRegex::SecondPass
   # In /(?:(a)|b)/, capture 1 is first: true, last: false;
   # /(?:(a)??)/ is first: false, last: true because skipping is tried first.
   def capture_at_edge?(node, reference, first:)
-    return false if node.is_a?(String)
+    return false if node.instance_of?(String)
     return false if node.optional? && node.quantifier.reluctant? == first
     return true if node.type == :captured_group && node.reference == reference
 
@@ -358,7 +358,7 @@ class JsRegex::SecondPass::PreserveRepeatedCaptures < JsRegex::SecondPass
   # \1 => /(?:[\s\S]*)/ for conservative length/character analysis only;
   # this approximation is not emitted as the converted regexp.
   def analysis_source(node)
-    return node if node.is_a?(String)
+    return node if node.instance_of?(String)
 
     source = case node.type
              when :backref, :capture_backref, :multiplex_backref

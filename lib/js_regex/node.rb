@@ -100,7 +100,7 @@ class JsRegex
 
     def positive_assertion?
       head = children.first
-      head.is_a?(String) && (head.start_with?('(?=') || head == '(?<=')
+      head.instance_of?(String) && (head.start_with?('(?=') || head == '(?<=')
     end
 
     def atomic?
