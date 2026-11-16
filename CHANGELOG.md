@@ -6,6 +6,8 @@ and this project adheres to [Semantic Versioning](http://semver.org/spec/v2.0.0.
 
 ## Unreleased
 
+## [3.15.0] - 2026-11-16
+
 The minimum ruby version is now 2.6.
 
 ### Added
